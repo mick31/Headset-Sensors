@@ -14,6 +14,11 @@
 
 @implementation ViewController
 
+@synthesize avgInput = _avgInput;
+@synthesize peakInput = _peakInput;
+@synthesize lowpassInput = _lowpassInput;
+@synthesize inputSource = _inputSource;
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
@@ -46,7 +51,50 @@
     double peakPowerForChannel = pow(10, (0.05 * [recorder peakPowerForChannel:0]));
     lowPassFiltered = ALPHA * peakPowerForChannel + (1.0 - ALPHA) * lowPassFiltered;
     
-    NSLog(@"Average input: %f \nPeak input: %f \nLow Pass Results: %f", [recorder averagePowerForChannel:0], [recorder peakPowerForChannel:0], lowPassFiltered);
+    _avgInput.text = [NSString stringWithFormat:@"%f", [recorder averagePowerForChannel:0]];
+    _peakInput.text = [NSString stringWithFormat:@"%f", [recorder peakPowerForChannel:0]];
+    _lowpassInput.text = [NSString stringWithFormat:@"%f", lowPassFiltered];
+    
+    if (self.isHeadsetPluggedIn)
+        _inputSource.text = @"Headset";
+    else
+        _inputSource.text = @"Mic";
+    
+}
+
+-(BOOL) isHeadsetPluggedIn {
+    UInt32 routeSize = sizeof (CFStringRef);
+    CFStringRef route;
+    
+    OSStatus error = AudioSessionGetProperty (kAudioSessionProperty_AudioRoute,
+                                              &routeSize,
+                                              &route);
+
+    
+    /* Known values of route:
+     * "Headset"
+     * "Headphone"
+     * "Speaker"
+     * "SpeakerAndMicrophone"
+     * "HeadphonesAndMicrophone"
+     * "HeadsetInOut"
+     * "ReceiverAndMicrophone"
+     * "Lineout"
+     */
+    
+    if (!error && (route != NULL)) {
+        
+        NSString* routeStr = (__bridge NSString *)route;
+        
+        //NSLog(routeStr);
+        
+        NSRange headphoneRange = [routeStr rangeOfString : @"MicrophoneWired"];
+        if (headphoneRange.location != NSNotFound) {
+            return YES;
+        }
+    }
+    
+    return NO;
 }
 
 - (void)didReceiveMemoryWarning

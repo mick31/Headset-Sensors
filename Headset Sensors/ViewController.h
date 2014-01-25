@@ -16,7 +16,12 @@
     NSTimer *levelTimer;
     double lowPassFiltered;
 }
+@property (weak, nonatomic) IBOutlet UILabel *avgInput;
+@property (weak, nonatomic) IBOutlet UILabel *peakInput;
+@property (weak, nonatomic) IBOutlet UILabel *lowpassInput;
+@property (weak, nonatomic) IBOutlet UILabel *inputSource;
 
 -(void) levelTimerCallBack:(NSTimer *) timer;
+-(BOOL) isHeadsetPluggedIn;
 
 @end
