@@ -20,8 +20,10 @@
 @property (weak, nonatomic) IBOutlet UILabel *peakInput;
 @property (weak, nonatomic) IBOutlet UILabel *lowpassInput;
 @property (weak, nonatomic) IBOutlet UILabel *inputSource;
+@property (weak, nonatomic) IBOutlet UISwitch *headsetSwitch;
 
 -(void) levelTimerCallBack:(NSTimer *) timer;
 -(BOOL) isHeadsetPluggedIn;
+- (IBAction)flippedHeadset:(id)sender;
 
 @end

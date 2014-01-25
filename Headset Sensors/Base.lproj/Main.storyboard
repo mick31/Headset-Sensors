@@ -26,6 +26,9 @@
                             <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="2m0-iL-3ib">
                                 <rect key="frame" x="136" y="303" width="51" height="31"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <connections>
+                                    <action selector="flippedHeadset:" destination="vXZ-lx-hvc" eventType="valueChanged" id="AGk-WB-DLo"/>
+                                </connections>
                             </switch>
                             <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Headset Input Only" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="b3K-x5-9Wh">
                                 <rect key="frame" x="86" y="342" width="148" height="21"/>
@@ -87,6 +90,7 @@
                     </view>
                     <connections>
                         <outlet property="avgInput" destination="p9G-n0-Qxx" id="GZ3-sx-hcv"/>
+                        <outlet property="headsetSwitch" destination="2m0-iL-3ib" id="CNy-FT-YqK"/>
                         <outlet property="inputSource" destination="qye-8V-emE" id="iW2-vn-j3G"/>
                         <outlet property="lowpassInput" destination="rcT-B5-dND" id="T1u-FZ-7rd"/>
                         <outlet property="peakInput" destination="cjD-IA-DYX" id="GpY-u3-FSX"/>

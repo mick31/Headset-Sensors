@@ -97,6 +97,9 @@
     return NO;
 }
 
+- (IBAction)flippedHeadset:(id)sender {
+}
+
 - (void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
