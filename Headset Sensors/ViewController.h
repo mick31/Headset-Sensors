@@ -7,7 +7,16 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <AVFoundation/AVFoundation.h>
+#import <CoreAudio/CoreAudioTypes.h>
 
-@interface ViewController : UIViewController
+
+@interface ViewController : UIViewController {
+    AVAudioRecorder *recorder;
+    NSTimer *levelTimer;
+    double lowPassFiltered;
+}
+
+-(void) levelTimerCallBack:(NSTimer *) timer;
 
 @end

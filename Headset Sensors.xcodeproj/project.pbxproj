@@ -21,6 +21,8 @@
 		000AD218189311F20035A466 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 000AD1FA189311F20035A466 /* UIKit.framework */; };
 		000AD220189311F20035A466 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 000AD21E189311F20035A466 /* InfoPlist.strings */; };
 		000AD222189311F20035A466 /* Headset_SensorsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 000AD221189311F20035A466 /* Headset_SensorsTests.m */; };
+		000AD22C189312800035A466 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 000AD22B189312800035A466 /* AVFoundation.framework */; };
+		000AD23218931A030035A466 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 000AD23118931A030035A466 /* CoreAudio.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -53,6 +55,10 @@
 		000AD21D189311F20035A466 /* Headset SensorsTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Headset SensorsTests-Info.plist"; sourceTree = "<group>"; };
 		000AD21F189311F20035A466 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		000AD221189311F20035A466 /* Headset_SensorsTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Headset_SensorsTests.m; sourceTree = "<group>"; };
+		000AD22B189312800035A466 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		000AD22D189312880035A466 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
+		000AD22F1893128E0035A466 /* AudioUnit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioUnit.framework; path = System/Library/Frameworks/AudioUnit.framework; sourceTree = SDKROOT; };
+		000AD23118931A030035A466 /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = System/Library/Frameworks/CoreAudio.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -60,6 +66,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				000AD23218931A030035A466 /* CoreAudio.framework in Frameworks */,
+				000AD22C189312800035A466 /* AVFoundation.framework in Frameworks */,
 				000AD1F9189311F20035A466 /* CoreGraphics.framework in Frameworks */,
 				000AD1FB189311F20035A466 /* UIKit.framework in Frameworks */,
 				000AD1F7189311F20035A466 /* Foundation.framework in Frameworks */,
@@ -101,6 +109,10 @@
 		000AD1F5189311F20035A466 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				000AD23118931A030035A466 /* CoreAudio.framework */,
+				000AD22F1893128E0035A466 /* AudioUnit.framework */,
+				000AD22D189312880035A466 /* AudioToolbox.framework */,
+				000AD22B189312800035A466 /* AVFoundation.framework */,
 				000AD1F6189311F20035A466 /* Foundation.framework */,
 				000AD1F8189311F20035A466 /* CoreGraphics.framework */,
 				000AD1FA189311F20035A466 /* UIKit.framework */,
@@ -199,6 +211,9 @@
 				LastUpgradeCheck = 0500;
 				ORGANIZATIONNAME = Mick;
 				TargetAttributes = {
+					000AD1F2189311F20035A466 = {
+						DevelopmentTeam = Z5SLZ6QPTL;
+					};
 					000AD213189311F20035A466 = {
 						TestTargetID = 000AD1F2189311F20035A466;
 					};
@@ -378,6 +393,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Headset Sensors/Headset Sensors-Prefix.pch";
 				INFOPLIST_FILE = "Headset Sensors/Headset Sensors-Info.plist";
@@ -391,6 +407,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Headset Sensors/Headset Sensors-Prefix.pch";
 				INFOPLIST_FILE = "Headset Sensors/Headset Sensors-Info.plist";
