@@ -477,6 +477,7 @@
 				000AD227189311F20035A466 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		000AD228189311F20035A466 /* Build configuration list for PBXNativeTarget "Headset SensorsTests" */ = {
 			isa = XCConfigurationList;
@@ -485,6 +486,7 @@
 				000AD22A189311F20035A466 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
