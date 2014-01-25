@@ -18,6 +18,7 @@
 @synthesize peakInput = _peakInput;
 @synthesize lowpassInput = _lowpassInput;
 @synthesize inputSource = _inputSource;
+@synthesize headsetSwitch = _headsetSwitch;
 
 - (void)viewDidLoad
 {
@@ -69,18 +70,6 @@
     OSStatus error = AudioSessionGetProperty (kAudioSessionProperty_AudioRoute,
                                               &routeSize,
                                               &route);
-
-    
-    /* Known values of route:
-     * "Headset"
-     * "Headphone"
-     * "Speaker"
-     * "SpeakerAndMicrophone"
-     * "HeadphonesAndMicrophone"
-     * "HeadsetInOut"
-     * "ReceiverAndMicrophone"
-     * "Lineout"
-     */
     
     if (!error && (route != NULL)) {
         
@@ -98,6 +87,11 @@
 }
 
 - (IBAction)flippedHeadset:(id)sender {
+    if (self.headsetSwitch.on) {
+        AudioSessionSetProperty (kAudioSessionProperty_InputSource, sizeof(kAudioSessionInputRoute_HeadsetMic), &kAudioSessionInputRoute_HeadsetMic);
+    } else {
+        
+    }
 }
 
 - (void)didReceiveMemoryWarning

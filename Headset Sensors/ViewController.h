@@ -8,6 +8,7 @@
 
 #import <UIKit/UIKit.h>
 #import <AVFoundation/AVFoundation.h>
+#import <AVFoundation/AVAudioSession.h>
 #import <CoreAudio/CoreAudioTypes.h>
 
 
