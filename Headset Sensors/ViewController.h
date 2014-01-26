@@ -12,7 +12,7 @@
 #import <CoreAudio/CoreAudioTypes.h>
 
 
-@interface ViewController : UIViewController {
+@interface ViewController : UIViewController <UIAlertViewDelegate> {
     AVAudioRecorder *recorder;
     NSTimer *levelTimer;
     double lowPassFiltered;
@@ -23,8 +23,9 @@
 @property (weak, nonatomic) IBOutlet UILabel *inputSource;
 @property (weak, nonatomic) IBOutlet UISwitch *headsetSwitch;
 
--(void) levelTimerCallBack:(NSTimer *) timer;
--(BOOL) isHeadsetPluggedIn;
+- (void)levelTimerCallBack:(NSTimer *) timer;
+- (BOOL)isHeadsetPluggedIn;
 - (IBAction)flippedHeadset:(id)sender;
+- (void)forceHeadsetRoute;
 
 @end

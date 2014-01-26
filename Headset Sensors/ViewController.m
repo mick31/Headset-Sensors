@@ -10,6 +10,7 @@
 
 @interface ViewController ()
 
+
 @end
 
 @implementation ViewController
@@ -40,9 +41,8 @@
         [recorder prepareToRecord];
         recorder.meteringEnabled = YES;
         [recorder record];
-        levelTimer = [NSTimer scheduledTimerWithTimeInterval:0.03 target:self selector:@selector(levelTimerCallBack:) userInfo:nil repeats:YES];
     } else
-        NSLog([err description]);
+        NSLog(@"%@",[err description]);
 }
 
 -(void) levelTimerCallBack:(NSTimer *)timer{
@@ -58,12 +58,43 @@
     
     if (self.isHeadsetPluggedIn)
         _inputSource.text = @"Headset";
-    else
+    else if ([_inputSource.text isEqualToString:@"Headset"]) {
+        [timer invalidate];
+        timer = nil;
+        UIAlertView *noHeadsetAlertView =
+                   [[UIAlertView alloc]
+                    initWithTitle:@"No Headset"
+                    message:@"You need a headset you fool!"
+                    delegate:self
+                    cancelButtonTitle:nil
+                    otherButtonTitles:@"Cancel", @"Use Mic", @"Force Headset", nil];
+        
+        [noHeadsetAlertView show];
+    } else
         _inputSource.text = @"Mic";
+}
+
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
+    switch (buttonIndex) {
+        case 0:
+            self.headsetSwitch.on = NO ;
+            _inputSource.text = @"None";
+            break;
+        case 1:
+            levelTimer = [NSTimer scheduledTimerWithTimeInterval:0.03 target:self selector:@selector(levelTimerCallBack:) userInfo:nil repeats:YES];
+            _inputSource.text = @"Mic";
+            break;
+        case 2:
+            [self forceHeadsetRoute];
+            break;
+        default:
+            NSLog(@"Blowing It: Alert not handled");
+            break;
+    }
     
 }
 
--(BOOL) isHeadsetPluggedIn {
+- (BOOL)isHeadsetPluggedIn {
     UInt32 routeSize = sizeof (CFStringRef);
     CFStringRef route;
     
@@ -75,7 +106,7 @@
         
         NSString* routeStr = (__bridge NSString *)route;
         
-        //NSLog(routeStr);
+        //NSLog(@"%@", routeStr);
         
         NSRange headphoneRange = [routeStr rangeOfString : @"MicrophoneWired"];
         if (headphoneRange.location != NSNotFound) {
@@ -87,11 +118,31 @@
 }
 
 - (IBAction)flippedHeadset:(id)sender {
-    if (self.headsetSwitch.on) {
-        AudioSessionSetProperty (kAudioSessionProperty_InputSource, sizeof(kAudioSessionInputRoute_HeadsetMic), &kAudioSessionInputRoute_HeadsetMic);
+    if (self.headsetSwitch.on && self.isHeadsetPluggedIn) {
+        levelTimer = [NSTimer scheduledTimerWithTimeInterval:0.03 target:self selector:@selector(levelTimerCallBack:) userInfo:nil repeats:YES];
+    } else if (!self.headsetSwitch.on){
+        [levelTimer invalidate];
+        levelTimer = nil;
+        _inputSource.text = @"None";
     } else {
-        
+        [levelTimer invalidate];
+        levelTimer = nil;
+        UIAlertView *noHeadsetAlertView =
+                    [[UIAlertView alloc]
+                     initWithTitle:@"No Headset"
+                     message:@"You need a headset you fool!"
+                     delegate:self
+                     cancelButtonTitle:nil
+                     otherButtonTitles:@"Cancel", @"Use Mic", @"Force Headset", nil];
+        [noHeadsetAlertView show];
     }
+}
+
+- (void)forceHeadsetRoute {
+    //CFStringRef *headsetRoute = (__bridge CFStringRef) @"MicrophoneWired";
+    CFStringRef headsetRoute = kAudioSessionInputRoute_HeadsetMic;
+    AudioSessionSetProperty (kAudioSessionProperty_OverrideAudioRoute, sizeof(headsetRoute), &headsetRoute);
+    NSLog(@"Made It: force headset func");
 }
 
 - (void)didReceiveMemoryWarning
