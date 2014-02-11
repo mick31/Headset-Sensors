@@ -8,10 +8,18 @@
 
 #import "ViewController.h"
 
-@interface ViewController ()
-
+@interface ViewController () {
+    ToneGenerator *powerTone;
+}
 
 @end
+
+// Stops tone when call or notification is received
+void ToneIterruptionListner(void *inClientData, UInt32 inInterruptionState) {
+    ToneGenerator * tone = CFBridgingRelease(inClientData);
+    
+    [tone togglePowerOn:NO];
+}
 
 @implementation ViewController
 
@@ -23,6 +31,7 @@
 
 - (void)viewDidLoad
 {
+    // Input Setup
     [super viewDidLoad];
 	
     NSURL *url = [NSURL fileURLWithPath:@"dev/null"];
@@ -43,6 +52,20 @@
         [recorder record];
     } else
         NSLog(@"%@",[err description]);
+    
+    // Power tone setup
+    powerTone.sampleRate = 44100;
+    powerTone.frequency = 22000;
+    OSStatus result = AudioSessionInitialize(NULL,
+                                             NULL,
+                                             ToneIterruptionListner,
+                                             (__bridge void *)(powerTone));
+	if (result == kAudioSessionNoError)
+	{
+		UInt32 sessionCategory = kAudioSessionCategory_MediaPlayback;
+		AudioSessionSetProperty(kAudioSessionProperty_AudioCategory, sizeof(sessionCategory), &sessionCategory);
+	}
+	AudioSessionSetActive(true);
 }
 
 -(void) levelTimerCallBack:(NSTimer *)timer{
@@ -59,8 +82,14 @@
     if (self.isHeadsetPluggedIn)
         _inputSource.text = @"Headset";
     else if ([_inputSource.text isEqualToString:@"Headset"]) {
+        // Stop Timer
         [timer invalidate];
         timer = nil;
+        
+        // Kill power Tone
+        [self->powerTone togglePowerOn:NO];
+        
+        // Setup Alert View
         UIAlertView *noHeadsetAlertView =
                    [[UIAlertView alloc]
                     initWithTitle:@"No Headset"
@@ -119,14 +148,26 @@
 
 - (IBAction)flippedHeadset:(id)sender {
     if (self.headsetSwitch.on && self.isHeadsetPluggedIn) {
+        // Start Sampler
         levelTimer = [NSTimer scheduledTimerWithTimeInterval:0.03 target:self selector:@selector(levelTimerCallBack:) userInfo:nil repeats:YES];
+        
+        // Start Power Tone
+        [self->powerTone togglePowerOn:YES];
+        
     } else if (!self.headsetSwitch.on){
         [levelTimer invalidate];
         levelTimer = nil;
         _inputSource.text = @"None";
+        
+        // Stop Power Tone
+        [self->powerTone togglePowerOn:NO];
     } else {
         [levelTimer invalidate];
         levelTimer = nil;
+        
+        // Stop Power Tone
+        [self->powerTone togglePowerOn:NO];
+        
         UIAlertView *noHeadsetAlertView =
                     [[UIAlertView alloc]
                      initWithTitle:@"No Headset"

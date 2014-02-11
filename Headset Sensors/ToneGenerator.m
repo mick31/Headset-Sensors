@@ -22,8 +22,8 @@ OSStatus RenderTone (
     
     ToneGenerator *tone = (ToneGenerator *) CFBridgingRelease(inRefcon);
     
-    double theta = tone->theta;
-    double theta_increment = 2.0 * M_PI * tone->frequency / tone->sampleRate;
+    double theta = tone.theta;
+    double theta_increment = 2.0 * M_PI * tone.frequency / tone.sampleRate;
     
     // One tone so only one buffer needed
     const int channel = 0;
@@ -40,21 +40,18 @@ OSStatus RenderTone (
     }
     
     // Store new theta
-    tone->theta = theta;
+    tone.theta = theta;
     
     return noErr;
 }
 
 
-// Stops tone when call is received
-void ToneIterruptionListner(void *inClientData, UInt32 inInterruptionState) {
-    ToneGenerator * tone = CFBridgingRelease(inClientData);
-    
-    [tone togglePowerOn:NO];
-}
-
-
 @implementation ToneGenerator
+
+@synthesize powerTone = _powerTone;
+@synthesize frequency = _frequency;
+@synthesize sampleRate = _sampleRate;
+@synthesize theta = _theta;
 
 // Creates a tone unit
 - (void)createToneUnit {
@@ -72,14 +69,14 @@ void ToneIterruptionListner(void *inClientData, UInt32 inInterruptionState) {
     NSAssert(defaultOutput, @"Can't find default output");
     
     // Create a new unit based on default output
-    OSErr err = AudioComponentInstanceNew(defaultOutput, &powerTone);
-    NSAssert1(powerTone, @"Error creating unit: %hd", err);
+    OSErr err = AudioComponentInstanceNew(defaultOutput, &_powerTone);
+    NSAssert1(_powerTone, @"Error creating unit: %hd", err);
     
     // Send power tone to rendering function
     AURenderCallbackStruct input;
     input.inputProc = RenderTone;
     input.inputProcRefCon = (__bridge void *)(self);
-    err = AudioUnitSetProperty(powerTone,
+    err = AudioUnitSetProperty(_powerTone,
                                kAudioUnitProperty_SetRenderCallback,
                                kAudioUnitScope_Input,
                                0,
@@ -91,7 +88,7 @@ void ToneIterruptionListner(void *inClientData, UInt32 inInterruptionState) {
     const int float_eq_four_bytes = 4;
     const int byte_eq_eight_bits = 8;
     AudioStreamBasicDescription streamFormat;
-    streamFormat.mSampleRate = sampleRate;
+    streamFormat.mSampleRate = _sampleRate;
     streamFormat.mFormatID = kAudioFormatLinearPCM;
     streamFormat.mFormatFlags = kAudioFormatFlagsNativeFloatPacked | kAudioFormatFlagIsNonInterleaved;
     streamFormat.mBytesPerPacket = float_eq_four_bytes;
@@ -99,7 +96,7 @@ void ToneIterruptionListner(void *inClientData, UInt32 inInterruptionState) {
     streamFormat.mBytesPerFrame = byte_eq_eight_bits;
     streamFormat.mChannelsPerFrame = 1;
     streamFormat.mBitsPerChannel = float_eq_four_bytes * byte_eq_eight_bits;
-    err = AudioUnitSetProperty(powerTone,
+    err = AudioUnitSetProperty(_powerTone,
                                kAudioUnitProperty_StreamFormat,
                                kAudioUnitScope_Input,
                                0,
@@ -112,19 +109,19 @@ void ToneIterruptionListner(void *inClientData, UInt32 inInterruptionState) {
 - (void) togglePowerOn: (BOOL)state {
     if ( state == NO) {
         // Stop power tone
-        AudioOutputUnitStop(powerTone);
-        AudioUnitUninitialize(powerTone);
-        powerTone = nil;
+        AudioOutputUnitStop(_powerTone);
+        AudioUnitUninitialize(_powerTone);
+        _powerTone = nil;
     } else {
         // Start power tone
         [self createToneUnit];
         
         // Initialize the audio unit
-        OSErr err = AudioUnitInitialize(powerTone);
+        OSErr err = AudioUnitInitialize(_powerTone);
         NSAssert1(err == noErr, @"Error initializing power tone: %hd", err);
         
         // Start playback
-        err = AudioOutputUnitStart(powerTone);
+        err = AudioOutputUnitStart(_powerTone);
         NSAssert1(err == noErr, @"Error starting power tone: %hd", err);
     }
 }

@@ -9,13 +9,11 @@
 #import <Foundation/Foundation.h>
 #import <AudioUnit/AudioUnit.h>
 
-@interface ToneGenerator : NSObject {
-    AudioComponentInstance powerTone;
-@public
-    double frequency;
-    double sampleRate;
-    double theta;
-}
+@interface ToneGenerator : NSObject
+@property AudioComponentInstance powerTone;
+@property double frequency;
+@property double sampleRate;
+@property double theta;
 
 - (void)togglePowerOn:(BOOL)state;
 
