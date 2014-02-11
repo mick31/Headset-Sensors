@@ -11,6 +11,8 @@
 #import <AVFoundation/AVAudioSession.h>
 #import <CoreAudio/CoreAudioTypes.h>
 
+#import "ToneGenerator.h"
+
 
 @interface ViewController : UIViewController <UIAlertViewDelegate> {
     AVAudioRecorder *recorder;

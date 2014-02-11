@@ -23,7 +23,8 @@
 		000AD222189311F20035A466 /* Headset_SensorsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 000AD221189311F20035A466 /* Headset_SensorsTests.m */; };
 		000AD22C189312800035A466 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 000AD22B189312800035A466 /* AVFoundation.framework */; };
 		000AD23218931A030035A466 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 000AD23118931A030035A466 /* CoreAudio.framework */; };
-		00C4E9B418A02D1600D80291 /* toneGen.m in Sources */ = {isa = PBXBuildFile; fileRef = 00C4E9B318A02D1600D80291 /* toneGen.m */; };
+		00C4E9B418A02D1600D80291 /* ToneGenerator.m in Sources */ = {isa = PBXBuildFile; fileRef = 00C4E9B318A02D1600D80291 /* ToneGenerator.m */; };
+		5B9F5DC018A996D8002CD58B /* MediaPlayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5B9F5DBF18A996D8002CD58B /* MediaPlayer.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -60,8 +61,9 @@
 		000AD22D189312880035A466 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		000AD22F1893128E0035A466 /* AudioUnit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioUnit.framework; path = System/Library/Frameworks/AudioUnit.framework; sourceTree = SDKROOT; };
 		000AD23118931A030035A466 /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = System/Library/Frameworks/CoreAudio.framework; sourceTree = SDKROOT; };
-		00C4E9B218A02D1600D80291 /* toneGen.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = toneGen.h; sourceTree = "<group>"; };
-		00C4E9B318A02D1600D80291 /* toneGen.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = toneGen.m; sourceTree = "<group>"; };
+		00C4E9B218A02D1600D80291 /* ToneGenerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ToneGenerator.h; sourceTree = "<group>"; };
+		00C4E9B318A02D1600D80291 /* ToneGenerator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ToneGenerator.m; sourceTree = "<group>"; };
+		5B9F5DBF18A996D8002CD58B /* MediaPlayer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaPlayer.framework; path = System/Library/Frameworks/MediaPlayer.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -69,6 +71,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5B9F5DC018A996D8002CD58B /* MediaPlayer.framework in Frameworks */,
 				000AD23218931A030035A466 /* CoreAudio.framework in Frameworks */,
 				000AD22C189312800035A466 /* AVFoundation.framework in Frameworks */,
 				000AD1F9189311F20035A466 /* CoreGraphics.framework in Frameworks */,
@@ -112,6 +115,7 @@
 		000AD1F5189311F20035A466 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				5B9F5DBF18A996D8002CD58B /* MediaPlayer.framework */,
 				000AD23118931A030035A466 /* CoreAudio.framework */,
 				000AD22F1893128E0035A466 /* AudioUnit.framework */,
 				000AD22D189312880035A466 /* AudioToolbox.framework */,
@@ -132,8 +136,8 @@
 				000AD208189311F20035A466 /* Main.storyboard */,
 				000AD20B189311F20035A466 /* ViewController.h */,
 				000AD20C189311F20035A466 /* ViewController.m */,
-				00C4E9B218A02D1600D80291 /* toneGen.h */,
-				00C4E9B318A02D1600D80291 /* toneGen.m */,
+				00C4E9B218A02D1600D80291 /* ToneGenerator.h */,
+				00C4E9B318A02D1600D80291 /* ToneGenerator.m */,
 				000AD20E189311F20035A466 /* Images.xcassets */,
 				000AD1FD189311F20035A466 /* Supporting Files */,
 			);
@@ -269,7 +273,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				00C4E9B418A02D1600D80291 /* toneGen.m in Sources */,
+				00C4E9B418A02D1600D80291 /* ToneGenerator.m in Sources */,
 				000AD20D189311F20035A466 /* ViewController.m in Sources */,
 				000AD207189311F20035A466 /* AppDelegate.m in Sources */,
 				000AD203189311F20035A466 /* main.m in Sources */,
