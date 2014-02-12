@@ -18,6 +18,7 @@
     AVAudioRecorder *recorder;
     NSTimer *levelTimer;
     double lowPassFiltered;
+    IBOutlet UILabel *Foo;
 }
 @property (weak, nonatomic) IBOutlet UILabel *avgInput;
 @property (weak, nonatomic) IBOutlet UILabel *peakInput;
@@ -28,6 +29,8 @@
 - (void)levelTimerCallBack:(NSTimer *) timer;
 - (BOOL)isHeadsetPluggedIn;
 - (IBAction)flippedHeadset:(id)sender;
-- (void)forceHeadsetRoute;
+- (void)sliderHandler: (UISlider *)sender;
+// No longer needed
+//- (void)forceHeadsetRoute;
 
 @end
