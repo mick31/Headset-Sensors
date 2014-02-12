@@ -99,7 +99,7 @@ void ToneIterruptionListner(void *inClientData, UInt32 inInterruptionState) {
         volumeSlider.maximumValue = 10.00;
         volumeSlider.minimumValue = 1.0;
         [volumeSlider addTarget:self action:@selector(sliderHandler:) forControlEvents:UIControlEventValueChanged];
-        
+        /* Replace with SDCAlertView
         // Setup Alert View
         UIAlertView *noHeadsetAlertView =
                    [[UIAlertView alloc]
@@ -111,10 +111,15 @@ void ToneIterruptionListner(void *inClientData, UInt32 inInterruptionState) {
         [noHeadsetAlertView addSubview:volumeSlider];
         
         [noHeadsetAlertView show];
-    } else
+         */
+    } else {
         _inputSource.text = @"Mic";
+        // Start Power Tone
+        [self->powerTone togglePowerOn:YES];
+    }
 }
 
+/* Replace with SDCAlertView
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
     switch (buttonIndex) {
         case 0:
@@ -130,6 +135,7 @@ void ToneIterruptionListner(void *inClientData, UInt32 inInterruptionState) {
             break;
     }
 }
+*/
 
 - (BOOL)isHeadsetPluggedIn {
     UInt32 routeSize = sizeof (CFStringRef);
@@ -180,7 +186,7 @@ void ToneIterruptionListner(void *inClientData, UInt32 inInterruptionState) {
         volumeSlider.maximumValue = 10.00;
         volumeSlider.minimumValue = 1.0;
         [volumeSlider addTarget:self action:@selector(sliderHandler:) forControlEvents:UIControlEventValueChanged];
-        
+        /* Replace with SDCAlertView
         // Setup Alert View
         UIAlertView *noHeadsetAlertView =
                     [[UIAlertView alloc]
@@ -190,6 +196,7 @@ void ToneIterruptionListner(void *inClientData, UInt32 inInterruptionState) {
                      cancelButtonTitle:nil
                      otherButtonTitles:@"Cancel", @"Use Mic", nil];
         [noHeadsetAlertView show];
+         */
     }
 }
 /* Does not work due to depricated functions
