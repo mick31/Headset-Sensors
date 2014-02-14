@@ -9,6 +9,11 @@
 			<key>isShown</key>
 			<false/>
 		</dict>
+		<key>Pods-SDCAlertView.xcscheme</key>
+		<dict>
+			<key>isShown</key>
+			<false/>
+		</dict>
 		<key>Pods-SDCAutoLayout.xcscheme</key>
 		<dict>
 			<key>isShown</key>
@@ -22,17 +27,22 @@
 	</dict>
 	<key>SuppressBuildableAutocreation</key>
 	<dict>
-		<key>5AB8A4E998694BD1A4481F5E</key>
+		<key>43DC260678604ABFBAC7446A</key>
 		<dict>
 			<key>primary</key>
 			<true/>
 		</dict>
-		<key>75100BFE430B4F70BFD1EA76</key>
+		<key>5715205021CD44A4B2C41BBF</key>
 		<dict>
 			<key>primary</key>
 			<true/>
 		</dict>
-		<key>C09EA5EEE31F4943B2FE966F</key>
+		<key>C46EAC733A5546D1A818E4D6</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>C5D005765D774586A194A719</key>
 		<dict>
 			<key>primary</key>
 			<true/>

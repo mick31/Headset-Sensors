@@ -42,6 +42,11 @@ OSStatus RenderTone (
     // Store new theta
     tone.theta = theta;
     
+    /*************
+     *** Debug ***
+     *************/
+    NSLog(@"RenderTone: Made it!");
+    
     return noErr;
 }
 
@@ -103,6 +108,11 @@ OSStatus RenderTone (
                                &streamFormat,
                                sizeof(AudioStreamBasicDescription));
     NSAssert1(err == noErr, @"Error setting stream format: %hd", err);
+    
+    /*************
+     *** Debug ***
+     *************/
+    NSLog(@"createTone: Made it!");
 }
 
 // Turns tone on and off
@@ -112,6 +122,9 @@ OSStatus RenderTone (
         AudioOutputUnitStop(_powerTone);
         AudioUnitUninitialize(_powerTone);
         _powerTone = nil;
+        
+        // Debug
+        NSLog(@"togglePowerOn: Off");
     } else {
         // Start power tone
         [self createToneUnit];
@@ -123,7 +136,16 @@ OSStatus RenderTone (
         // Start playback
         err = AudioOutputUnitStart(_powerTone);
         NSAssert1(err == noErr, @"Error starting power tone: %hd", err);
+        
+        /*************
+         *** Debug ***
+         *************/
+        NSLog(@"togglePowerOn: On");
     }
+    /*************
+     *** Debug ***
+     *************/
+    NSLog(@"togglePowerOn: Made It!");
 }
 
 @end

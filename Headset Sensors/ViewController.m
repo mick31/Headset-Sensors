@@ -55,14 +55,15 @@ void ToneIterruptionListner(void *inClientData, UInt32 inInterruptionState) {
     
     // Power tone setup
     powerTone.sampleRate = 44100;
-    powerTone.frequency = 22000;
+    powerTone.frequency = 20000;
     OSStatus result = AudioSessionInitialize(NULL,
                                              NULL,
                                              ToneIterruptionListner,
                                              (__bridge void *)(powerTone));
 	if (result == kAudioSessionNoError)
 	{
-		UInt32 sessionCategory = kAudioSessionCategory_MediaPlayback;
+        // allows for both mic and speaker output
+		UInt32 sessionCategory = kAudioSessionCategory_PlayAndRecord;
 		AudioSessionSetProperty(kAudioSessionProperty_AudioCategory, sizeof(sessionCategory), &sessionCategory);
 	}
 	AudioSessionSetActive(true);
@@ -99,28 +100,24 @@ void ToneIterruptionListner(void *inClientData, UInt32 inInterruptionState) {
         volumeSlider.maximumValue = 10.00;
         volumeSlider.minimumValue = 1.0;
         [volumeSlider addTarget:self action:@selector(sliderHandler:) forControlEvents:UIControlEventValueChanged];
-        /* Replace with SDCAlertView
+        
         // Setup Alert View
-        UIAlertView *noHeadsetAlertView =
-                   [[UIAlertView alloc]
+        SDCAlertView *noHeadsetAlertView =
+                   [[SDCAlertView alloc]
                     initWithTitle:@"No Headset"
                     message:@"You need a headset you fool!"
-                    delegate:self
+                    delegate:nil
                     cancelButtonTitle:nil
                     otherButtonTitles:@"Cancel", @"Use Mic", nil];
-        [noHeadsetAlertView addSubview:volumeSlider];
+        [noHeadsetAlertView.contentView addSubview:volumeSlider];
         
         [noHeadsetAlertView show];
-         */
-    } else {
+    } else
         _inputSource.text = @"Mic";
-        // Start Power Tone
-        [self->powerTone togglePowerOn:YES];
-    }
 }
 
-/* Replace with SDCAlertView
-- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
+
+- (void)alertView:(SDCAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
     switch (buttonIndex) {
         case 0:
             self.headsetSwitch.on = NO ;
@@ -129,13 +126,20 @@ void ToneIterruptionListner(void *inClientData, UInt32 inInterruptionState) {
         case 1:
             levelTimer = [NSTimer scheduledTimerWithTimeInterval:0.03 target:self selector:@selector(levelTimerCallBack:) userInfo:nil repeats:YES];
             _inputSource.text = @"Mic";
+            
+            /*************
+             *** Debug ***
+             *************/
+            [self->powerTone togglePowerOn:YES];
+            NSLog(@"alertView: Made it");
+            
             break;
         default:
             NSLog(@"Blowing It: Alert not handled");
             break;
     }
 }
-*/
+
 
 - (BOOL)isHeadsetPluggedIn {
     UInt32 routeSize = sizeof (CFStringRef);
@@ -149,9 +153,21 @@ void ToneIterruptionListner(void *inClientData, UInt32 inInterruptionState) {
         
         NSString* routeStr = (__bridge NSString *)route;
         
+        /* Known routes-
+                MicrophoneWired
+                MicrophoneBuiltIn
+                Headphones
+                Speaker
+                HeadsetInOut
+                ReceiverAndMicrophone
+         */
+        /*************
+         *** Debug ***
+         *************/
         //NSLog(@"%@", routeStr);
         
-        NSRange headphoneRange = [routeStr rangeOfString : @"MicrophoneWired"];
+        // HeadsetInOut should allow for two way communicaiton and power
+        NSRange headphoneRange = [routeStr rangeOfString : @"HeadsetInOut"];
         if (headphoneRange.location != NSNotFound) {
             return YES;
         }
@@ -181,32 +197,31 @@ void ToneIterruptionListner(void *inClientData, UInt32 inInterruptionState) {
         // Stop Power Tone
         [self->powerTone togglePowerOn:NO];
         
+        /*************
+         *** Debug ***
+         *************/
+        NSLog(@"flippedHeadset: Made it!");
+        
         // Setup Slider for Alert View
         UISlider *volumeSlider = [[UISlider alloc] initWithFrame:CGRectMake(20, 50, 200, 200)];
         volumeSlider.maximumValue = 10.00;
         volumeSlider.minimumValue = 1.0;
         [volumeSlider addTarget:self action:@selector(sliderHandler:) forControlEvents:UIControlEventValueChanged];
-        /* Replace with SDCAlertView
+        
         // Setup Alert View
-        UIAlertView *noHeadsetAlertView =
-                    [[UIAlertView alloc]
+        SDCAlertView *noHeadsetAlertView =
+                    [[SDCAlertView alloc]
                      initWithTitle:@"No Headset"
                      message:@"You need a headset you fool!"
                      delegate:self
                      cancelButtonTitle:nil
                      otherButtonTitles:@"Cancel", @"Use Mic", nil];
+        [noHeadsetAlertView.contentView addSubview:volumeSlider];
+        
         [noHeadsetAlertView show];
-         */
     }
 }
-/* Does not work due to depricated functions
-- (void)forceHeadsetRoute {
-    //CFStringRef *headsetRoute = (__bridge CFStringRef) @"MicrophoneWired";
-    CFStringRef headsetRoute = kAudioSessionInputRoute_HeadsetMic;
-    AudioSessionSetProperty (kAudioSessionProperty_OverrideAudioRoute, sizeof(headsetRoute), &headsetRoute);
-    NSLog(@"Made It: force headset func");
-}
-*/
+
 - (void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];

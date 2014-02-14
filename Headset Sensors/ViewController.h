@@ -11,6 +11,9 @@
 #import <AVFoundation/AVAudioSession.h>
 #import <CoreAudio/CoreAudioTypes.h>
 
+@import MapKit;
+#import <SDCAlertView.h>
+
 #import "ToneGenerator.h"
 
 
@@ -30,7 +33,5 @@
 - (BOOL)isHeadsetPluggedIn;
 - (IBAction)flippedHeadset:(id)sender;
 - (void)sliderHandler: (UISlider *)sender;
-// No longer needed
-//- (void)forceHeadsetRoute;
 
 @end
