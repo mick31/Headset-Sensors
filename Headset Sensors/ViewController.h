@@ -13,6 +13,7 @@
 
 @import MapKit;
 #import <SDCAlertView.h>
+#import <UIView+SDCAutoLayout.h>
 
 #import "ToneGenerator.h"
 

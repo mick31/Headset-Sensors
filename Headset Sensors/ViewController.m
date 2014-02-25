@@ -55,7 +55,7 @@ void ToneIterruptionListner(void *inClientData, UInt32 inInterruptionState) {
     
     // Power tone setup
     powerTone.sampleRate = 44100;
-    powerTone.frequency = 20000;
+    powerTone.frequency = 2000;
     OSStatus result = AudioSessionInitialize(NULL,
                                              NULL,
                                              ToneIterruptionListner,
@@ -97,7 +97,7 @@ void ToneIterruptionListner(void *inClientData, UInt32 inInterruptionState) {
         
         // Setup Slider for Alert View
         UISlider *volumeSlider = [[UISlider alloc] initWithFrame:CGRectMake(20, 50, 200, 200)];
-        volumeSlider.maximumValue = 10.00;
+        volumeSlider.maximumValue = 10.0;
         volumeSlider.minimumValue = 1.0;
         [volumeSlider addTarget:self action:@selector(sliderHandler:) forControlEvents:UIControlEventValueChanged];
         
@@ -106,12 +106,22 @@ void ToneIterruptionListner(void *inClientData, UInt32 inInterruptionState) {
                    [[SDCAlertView alloc]
                     initWithTitle:@"No Headset"
                     message:@"You need a headset you fool!"
-                    delegate:nil
+                    delegate:self
                     cancelButtonTitle:nil
                     otherButtonTitles:@"Cancel", @"Use Mic", nil];
+        [volumeSlider setTranslatesAutoresizingMaskIntoConstraints:NO];
         [noHeadsetAlertView.contentView addSubview:volumeSlider];
         
+        [volumeSlider sdc_pinWidthToWidthOfView:noHeadsetAlertView.contentView offset: -20];
+        [volumeSlider sdc_horizontallyCenterInSuperview];
+        
+        [noHeadsetAlertView.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|-[volumeSlider]|"
+                                                                                  options:0
+                                                                                  metrics:nil
+                                                                                    views:NSDictionaryOfVariableBindings(volumeSlider)]];
+        
         [noHeadsetAlertView show];
+        
     } else
         _inputSource.text = @"Mic";
 }
@@ -122,6 +132,7 @@ void ToneIterruptionListner(void *inClientData, UInt32 inInterruptionState) {
         case 0:
             self.headsetSwitch.on = NO ;
             _inputSource.text = @"None";
+            NSLog(@"alertView: Cancel Made it");
             break;
         case 1:
             levelTimer = [NSTimer scheduledTimerWithTimeInterval:0.03 target:self selector:@selector(levelTimerCallBack:) userInfo:nil repeats:YES];
@@ -210,15 +221,26 @@ void ToneIterruptionListner(void *inClientData, UInt32 inInterruptionState) {
         
         // Setup Alert View
         SDCAlertView *noHeadsetAlertView =
-                    [[SDCAlertView alloc]
-                     initWithTitle:@"No Headset"
-                     message:@"You need a headset you fool!"
-                     delegate:self
-                     cancelButtonTitle:nil
-                     otherButtonTitles:@"Cancel", @"Use Mic", nil];
+        [[SDCAlertView alloc]
+         initWithTitle:@"No Headset"
+         message:@"You need a headset you fool!"
+         delegate:self
+         cancelButtonTitle:nil
+         otherButtonTitles:@"Cancel", @"Use Mic", nil];
+        
+        [volumeSlider setTranslatesAutoresizingMaskIntoConstraints:NO];
         [noHeadsetAlertView.contentView addSubview:volumeSlider];
         
+        [volumeSlider sdc_pinWidthToWidthOfView:noHeadsetAlertView.contentView offset: -20];
+        [volumeSlider sdc_horizontallyCenterInSuperview];
+        
+        [noHeadsetAlertView.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|-[volumeSlider]|"
+                                                                                               options:0
+                                                                                               metrics:nil
+                                                                                                 views:NSDictionaryOfVariableBindings(volumeSlider)]];
+        
         [noHeadsetAlertView show];
+
     }
 }
 

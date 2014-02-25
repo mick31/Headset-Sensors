@@ -18,7 +18,7 @@ OSStatus RenderTone (
     AudioBufferList             *ioData) {
     // Set Tone parameters
     // Starting with a fixed amplitude. ***CHANGE LATER: Replace with Volume***
-    const double amplitude = 0.5;
+    const double amplitude = 1.0;
     
     ToneGenerator *tone = (ToneGenerator *) CFBridgingRelease(inRefcon);
     
@@ -45,7 +45,7 @@ OSStatus RenderTone (
     /*************
      *** Debug ***
      *************/
-    NSLog(@"RenderTone: Made it!");
+    //NSLog(@"RenderTone: Made it!");
     
     return noErr;
 }
@@ -112,7 +112,7 @@ OSStatus RenderTone (
     /*************
      *** Debug ***
      *************/
-    NSLog(@"createTone: Made it!");
+    //NSLog(@"createTone: Made it!");
 }
 
 // Turns tone on and off
@@ -123,8 +123,10 @@ OSStatus RenderTone (
         AudioUnitUninitialize(_powerTone);
         _powerTone = nil;
         
-        // Debug
-        NSLog(@"togglePowerOn: Off");
+        /*************
+         *** Debug ***
+         *************/
+        //NSLog(@"togglePowerOn: Off");
     } else {
         // Start power tone
         [self createToneUnit];
@@ -140,12 +142,12 @@ OSStatus RenderTone (
         /*************
          *** Debug ***
          *************/
-        NSLog(@"togglePowerOn: On");
+        //NSLog(@"togglePowerOn: On");
     }
     /*************
      *** Debug ***
      *************/
-    NSLog(@"togglePowerOn: Made It!");
+    //NSLog(@"togglePowerOn: Made It!");
 }
 
 @end
