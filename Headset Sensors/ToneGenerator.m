@@ -17,7 +17,7 @@ OSStatus RenderTone (
     UInt32                      inNumberFrames,
     AudioBufferList             *ioData) {
     // Set Tone parameters
-    // Starting with a fixed amplitude. ***CHANGE LATER: Replace with Volume***
+    // Starting with a fixed amplitude.
     const double amplitude = 1.0;
     
     ToneGenerator *tone = (ToneGenerator *) CFBridgingRelease(inRefcon);
