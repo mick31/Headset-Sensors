@@ -58,16 +58,24 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState)
 
 @implementation ViewController
 
+@synthesize recorder = _recorder;
+@synthesize levelTimer = _levelTimer;
+@synthesize lowPassFiltered = _lowPassFiltered;
 @synthesize avgInput = _avgInput;
 @synthesize peakInput = _peakInput;
 @synthesize lowpassInput = _lowpassInput;
 @synthesize inputSource = _inputSource;
 @synthesize headsetSwitch = _headsetSwitch;
 
-@synthesize frequencySlider;
-@synthesize frequencyOut;
-@synthesize amplitudeSlider;
-@synthesize amplitudeOut;
+@synthesize powerTone = _powerTone;
+@synthesize frequency = _frequency;
+@synthesize amplitude = _amplitude;
+@synthesize sampleRate = _sampleRate;
+@synthesize theta = _theta;
+@synthesize frequencySlider = _frequencySlider;
+@synthesize frequencyOut = _frequencyOut;
+@synthesize amplitudeSlider = _amplitudeSlider;
+@synthesize amplitudeOut = _amplitudeOut;
 
 
 
@@ -342,13 +350,13 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState)
 }
 
 - (IBAction)frequencySliderChange:(id)sender {
-    _frequency = frequencySlider.value;
-	frequencyOut.text = [NSString stringWithFormat:@"%4.1f Hz", _frequency];
+    _frequency = _frequencySlider.value;
+	_frequencyOut.text = [NSString stringWithFormat:@"%4.1f Hz", _frequency];
 }
 
 - (IBAction)amplitudeSliderChange:(id)sender {
-    _amplitude = amplitudeSlider.value;
-	amplitudeOut.text = [NSString stringWithFormat:@"%f", _amplitude*100];
+    _amplitude = _amplitudeSlider.value;
+	_amplitudeOut.text = [NSString stringWithFormat:@"%3.0f", _amplitude*100];
 }
 
 - (void)didReceiveMemoryWarning

@@ -119,20 +119,6 @@
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="0.0" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="JtE-2t-9T3">
-                                <rect key="frame" x="171" y="197" width="89" height="21"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                            <slider opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="1000" minValue="20" maxValue="20000" translatesAutoresizingMaskIntoConstraints="NO" id="O1l-Vk-5Vq">
-                                <rect key="frame" x="41" y="226" width="221" height="34"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <connections>
-                                    <action selector="freqSlider:" destination="vXZ-lx-hvc" eventType="valueChanged" id="hKV-5S-G3P"/>
-                                    <action selector="frequencySliderChange:" destination="vXZ-lx-hvc" eventType="valueChanged" id="Tch-VU-Odk"/>
-                                </connections>
-                            </slider>
                             <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Wave Amplitude (%):" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Pke-HM-pnv">
                                 <rect key="frame" x="43" y="273" width="161" height="21"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
@@ -140,33 +126,42 @@
                                 <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="0" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="kv0-lg-FNk">
+                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="5000.0" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="29H-2M-ZCk">
+                                <rect key="frame" x="163" y="197" width="97" height="21"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="50" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="kBr-Oh-iiV">
                                 <rect key="frame" x="212" y="273" width="48" height="21"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <slider opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="0.5" minValue="0.0" maxValue="1" translatesAutoresizingMaskIntoConstraints="NO" id="oW4-5E-wLR">
+                            <slider opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="0.5" minValue="0.0" maxValue="1" translatesAutoresizingMaskIntoConstraints="NO" id="1sY-OX-b2f">
                                 <rect key="frame" x="41" y="302" width="221" height="34"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <connections>
-                                    <action selector="ampSlider:" destination="vXZ-lx-hvc" eventType="valueChanged" id="E9g-iy-GN5"/>
-                                    <action selector="amplitudeSliderChange:" destination="vXZ-lx-hvc" eventType="valueChanged" id="vA8-Ki-juI"/>
+                                    <action selector="amplitudeSliderChange:" destination="vXZ-lx-hvc" eventType="valueChanged" id="oqc-km-sT2"/>
+                                </connections>
+                            </slider>
+                            <slider opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="5000" minValue="40" maxValue="20000" translatesAutoresizingMaskIntoConstraints="NO" id="E0b-w0-Lod">
+                                <rect key="frame" x="41" y="226" width="221" height="34"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <connections>
+                                    <action selector="frequencySliderChange:" destination="vXZ-lx-hvc" eventType="valueChanged" id="qiO-Sn-gSo"/>
                                 </connections>
                             </slider>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                     </view>
                     <connections>
-                        <outlet property="ampOut" destination="kv0-lg-FNk" id="aK7-VM-N7s"/>
-                        <outlet property="ampSlider" destination="oW4-5E-wLR" id="dUQ-d0-A9g"/>
-                        <outlet property="amplitudeOut" destination="kv0-lg-FNk" id="Lko-ZK-ItY"/>
-                        <outlet property="amplitudeSlider" destination="oW4-5E-wLR" id="q9p-N8-5BW"/>
+                        <outlet property="amplitudeOut" destination="kBr-Oh-iiV" id="Ehw-Vz-Gtm"/>
+                        <outlet property="amplitudeSlider" destination="1sY-OX-b2f" id="p0F-rO-gQ2"/>
                         <outlet property="avgInput" destination="p9G-n0-Qxx" id="GZ3-sx-hcv"/>
-                        <outlet property="freqOut" destination="JtE-2t-9T3" id="Mqn-iw-ghl"/>
-                        <outlet property="freqSlider" destination="O1l-Vk-5Vq" id="uRU-NX-7bV"/>
-                        <outlet property="frequencyOut" destination="JtE-2t-9T3" id="IQj-Wz-xpK"/>
-                        <outlet property="frequencySlider" destination="O1l-Vk-5Vq" id="YLv-sR-5Rl"/>
+                        <outlet property="frequencyOut" destination="29H-2M-ZCk" id="71M-Se-60D"/>
+                        <outlet property="frequencySlider" destination="E0b-w0-Lod" id="RNE-dy-FmS"/>
                         <outlet property="headsetSwitch" destination="2m0-iL-3ib" id="CNy-FT-YqK"/>
                         <outlet property="inputSource" destination="qye-8V-emE" id="iW2-vn-j3G"/>
                         <outlet property="lowpassInput" destination="rcT-B5-dND" id="T1u-FZ-7rd"/>
