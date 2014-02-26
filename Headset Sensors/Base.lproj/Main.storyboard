@@ -125,9 +125,13 @@
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <slider opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="0.5" minValue="0.0" maxValue="1" translatesAutoresizingMaskIntoConstraints="NO" id="O1l-Vk-5Vq">
+                            <slider opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="1000" minValue="20" maxValue="20000" translatesAutoresizingMaskIntoConstraints="NO" id="O1l-Vk-5Vq">
                                 <rect key="frame" x="41" y="226" width="221" height="34"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <connections>
+                                    <action selector="freqSlider:" destination="vXZ-lx-hvc" eventType="valueChanged" id="hKV-5S-G3P"/>
+                                    <action selector="frequencySliderChange:" destination="vXZ-lx-hvc" eventType="valueChanged" id="Tch-VU-Odk"/>
+                                </connections>
                             </slider>
                             <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Wave Amplitude (%):" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Pke-HM-pnv">
                                 <rect key="frame" x="43" y="273" width="161" height="21"/>
@@ -145,16 +149,24 @@
                             <slider opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="0.5" minValue="0.0" maxValue="1" translatesAutoresizingMaskIntoConstraints="NO" id="oW4-5E-wLR">
                                 <rect key="frame" x="41" y="302" width="221" height="34"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <connections>
+                                    <action selector="ampSlider:" destination="vXZ-lx-hvc" eventType="valueChanged" id="E9g-iy-GN5"/>
+                                    <action selector="amplitudeSliderChange:" destination="vXZ-lx-hvc" eventType="valueChanged" id="vA8-Ki-juI"/>
+                                </connections>
                             </slider>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                     </view>
                     <connections>
                         <outlet property="ampOut" destination="kv0-lg-FNk" id="aK7-VM-N7s"/>
-                        <outlet property="ampSlider" destination="oW4-5E-wLR" id="uAq-Qu-D1g"/>
+                        <outlet property="ampSlider" destination="oW4-5E-wLR" id="dUQ-d0-A9g"/>
+                        <outlet property="amplitudeOut" destination="kv0-lg-FNk" id="Lko-ZK-ItY"/>
+                        <outlet property="amplitudeSlider" destination="oW4-5E-wLR" id="q9p-N8-5BW"/>
                         <outlet property="avgInput" destination="p9G-n0-Qxx" id="GZ3-sx-hcv"/>
                         <outlet property="freqOut" destination="JtE-2t-9T3" id="Mqn-iw-ghl"/>
-                        <outlet property="freqSlider" destination="O1l-Vk-5Vq" id="AaY-2o-sai"/>
+                        <outlet property="freqSlider" destination="O1l-Vk-5Vq" id="uRU-NX-7bV"/>
+                        <outlet property="frequencyOut" destination="JtE-2t-9T3" id="IQj-Wz-xpK"/>
+                        <outlet property="frequencySlider" destination="O1l-Vk-5Vq" id="YLv-sR-5Rl"/>
                         <outlet property="headsetSwitch" destination="2m0-iL-3ib" id="CNy-FT-YqK"/>
                         <outlet property="inputSource" destination="qye-8V-emE" id="iW2-vn-j3G"/>
                         <outlet property="lowpassInput" destination="rcT-B5-dND" id="T1u-FZ-7rd"/>

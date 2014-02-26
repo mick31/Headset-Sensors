@@ -23,9 +23,9 @@
 		000AD222189311F20035A466 /* Headset_SensorsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 000AD221189311F20035A466 /* Headset_SensorsTests.m */; };
 		000AD22C189312800035A466 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 000AD22B189312800035A466 /* AVFoundation.framework */; };
 		000AD23218931A030035A466 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 000AD23118931A030035A466 /* CoreAudio.framework */; };
-		00C4E9B418A02D1600D80291 /* ToneGenerator.m in Sources */ = {isa = PBXBuildFile; fileRef = 00C4E9B318A02D1600D80291 /* ToneGenerator.m */; };
 		21211EFEDFAA43C794B40D00 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2C2FCF3CD60543EDB826F845 /* libPods.a */; };
 		5B402D8D18BE6C2E009EE8CA /* GSF_insert_sensor_alert.png in Resources */ = {isa = PBXBuildFile; fileRef = 5B402D8C18BE6C2E009EE8CA /* GSF_insert_sensor_alert.png */; };
+		5B402D8F18BEA015009EE8CA /* GSF_Insert_sensor_alert-v2.png in Resources */ = {isa = PBXBuildFile; fileRef = 5B402D8E18BEA015009EE8CA /* GSF_Insert_sensor_alert-v2.png */; };
 		5B9F5DC018A996D8002CD58B /* MediaPlayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5B9F5DBF18A996D8002CD58B /* MediaPlayer.framework */; };
 /* End PBXBuildFile section */
 
@@ -63,11 +63,10 @@
 		000AD22D189312880035A466 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		000AD22F1893128E0035A466 /* AudioUnit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioUnit.framework; path = System/Library/Frameworks/AudioUnit.framework; sourceTree = SDKROOT; };
 		000AD23118931A030035A466 /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = System/Library/Frameworks/CoreAudio.framework; sourceTree = SDKROOT; };
-		00C4E9B218A02D1600D80291 /* ToneGenerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ToneGenerator.h; sourceTree = "<group>"; };
-		00C4E9B318A02D1600D80291 /* ToneGenerator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ToneGenerator.m; sourceTree = "<group>"; };
 		2C2FCF3CD60543EDB826F845 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		3EFAB3C224C74BFC978241D5 /* Pods.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.xcconfig; path = Pods/Pods.xcconfig; sourceTree = "<group>"; };
 		5B402D8C18BE6C2E009EE8CA /* GSF_insert_sensor_alert.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = GSF_insert_sensor_alert.png; path = "Headset Sensors/GSF_insert_sensor_alert.png"; sourceTree = "<group>"; };
+		5B402D8E18BEA015009EE8CA /* GSF_Insert_sensor_alert-v2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "GSF_Insert_sensor_alert-v2.png"; path = "Headset Sensors/GSF_Insert_sensor_alert-v2.png"; sourceTree = "<group>"; };
 		5B9F5DBF18A996D8002CD58B /* MediaPlayer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaPlayer.framework; path = System/Library/Frameworks/MediaPlayer.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -145,8 +144,6 @@
 				000AD208189311F20035A466 /* Main.storyboard */,
 				000AD20B189311F20035A466 /* ViewController.h */,
 				000AD20C189311F20035A466 /* ViewController.m */,
-				00C4E9B218A02D1600D80291 /* ToneGenerator.h */,
-				00C4E9B318A02D1600D80291 /* ToneGenerator.m */,
 				000AD20E189311F20035A466 /* Images.xcassets */,
 				000AD1FD189311F20035A466 /* Supporting Files */,
 			);
@@ -186,6 +183,7 @@
 			isa = PBXGroup;
 			children = (
 				5B402D8C18BE6C2E009EE8CA /* GSF_insert_sensor_alert.png */,
+				5B402D8E18BEA015009EE8CA /* GSF_Insert_sensor_alert-v2.png */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -271,6 +269,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5B402D8F18BEA015009EE8CA /* GSF_Insert_sensor_alert-v2.png in Resources */,
 				000AD20F189311F20035A466 /* Images.xcassets in Resources */,
 				000AD201189311F20035A466 /* InfoPlist.strings in Resources */,
 				5B402D8D18BE6C2E009EE8CA /* GSF_insert_sensor_alert.png in Resources */,
@@ -326,7 +325,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				00C4E9B418A02D1600D80291 /* ToneGenerator.m in Sources */,
 				000AD20D189311F20035A466 /* ViewController.m in Sources */,
 				000AD207189311F20035A466 /* AppDelegate.m in Sources */,
 				000AD203189311F20035A466 /* main.m in Sources */,
