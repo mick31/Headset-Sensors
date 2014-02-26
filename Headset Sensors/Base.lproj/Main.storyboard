@@ -33,7 +33,7 @@
                             <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Mointor Sensor" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="b3K-x5-9Wh">
                                 <rect key="frame" x="86" y="442" width="148" height="21"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <fontDescription key="fontDescription" type="boldSystem" pointSize="18"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="0.0" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="p9G-n0-Qxx">
@@ -74,13 +74,13 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Source:" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="DuJ-pK-bQL">
-                                <rect key="frame" x="103" y="367" width="60" height="21"/>
+                                <rect key="frame" x="103" y="381" width="60" height="21"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="None" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="qye-8V-emE">
-                                <rect key="frame" x="163" y="367" width="97" height="21"/>
+                                <rect key="frame" x="163" y="381" width="97" height="21"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <nil key="highlightedColor"/>
@@ -150,7 +150,11 @@
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                     </view>
                     <connections>
+                        <outlet property="ampOut" destination="kv0-lg-FNk" id="aK7-VM-N7s"/>
+                        <outlet property="ampSlider" destination="oW4-5E-wLR" id="uAq-Qu-D1g"/>
                         <outlet property="avgInput" destination="p9G-n0-Qxx" id="GZ3-sx-hcv"/>
+                        <outlet property="freqOut" destination="JtE-2t-9T3" id="Mqn-iw-ghl"/>
+                        <outlet property="freqSlider" destination="O1l-Vk-5Vq" id="AaY-2o-sai"/>
                         <outlet property="headsetSwitch" destination="2m0-iL-3ib" id="CNy-FT-YqK"/>
                         <outlet property="inputSource" destination="qye-8V-emE" id="iW2-vn-j3G"/>
                         <outlet property="lowpassInput" destination="rcT-B5-dND" id="T1u-FZ-7rd"/>

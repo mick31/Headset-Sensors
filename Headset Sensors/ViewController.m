@@ -95,13 +95,10 @@ void ToneIterruptionListner(void *inClientData, UInt32 inInterruptionState) {
         // Kill power Tone
         [self->powerTone togglePowerOn:NO];
         
-        // Setup Slider for Alert View
-        UISlider *volumeSlider = [[UISlider alloc] initWithFrame:CGRectMake(20, 50, 200, 200)];
-        volumeSlider.maximumValue = 10.0;
-        volumeSlider.minimumValue = 1.0;
-        [volumeSlider addTarget:self action:@selector(sliderHandler:) forControlEvents:UIControlEventValueChanged];
-        
-        //UIImage *
+        // Setup image for Alert View
+        UIView *alertImageView = [[UIView alloc] initWithFrame:CGRectMake(20, 50, 250, 150)];
+        [alertImageView setBackgroundColor:[UIColor colorWithPatternImage:[UIImage imageNamed:@"GSF_insert_sensor_alert.png"]]];
+
         
         // Setup Alert View
         SDCAlertView *noHeadsetAlertView =
@@ -111,16 +108,16 @@ void ToneIterruptionListner(void *inClientData, UInt32 inInterruptionState) {
                     delegate:self
                     cancelButtonTitle:nil
                     otherButtonTitles:@"Cancel", @"Use Mic", nil];
-        [volumeSlider setTranslatesAutoresizingMaskIntoConstraints:NO];
-        [noHeadsetAlertView.contentView addSubview:volumeSlider];
+        [alertImageView setTranslatesAutoresizingMaskIntoConstraints:NO];
+        [noHeadsetAlertView.contentView addSubview:alertImageView];
         
-        [volumeSlider sdc_pinWidthToWidthOfView:noHeadsetAlertView.contentView offset: -20];
-        [volumeSlider sdc_horizontallyCenterInSuperview];
+        //[alertImageView sdc_pinWidthToWidthOfView:noHeadsetAlertView.contentView offset: -20];
+        [alertImageView sdc_horizontallyCenterInSuperview];
         
-        [noHeadsetAlertView.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|-[volumeSlider]|"
+        [noHeadsetAlertView.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|-[alertImageView]|"
                                                                                   options:0
                                                                                   metrics:nil
-                                                                                    views:NSDictionaryOfVariableBindings(volumeSlider)]];
+                                                                                    views:NSDictionaryOfVariableBindings(alertImageView)]];
         
         [noHeadsetAlertView show];
         
@@ -215,32 +212,29 @@ void ToneIterruptionListner(void *inClientData, UInt32 inInterruptionState) {
          *************/
         NSLog(@"flippedHeadset: Made it!");
         
-        // Setup Slider for Alert View
-        UISlider *volumeSlider = [[UISlider alloc] initWithFrame:CGRectMake(20, 50, 200, 200)];
-        volumeSlider.maximumValue = 10.00;
-        volumeSlider.minimumValue = 1.0;
-        [volumeSlider addTarget:self action:@selector(sliderHandler:) forControlEvents:UIControlEventValueChanged];
+        // Setup image for Alert View
+        UIView *alertImageView = [[UIView alloc] initWithFrame:CGRectMake(20, 50, 250, 150)];
+        [alertImageView setBackgroundColor:[UIColor colorWithPatternImage:[UIImage imageNamed:@"GSF_insert_sensor_alert.png"]]];
+        
         
         // Setup Alert View
         SDCAlertView *noHeadsetAlertView =
         [[SDCAlertView alloc]
-         initWithTitle:@"No Headset"
-         message:@"You need a headset you fool!"
+         initWithTitle:@"No Sensor"
+         message:@"Please insert the GSF sensor to collect this data."
          delegate:self
          cancelButtonTitle:nil
          otherButtonTitles:@"Cancel", @"Use Mic", nil];
+        [alertImageView setTranslatesAutoresizingMaskIntoConstraints:NO];
+        [noHeadsetAlertView.contentView addSubview:alertImageView];
         
-        [volumeSlider setTranslatesAutoresizingMaskIntoConstraints:NO];
-        [noHeadsetAlertView.contentView addSubview:volumeSlider];
+        //[alertImageView sdc_pinWidthToWidthOfView:noHeadsetAlertView.contentView offset: -20];
+        [alertImageView sdc_horizontallyCenterInSuperview];
         
-        [volumeSlider sdc_pinWidthToWidthOfView:noHeadsetAlertView.contentView offset: -20];
-        [volumeSlider sdc_horizontallyCenterInSuperview];
-        
-        [noHeadsetAlertView.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|-[volumeSlider]|"
+        [noHeadsetAlertView.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|-[alertImageView]|"
                                                                                                options:0
                                                                                                metrics:nil
-                                                                                                 views:NSDictionaryOfVariableBindings(volumeSlider)]];
-        
+                                                                                                 views:NSDictionaryOfVariableBindings(alertImageView)]];
         [noHeadsetAlertView show];
 
     }
