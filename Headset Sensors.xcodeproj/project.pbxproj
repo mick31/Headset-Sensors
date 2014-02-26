@@ -1,1229 +1,559 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-	<key>archiveVersion</key>
-	<string>1</string>
-	<key>classes</key>
-	<dict/>
-	<key>objectVersion</key>
-	<string>46</string>
-	<key>objects</key>
-	<dict>
-		<key>000AD1EA189311F20035A466</key>
-		<dict>
-			<key>children</key>
-			<array>
-				<string>000AD1FC189311F20035A466</string>
-				<string>000AD21B189311F20035A466</string>
-				<string>000AD1F5189311F20035A466</string>
-				<string>000AD1F4189311F20035A466</string>
-				<string>3EFAB3C224C74BFC978241D5</string>
-			</array>
-			<key>isa</key>
-			<string>PBXGroup</string>
-			<key>sourceTree</key>
-			<string>&lt;group&gt;</string>
-		</dict>
-		<key>000AD1EB189311F20035A466</key>
-		<dict>
-			<key>attributes</key>
-			<dict>
-				<key>LastUpgradeCheck</key>
-				<string>0500</string>
-				<key>ORGANIZATIONNAME</key>
-				<string>Mick</string>
-				<key>TargetAttributes</key>
-				<dict>
-					<key>000AD1F2189311F20035A466</key>
-					<dict>
-						<key>DevelopmentTeam</key>
-						<string>Z5SLZ6QPTL</string>
-					</dict>
-					<key>000AD213189311F20035A466</key>
-					<dict>
-						<key>TestTargetID</key>
-						<string>000AD1F2189311F20035A466</string>
-					</dict>
-				</dict>
-			</dict>
-			<key>buildConfigurationList</key>
-			<string>000AD1EE189311F20035A466</string>
-			<key>compatibilityVersion</key>
-			<string>Xcode 3.2</string>
-			<key>developmentRegion</key>
-			<string>English</string>
-			<key>hasScannedForEncodings</key>
-			<string>0</string>
-			<key>isa</key>
-			<string>PBXProject</string>
-			<key>knownRegions</key>
-			<array>
-				<string>en</string>
-				<string>Base</string>
-			</array>
-			<key>mainGroup</key>
-			<string>000AD1EA189311F20035A466</string>
-			<key>productRefGroup</key>
-			<string>000AD1F4189311F20035A466</string>
-			<key>projectDirPath</key>
-			<string></string>
-			<key>projectReferences</key>
-			<array/>
-			<key>projectRoot</key>
-			<string></string>
-			<key>targets</key>
-			<array>
-				<string>000AD1F2189311F20035A466</string>
-				<string>000AD213189311F20035A466</string>
-			</array>
-		</dict>
-		<key>000AD1EE189311F20035A466</key>
-		<dict>
-			<key>buildConfigurations</key>
-			<array>
-				<string>000AD223189311F20035A466</string>
-				<string>000AD224189311F20035A466</string>
-			</array>
-			<key>defaultConfigurationIsVisible</key>
-			<string>0</string>
-			<key>defaultConfigurationName</key>
-			<string>Release</string>
-			<key>isa</key>
-			<string>XCConfigurationList</string>
-		</dict>
-		<key>000AD1EF189311F20035A466</key>
-		<dict>
-			<key>buildActionMask</key>
-			<string>2147483647</string>
-			<key>files</key>
-			<array>
-				<string>00C4E9B418A02D1600D80291</string>
-				<string>000AD20D189311F20035A466</string>
-				<string>000AD207189311F20035A466</string>
-				<string>000AD203189311F20035A466</string>
-			</array>
-			<key>isa</key>
-			<string>PBXSourcesBuildPhase</string>
-			<key>runOnlyForDeploymentPostprocessing</key>
-			<string>0</string>
-		</dict>
-		<key>000AD1F0189311F20035A466</key>
-		<dict>
-			<key>buildActionMask</key>
-			<string>2147483647</string>
-			<key>files</key>
-			<array>
-				<string>5B9F5DC018A996D8002CD58B</string>
-				<string>000AD23218931A030035A466</string>
-				<string>000AD22C189312800035A466</string>
-				<string>000AD1F9189311F20035A466</string>
-				<string>000AD1FB189311F20035A466</string>
-				<string>000AD1F7189311F20035A466</string>
-				<string>21211EFEDFAA43C794B40D00</string>
-			</array>
-			<key>isa</key>
-			<string>PBXFrameworksBuildPhase</string>
-			<key>runOnlyForDeploymentPostprocessing</key>
-			<string>0</string>
-		</dict>
-		<key>000AD1F1189311F20035A466</key>
-		<dict>
-			<key>buildActionMask</key>
-			<string>2147483647</string>
-			<key>files</key>
-			<array>
-				<string>000AD20F189311F20035A466</string>
-				<string>000AD201189311F20035A466</string>
-				<string>000AD20A189311F20035A466</string>
-			</array>
-			<key>isa</key>
-			<string>PBXResourcesBuildPhase</string>
-			<key>runOnlyForDeploymentPostprocessing</key>
-			<string>0</string>
-		</dict>
-		<key>000AD1F2189311F20035A466</key>
-		<dict>
-			<key>buildConfigurationList</key>
-			<string>000AD225189311F20035A466</string>
-			<key>buildPhases</key>
-			<array>
-				<string>4C1FFAC6D9164C1483D03016</string>
-				<string>000AD1EF189311F20035A466</string>
-				<string>000AD1F0189311F20035A466</string>
-				<string>000AD1F1189311F20035A466</string>
-				<string>A459016738EE4AFC9669D76E</string>
-			</array>
-			<key>buildRules</key>
-			<array/>
-			<key>dependencies</key>
-			<array/>
-			<key>isa</key>
-			<string>PBXNativeTarget</string>
-			<key>name</key>
-			<string>Headset Sensors</string>
-			<key>productName</key>
-			<string>Headset Sensors</string>
-			<key>productReference</key>
-			<string>000AD1F3189311F20035A466</string>
-			<key>productType</key>
-			<string>com.apple.product-type.application</string>
-		</dict>
-		<key>000AD1F3189311F20035A466</key>
-		<dict>
-			<key>explicitFileType</key>
-			<string>wrapper.application</string>
-			<key>includeInIndex</key>
-			<string>0</string>
-			<key>isa</key>
-			<string>PBXFileReference</string>
-			<key>path</key>
-			<string>Headset Sensors.app</string>
-			<key>sourceTree</key>
-			<string>BUILT_PRODUCTS_DIR</string>
-		</dict>
-		<key>000AD1F4189311F20035A466</key>
-		<dict>
-			<key>children</key>
-			<array>
-				<string>000AD1F3189311F20035A466</string>
-				<string>000AD214189311F20035A466</string>
-			</array>
-			<key>isa</key>
-			<string>PBXGroup</string>
-			<key>name</key>
-			<string>Products</string>
-			<key>sourceTree</key>
-			<string>&lt;group&gt;</string>
-		</dict>
-		<key>000AD1F5189311F20035A466</key>
-		<dict>
-			<key>children</key>
-			<array>
-				<string>5B9F5DBF18A996D8002CD58B</string>
-				<string>000AD23118931A030035A466</string>
-				<string>000AD22F1893128E0035A466</string>
-				<string>000AD22D189312880035A466</string>
-				<string>000AD22B189312800035A466</string>
-				<string>000AD1F6189311F20035A466</string>
-				<string>000AD1F8189311F20035A466</string>
-				<string>000AD1FA189311F20035A466</string>
-				<string>000AD215189311F20035A466</string>
-				<string>2C2FCF3CD60543EDB826F845</string>
-			</array>
-			<key>isa</key>
-			<string>PBXGroup</string>
-			<key>name</key>
-			<string>Frameworks</string>
-			<key>sourceTree</key>
-			<string>&lt;group&gt;</string>
-		</dict>
-		<key>000AD1F6189311F20035A466</key>
-		<dict>
-			<key>isa</key>
-			<string>PBXFileReference</string>
-			<key>lastKnownFileType</key>
-			<string>wrapper.framework</string>
-			<key>name</key>
-			<string>Foundation.framework</string>
-			<key>path</key>
-			<string>System/Library/Frameworks/Foundation.framework</string>
-			<key>sourceTree</key>
-			<string>SDKROOT</string>
-		</dict>
-		<key>000AD1F7189311F20035A466</key>
-		<dict>
-			<key>fileRef</key>
-			<string>000AD1F6189311F20035A466</string>
-			<key>isa</key>
-			<string>PBXBuildFile</string>
-		</dict>
-		<key>000AD1F8189311F20035A466</key>
-		<dict>
-			<key>isa</key>
-			<string>PBXFileReference</string>
-			<key>lastKnownFileType</key>
-			<string>wrapper.framework</string>
-			<key>name</key>
-			<string>CoreGraphics.framework</string>
-			<key>path</key>
-			<string>System/Library/Frameworks/CoreGraphics.framework</string>
-			<key>sourceTree</key>
-			<string>SDKROOT</string>
-		</dict>
-		<key>000AD1F9189311F20035A466</key>
-		<dict>
-			<key>fileRef</key>
-			<string>000AD1F8189311F20035A466</string>
-			<key>isa</key>
-			<string>PBXBuildFile</string>
-		</dict>
-		<key>000AD1FA189311F20035A466</key>
-		<dict>
-			<key>isa</key>
-			<string>PBXFileReference</string>
-			<key>lastKnownFileType</key>
-			<string>wrapper.framework</string>
-			<key>name</key>
-			<string>UIKit.framework</string>
-			<key>path</key>
-			<string>System/Library/Frameworks/UIKit.framework</string>
-			<key>sourceTree</key>
-			<string>SDKROOT</string>
-		</dict>
-		<key>000AD1FB189311F20035A466</key>
-		<dict>
-			<key>fileRef</key>
-			<string>000AD1FA189311F20035A466</string>
-			<key>isa</key>
-			<string>PBXBuildFile</string>
-		</dict>
-		<key>000AD1FC189311F20035A466</key>
-		<dict>
-			<key>children</key>
-			<array>
-				<string>000AD205189311F20035A466</string>
-				<string>000AD206189311F20035A466</string>
-				<string>000AD208189311F20035A466</string>
-				<string>000AD20B189311F20035A466</string>
-				<string>000AD20C189311F20035A466</string>
-				<string>00C4E9B218A02D1600D80291</string>
-				<string>00C4E9B318A02D1600D80291</string>
-				<string>000AD20E189311F20035A466</string>
-				<string>000AD1FD189311F20035A466</string>
-			</array>
-			<key>isa</key>
-			<string>PBXGroup</string>
-			<key>path</key>
-			<string>Headset Sensors</string>
-			<key>sourceTree</key>
-			<string>&lt;group&gt;</string>
-		</dict>
-		<key>000AD1FD189311F20035A466</key>
-		<dict>
-			<key>children</key>
-			<array>
-				<string>000AD1FE189311F20035A466</string>
-				<string>000AD1FF189311F20035A466</string>
-				<string>000AD202189311F20035A466</string>
-				<string>000AD204189311F20035A466</string>
-			</array>
-			<key>isa</key>
-			<string>PBXGroup</string>
-			<key>name</key>
-			<string>Supporting Files</string>
-			<key>sourceTree</key>
-			<string>&lt;group&gt;</string>
-		</dict>
-		<key>000AD1FE189311F20035A466</key>
-		<dict>
-			<key>isa</key>
-			<string>PBXFileReference</string>
-			<key>lastKnownFileType</key>
-			<string>text.plist.xml</string>
-			<key>path</key>
-			<string>Headset Sensors-Info.plist</string>
-			<key>sourceTree</key>
-			<string>&lt;group&gt;</string>
-		</dict>
-		<key>000AD1FF189311F20035A466</key>
-		<dict>
-			<key>children</key>
-			<array>
-				<string>000AD200189311F20035A466</string>
-			</array>
-			<key>isa</key>
-			<string>PBXVariantGroup</string>
-			<key>name</key>
-			<string>InfoPlist.strings</string>
-			<key>sourceTree</key>
-			<string>&lt;group&gt;</string>
-		</dict>
-		<key>000AD200189311F20035A466</key>
-		<dict>
-			<key>isa</key>
-			<string>PBXFileReference</string>
-			<key>lastKnownFileType</key>
-			<string>text.plist.strings</string>
-			<key>name</key>
-			<string>en</string>
-			<key>path</key>
-			<string>en.lproj/InfoPlist.strings</string>
-			<key>sourceTree</key>
-			<string>&lt;group&gt;</string>
-		</dict>
-		<key>000AD201189311F20035A466</key>
-		<dict>
-			<key>fileRef</key>
-			<string>000AD1FF189311F20035A466</string>
-			<key>isa</key>
-			<string>PBXBuildFile</string>
-		</dict>
-		<key>000AD202189311F20035A466</key>
-		<dict>
-			<key>isa</key>
-			<string>PBXFileReference</string>
-			<key>lastKnownFileType</key>
-			<string>sourcecode.c.objc</string>
-			<key>path</key>
-			<string>main.m</string>
-			<key>sourceTree</key>
-			<string>&lt;group&gt;</string>
-		</dict>
-		<key>000AD203189311F20035A466</key>
-		<dict>
-			<key>fileRef</key>
-			<string>000AD202189311F20035A466</string>
-			<key>isa</key>
-			<string>PBXBuildFile</string>
-		</dict>
-		<key>000AD204189311F20035A466</key>
-		<dict>
-			<key>isa</key>
-			<string>PBXFileReference</string>
-			<key>lastKnownFileType</key>
-			<string>sourcecode.c.h</string>
-			<key>path</key>
-			<string>Headset Sensors-Prefix.pch</string>
-			<key>sourceTree</key>
-			<string>&lt;group&gt;</string>
-		</dict>
-		<key>000AD205189311F20035A466</key>
-		<dict>
-			<key>isa</key>
-			<string>PBXFileReference</string>
-			<key>lastKnownFileType</key>
-			<string>sourcecode.c.h</string>
-			<key>path</key>
-			<string>AppDelegate.h</string>
-			<key>sourceTree</key>
-			<string>&lt;group&gt;</string>
-		</dict>
-		<key>000AD206189311F20035A466</key>
-		<dict>
-			<key>isa</key>
-			<string>PBXFileReference</string>
-			<key>lastKnownFileType</key>
-			<string>sourcecode.c.objc</string>
-			<key>path</key>
-			<string>AppDelegate.m</string>
-			<key>sourceTree</key>
-			<string>&lt;group&gt;</string>
-		</dict>
-		<key>000AD207189311F20035A466</key>
-		<dict>
-			<key>fileRef</key>
-			<string>000AD206189311F20035A466</string>
-			<key>isa</key>
-			<string>PBXBuildFile</string>
-		</dict>
-		<key>000AD208189311F20035A466</key>
-		<dict>
-			<key>children</key>
-			<array>
-				<string>000AD209189311F20035A466</string>
-			</array>
-			<key>isa</key>
-			<string>PBXVariantGroup</string>
-			<key>name</key>
-			<string>Main.storyboard</string>
-			<key>sourceTree</key>
-			<string>&lt;group&gt;</string>
-		</dict>
-		<key>000AD209189311F20035A466</key>
-		<dict>
-			<key>isa</key>
-			<string>PBXFileReference</string>
-			<key>lastKnownFileType</key>
-			<string>file.storyboard</string>
-			<key>name</key>
-			<string>Base</string>
-			<key>path</key>
-			<string>Base.lproj/Main.storyboard</string>
-			<key>sourceTree</key>
-			<string>&lt;group&gt;</string>
-		</dict>
-		<key>000AD20A189311F20035A466</key>
-		<dict>
-			<key>fileRef</key>
-			<string>000AD208189311F20035A466</string>
-			<key>isa</key>
-			<string>PBXBuildFile</string>
-		</dict>
-		<key>000AD20B189311F20035A466</key>
-		<dict>
-			<key>isa</key>
-			<string>PBXFileReference</string>
-			<key>lastKnownFileType</key>
-			<string>sourcecode.c.h</string>
-			<key>path</key>
-			<string>ViewController.h</string>
-			<key>sourceTree</key>
-			<string>&lt;group&gt;</string>
-		</dict>
-		<key>000AD20C189311F20035A466</key>
-		<dict>
-			<key>isa</key>
-			<string>PBXFileReference</string>
-			<key>lastKnownFileType</key>
-			<string>sourcecode.c.objc</string>
-			<key>path</key>
-			<string>ViewController.m</string>
-			<key>sourceTree</key>
-			<string>&lt;group&gt;</string>
-		</dict>
-		<key>000AD20D189311F20035A466</key>
-		<dict>
-			<key>fileRef</key>
-			<string>000AD20C189311F20035A466</string>
-			<key>isa</key>
-			<string>PBXBuildFile</string>
-		</dict>
-		<key>000AD20E189311F20035A466</key>
-		<dict>
-			<key>isa</key>
-			<string>PBXFileReference</string>
-			<key>lastKnownFileType</key>
-			<string>folder.assetcatalog</string>
-			<key>path</key>
-			<string>Images.xcassets</string>
-			<key>sourceTree</key>
-			<string>&lt;group&gt;</string>
-		</dict>
-		<key>000AD20F189311F20035A466</key>
-		<dict>
-			<key>fileRef</key>
-			<string>000AD20E189311F20035A466</string>
-			<key>isa</key>
-			<string>PBXBuildFile</string>
-		</dict>
-		<key>000AD210189311F20035A466</key>
-		<dict>
-			<key>buildActionMask</key>
-			<string>2147483647</string>
-			<key>files</key>
-			<array>
-				<string>000AD222189311F20035A466</string>
-			</array>
-			<key>isa</key>
-			<string>PBXSourcesBuildPhase</string>
-			<key>runOnlyForDeploymentPostprocessing</key>
-			<string>0</string>
-		</dict>
-		<key>000AD211189311F20035A466</key>
-		<dict>
-			<key>buildActionMask</key>
-			<string>2147483647</string>
-			<key>files</key>
-			<array>
-				<string>000AD216189311F20035A466</string>
-				<string>000AD218189311F20035A466</string>
-				<string>000AD217189311F20035A466</string>
-			</array>
-			<key>isa</key>
-			<string>PBXFrameworksBuildPhase</string>
-			<key>runOnlyForDeploymentPostprocessing</key>
-			<string>0</string>
-		</dict>
-		<key>000AD212189311F20035A466</key>
-		<dict>
-			<key>buildActionMask</key>
-			<string>2147483647</string>
-			<key>files</key>
-			<array>
-				<string>000AD220189311F20035A466</string>
-			</array>
-			<key>isa</key>
-			<string>PBXResourcesBuildPhase</string>
-			<key>runOnlyForDeploymentPostprocessing</key>
-			<string>0</string>
-		</dict>
-		<key>000AD213189311F20035A466</key>
-		<dict>
-			<key>buildConfigurationList</key>
-			<string>000AD228189311F20035A466</string>
-			<key>buildPhases</key>
-			<array>
-				<string>000AD210189311F20035A466</string>
-				<string>000AD211189311F20035A466</string>
-				<string>000AD212189311F20035A466</string>
-			</array>
-			<key>buildRules</key>
-			<array/>
-			<key>dependencies</key>
-			<array>
-				<string>000AD21A189311F20035A466</string>
-			</array>
-			<key>isa</key>
-			<string>PBXNativeTarget</string>
-			<key>name</key>
-			<string>Headset SensorsTests</string>
-			<key>productName</key>
-			<string>Headset SensorsTests</string>
-			<key>productReference</key>
-			<string>000AD214189311F20035A466</string>
-			<key>productType</key>
-			<string>com.apple.product-type.bundle.unit-test</string>
-		</dict>
-		<key>000AD214189311F20035A466</key>
-		<dict>
-			<key>explicitFileType</key>
-			<string>wrapper.cfbundle</string>
-			<key>includeInIndex</key>
-			<string>0</string>
-			<key>isa</key>
-			<string>PBXFileReference</string>
-			<key>path</key>
-			<string>Headset SensorsTests.xctest</string>
-			<key>sourceTree</key>
-			<string>BUILT_PRODUCTS_DIR</string>
-		</dict>
-		<key>000AD215189311F20035A466</key>
-		<dict>
-			<key>isa</key>
-			<string>PBXFileReference</string>
-			<key>lastKnownFileType</key>
-			<string>wrapper.framework</string>
-			<key>name</key>
-			<string>XCTest.framework</string>
-			<key>path</key>
-			<string>Library/Frameworks/XCTest.framework</string>
-			<key>sourceTree</key>
-			<string>DEVELOPER_DIR</string>
-		</dict>
-		<key>000AD216189311F20035A466</key>
-		<dict>
-			<key>fileRef</key>
-			<string>000AD215189311F20035A466</string>
-			<key>isa</key>
-			<string>PBXBuildFile</string>
-		</dict>
-		<key>000AD217189311F20035A466</key>
-		<dict>
-			<key>fileRef</key>
-			<string>000AD1F6189311F20035A466</string>
-			<key>isa</key>
-			<string>PBXBuildFile</string>
-		</dict>
-		<key>000AD218189311F20035A466</key>
-		<dict>
-			<key>fileRef</key>
-			<string>000AD1FA189311F20035A466</string>
-			<key>isa</key>
-			<string>PBXBuildFile</string>
-		</dict>
-		<key>000AD219189311F20035A466</key>
-		<dict>
-			<key>containerPortal</key>
-			<string>000AD1EB189311F20035A466</string>
-			<key>isa</key>
-			<string>PBXContainerItemProxy</string>
-			<key>proxyType</key>
-			<string>1</string>
-			<key>remoteGlobalIDString</key>
-			<string>000AD1F2189311F20035A466</string>
-			<key>remoteInfo</key>
-			<string>Headset Sensors</string>
-		</dict>
-		<key>000AD21A189311F20035A466</key>
-		<dict>
-			<key>isa</key>
-			<string>PBXTargetDependency</string>
-			<key>target</key>
-			<string>000AD1F2189311F20035A466</string>
-			<key>targetProxy</key>
-			<string>000AD219189311F20035A466</string>
-		</dict>
-		<key>000AD21B189311F20035A466</key>
-		<dict>
-			<key>children</key>
-			<array>
-				<string>000AD221189311F20035A466</string>
-				<string>000AD21C189311F20035A466</string>
-			</array>
-			<key>isa</key>
-			<string>PBXGroup</string>
-			<key>path</key>
-			<string>Headset SensorsTests</string>
-			<key>sourceTree</key>
-			<string>&lt;group&gt;</string>
-		</dict>
-		<key>000AD21C189311F20035A466</key>
-		<dict>
-			<key>children</key>
-			<array>
-				<string>000AD21D189311F20035A466</string>
-				<string>000AD21E189311F20035A466</string>
-			</array>
-			<key>isa</key>
-			<string>PBXGroup</string>
-			<key>name</key>
-			<string>Supporting Files</string>
-			<key>sourceTree</key>
-			<string>&lt;group&gt;</string>
-		</dict>
-		<key>000AD21D189311F20035A466</key>
-		<dict>
-			<key>isa</key>
-			<string>PBXFileReference</string>
-			<key>lastKnownFileType</key>
-			<string>text.plist.xml</string>
-			<key>path</key>
-			<string>Headset SensorsTests-Info.plist</string>
-			<key>sourceTree</key>
-			<string>&lt;group&gt;</string>
-		</dict>
-		<key>000AD21E189311F20035A466</key>
-		<dict>
-			<key>children</key>
-			<array>
-				<string>000AD21F189311F20035A466</string>
-			</array>
-			<key>isa</key>
-			<string>PBXVariantGroup</string>
-			<key>name</key>
-			<string>InfoPlist.strings</string>
-			<key>sourceTree</key>
-			<string>&lt;group&gt;</string>
-		</dict>
-		<key>000AD21F189311F20035A466</key>
-		<dict>
-			<key>isa</key>
-			<string>PBXFileReference</string>
-			<key>lastKnownFileType</key>
-			<string>text.plist.strings</string>
-			<key>name</key>
-			<string>en</string>
-			<key>path</key>
-			<string>en.lproj/InfoPlist.strings</string>
-			<key>sourceTree</key>
-			<string>&lt;group&gt;</string>
-		</dict>
-		<key>000AD220189311F20035A466</key>
-		<dict>
-			<key>fileRef</key>
-			<string>000AD21E189311F20035A466</string>
-			<key>isa</key>
-			<string>PBXBuildFile</string>
-		</dict>
-		<key>000AD221189311F20035A466</key>
-		<dict>
-			<key>isa</key>
-			<string>PBXFileReference</string>
-			<key>lastKnownFileType</key>
-			<string>sourcecode.c.objc</string>
-			<key>path</key>
-			<string>Headset_SensorsTests.m</string>
-			<key>sourceTree</key>
-			<string>&lt;group&gt;</string>
-		</dict>
-		<key>000AD222189311F20035A466</key>
-		<dict>
-			<key>fileRef</key>
-			<string>000AD221189311F20035A466</string>
-			<key>isa</key>
-			<string>PBXBuildFile</string>
-		</dict>
-		<key>000AD223189311F20035A466</key>
-		<dict>
-			<key>buildSettings</key>
-			<dict>
-				<key>ALWAYS_SEARCH_USER_PATHS</key>
-				<string>NO</string>
-				<key>ARCHS</key>
-				<string>$(ARCHS_STANDARD_INCLUDING_64_BIT)</string>
-				<key>CLANG_CXX_LANGUAGE_STANDARD</key>
-				<string>gnu++0x</string>
-				<key>CLANG_CXX_LIBRARY</key>
-				<string>libc++</string>
-				<key>CLANG_ENABLE_MODULES</key>
-				<string>YES</string>
-				<key>CLANG_ENABLE_OBJC_ARC</key>
-				<string>YES</string>
-				<key>CLANG_WARN_BOOL_CONVERSION</key>
-				<string>YES</string>
-				<key>CLANG_WARN_CONSTANT_CONVERSION</key>
-				<string>YES</string>
-				<key>CLANG_WARN_DIRECT_OBJC_ISA_USAGE</key>
-				<string>YES_ERROR</string>
-				<key>CLANG_WARN_EMPTY_BODY</key>
-				<string>YES</string>
-				<key>CLANG_WARN_ENUM_CONVERSION</key>
-				<string>YES</string>
-				<key>CLANG_WARN_INT_CONVERSION</key>
-				<string>YES</string>
-				<key>CLANG_WARN_OBJC_ROOT_CLASS</key>
-				<string>YES_ERROR</string>
-				<key>CLANG_WARN__DUPLICATE_METHOD_MATCH</key>
-				<string>YES</string>
-				<key>CODE_SIGN_IDENTITY[sdk=iphoneos*]</key>
-				<string>iPhone Developer</string>
-				<key>COPY_PHASE_STRIP</key>
-				<string>NO</string>
-				<key>GCC_C_LANGUAGE_STANDARD</key>
-				<string>gnu99</string>
-				<key>GCC_DYNAMIC_NO_PIC</key>
-				<string>NO</string>
-				<key>GCC_OPTIMIZATION_LEVEL</key>
-				<string>0</string>
-				<key>GCC_PREPROCESSOR_DEFINITIONS</key>
-				<array>
-					<string>DEBUG=1</string>
-					<string>$(inherited)</string>
-				</array>
-				<key>GCC_SYMBOLS_PRIVATE_EXTERN</key>
-				<string>NO</string>
-				<key>GCC_WARN_64_TO_32_BIT_CONVERSION</key>
-				<string>YES</string>
-				<key>GCC_WARN_ABOUT_RETURN_TYPE</key>
-				<string>YES_ERROR</string>
-				<key>GCC_WARN_UNDECLARED_SELECTOR</key>
-				<string>YES</string>
-				<key>GCC_WARN_UNINITIALIZED_AUTOS</key>
-				<string>YES</string>
-				<key>GCC_WARN_UNUSED_FUNCTION</key>
-				<string>YES</string>
-				<key>GCC_WARN_UNUSED_VARIABLE</key>
-				<string>YES</string>
-				<key>IPHONEOS_DEPLOYMENT_TARGET</key>
-				<string>7.0</string>
-				<key>ONLY_ACTIVE_ARCH</key>
-				<string>YES</string>
-				<key>SDKROOT</key>
-				<string>iphoneos</string>
-			</dict>
-			<key>isa</key>
-			<string>XCBuildConfiguration</string>
-			<key>name</key>
-			<string>Debug</string>
-		</dict>
-		<key>000AD224189311F20035A466</key>
-		<dict>
-			<key>buildSettings</key>
-			<dict>
-				<key>ALWAYS_SEARCH_USER_PATHS</key>
-				<string>NO</string>
-				<key>ARCHS</key>
-				<string>$(ARCHS_STANDARD_INCLUDING_64_BIT)</string>
-				<key>CLANG_CXX_LANGUAGE_STANDARD</key>
-				<string>gnu++0x</string>
-				<key>CLANG_CXX_LIBRARY</key>
-				<string>libc++</string>
-				<key>CLANG_ENABLE_MODULES</key>
-				<string>YES</string>
-				<key>CLANG_ENABLE_OBJC_ARC</key>
-				<string>YES</string>
-				<key>CLANG_WARN_BOOL_CONVERSION</key>
-				<string>YES</string>
-				<key>CLANG_WARN_CONSTANT_CONVERSION</key>
-				<string>YES</string>
-				<key>CLANG_WARN_DIRECT_OBJC_ISA_USAGE</key>
-				<string>YES_ERROR</string>
-				<key>CLANG_WARN_EMPTY_BODY</key>
-				<string>YES</string>
-				<key>CLANG_WARN_ENUM_CONVERSION</key>
-				<string>YES</string>
-				<key>CLANG_WARN_INT_CONVERSION</key>
-				<string>YES</string>
-				<key>CLANG_WARN_OBJC_ROOT_CLASS</key>
-				<string>YES_ERROR</string>
-				<key>CLANG_WARN__DUPLICATE_METHOD_MATCH</key>
-				<string>YES</string>
-				<key>CODE_SIGN_IDENTITY[sdk=iphoneos*]</key>
-				<string>iPhone Developer</string>
-				<key>COPY_PHASE_STRIP</key>
-				<string>YES</string>
-				<key>ENABLE_NS_ASSERTIONS</key>
-				<string>NO</string>
-				<key>GCC_C_LANGUAGE_STANDARD</key>
-				<string>gnu99</string>
-				<key>GCC_WARN_64_TO_32_BIT_CONVERSION</key>
-				<string>YES</string>
-				<key>GCC_WARN_ABOUT_RETURN_TYPE</key>
-				<string>YES_ERROR</string>
-				<key>GCC_WARN_UNDECLARED_SELECTOR</key>
-				<string>YES</string>
-				<key>GCC_WARN_UNINITIALIZED_AUTOS</key>
-				<string>YES</string>
-				<key>GCC_WARN_UNUSED_FUNCTION</key>
-				<string>YES</string>
-				<key>GCC_WARN_UNUSED_VARIABLE</key>
-				<string>YES</string>
-				<key>IPHONEOS_DEPLOYMENT_TARGET</key>
-				<string>7.0</string>
-				<key>SDKROOT</key>
-				<string>iphoneos</string>
-				<key>VALIDATE_PRODUCT</key>
-				<string>YES</string>
-			</dict>
-			<key>isa</key>
-			<string>XCBuildConfiguration</string>
-			<key>name</key>
-			<string>Release</string>
-		</dict>
-		<key>000AD225189311F20035A466</key>
-		<dict>
-			<key>buildConfigurations</key>
-			<array>
-				<string>000AD226189311F20035A466</string>
-				<string>000AD227189311F20035A466</string>
-			</array>
-			<key>defaultConfigurationIsVisible</key>
-			<string>0</string>
-			<key>defaultConfigurationName</key>
-			<string>Release</string>
-			<key>isa</key>
-			<string>XCConfigurationList</string>
-		</dict>
-		<key>000AD226189311F20035A466</key>
-		<dict>
-			<key>baseConfigurationReference</key>
-			<string>3EFAB3C224C74BFC978241D5</string>
-			<key>buildSettings</key>
-			<dict>
-				<key>ASSETCATALOG_COMPILER_APPICON_NAME</key>
-				<string>AppIcon</string>
-				<key>ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME</key>
-				<string>LaunchImage</string>
-				<key>CODE_SIGN_IDENTITY</key>
-				<string>iPhone Developer</string>
-				<key>GCC_PRECOMPILE_PREFIX_HEADER</key>
-				<string>YES</string>
-				<key>GCC_PREFIX_HEADER</key>
-				<string>Headset Sensors/Headset Sensors-Prefix.pch</string>
-				<key>INFOPLIST_FILE</key>
-				<string>Headset Sensors/Headset Sensors-Info.plist</string>
-				<key>PRODUCT_NAME</key>
-				<string>$(TARGET_NAME)</string>
-				<key>WRAPPER_EXTENSION</key>
-				<string>app</string>
-			</dict>
-			<key>isa</key>
-			<string>XCBuildConfiguration</string>
-			<key>name</key>
-			<string>Debug</string>
-		</dict>
-		<key>000AD227189311F20035A466</key>
-		<dict>
-			<key>baseConfigurationReference</key>
-			<string>3EFAB3C224C74BFC978241D5</string>
-			<key>buildSettings</key>
-			<dict>
-				<key>ASSETCATALOG_COMPILER_APPICON_NAME</key>
-				<string>AppIcon</string>
-				<key>ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME</key>
-				<string>LaunchImage</string>
-				<key>CODE_SIGN_IDENTITY</key>
-				<string>iPhone Developer</string>
-				<key>GCC_PRECOMPILE_PREFIX_HEADER</key>
-				<string>YES</string>
-				<key>GCC_PREFIX_HEADER</key>
-				<string>Headset Sensors/Headset Sensors-Prefix.pch</string>
-				<key>INFOPLIST_FILE</key>
-				<string>Headset Sensors/Headset Sensors-Info.plist</string>
-				<key>PRODUCT_NAME</key>
-				<string>$(TARGET_NAME)</string>
-				<key>WRAPPER_EXTENSION</key>
-				<string>app</string>
-			</dict>
-			<key>isa</key>
-			<string>XCBuildConfiguration</string>
-			<key>name</key>
-			<string>Release</string>
-		</dict>
-		<key>000AD228189311F20035A466</key>
-		<dict>
-			<key>buildConfigurations</key>
-			<array>
-				<string>000AD229189311F20035A466</string>
-				<string>000AD22A189311F20035A466</string>
-			</array>
-			<key>defaultConfigurationIsVisible</key>
-			<string>0</string>
-			<key>defaultConfigurationName</key>
-			<string>Release</string>
-			<key>isa</key>
-			<string>XCConfigurationList</string>
-		</dict>
-		<key>000AD229189311F20035A466</key>
-		<dict>
-			<key>buildSettings</key>
-			<dict>
-				<key>ARCHS</key>
-				<string>$(ARCHS_STANDARD_INCLUDING_64_BIT)</string>
-				<key>BUNDLE_LOADER</key>
-				<string>$(BUILT_PRODUCTS_DIR)/Headset Sensors.app/Headset Sensors</string>
-				<key>FRAMEWORK_SEARCH_PATHS</key>
-				<array>
-					<string>$(SDKROOT)/Developer/Library/Frameworks</string>
-					<string>$(inherited)</string>
-					<string>$(DEVELOPER_FRAMEWORKS_DIR)</string>
-				</array>
-				<key>GCC_PRECOMPILE_PREFIX_HEADER</key>
-				<string>YES</string>
-				<key>GCC_PREFIX_HEADER</key>
-				<string>Headset Sensors/Headset Sensors-Prefix.pch</string>
-				<key>GCC_PREPROCESSOR_DEFINITIONS</key>
-				<array>
-					<string>DEBUG=1</string>
-					<string>$(inherited)</string>
-				</array>
-				<key>INFOPLIST_FILE</key>
-				<string>Headset SensorsTests/Headset SensorsTests-Info.plist</string>
-				<key>PRODUCT_NAME</key>
-				<string>$(TARGET_NAME)</string>
-				<key>TEST_HOST</key>
-				<string>$(BUNDLE_LOADER)</string>
-				<key>WRAPPER_EXTENSION</key>
-				<string>xctest</string>
-			</dict>
-			<key>isa</key>
-			<string>XCBuildConfiguration</string>
-			<key>name</key>
-			<string>Debug</string>
-		</dict>
-		<key>000AD22A189311F20035A466</key>
-		<dict>
-			<key>buildSettings</key>
-			<dict>
-				<key>ARCHS</key>
-				<string>$(ARCHS_STANDARD_INCLUDING_64_BIT)</string>
-				<key>BUNDLE_LOADER</key>
-				<string>$(BUILT_PRODUCTS_DIR)/Headset Sensors.app/Headset Sensors</string>
-				<key>FRAMEWORK_SEARCH_PATHS</key>
-				<array>
-					<string>$(SDKROOT)/Developer/Library/Frameworks</string>
-					<string>$(inherited)</string>
-					<string>$(DEVELOPER_FRAMEWORKS_DIR)</string>
-				</array>
-				<key>GCC_PRECOMPILE_PREFIX_HEADER</key>
-				<string>YES</string>
-				<key>GCC_PREFIX_HEADER</key>
-				<string>Headset Sensors/Headset Sensors-Prefix.pch</string>
-				<key>INFOPLIST_FILE</key>
-				<string>Headset SensorsTests/Headset SensorsTests-Info.plist</string>
-				<key>PRODUCT_NAME</key>
-				<string>$(TARGET_NAME)</string>
-				<key>TEST_HOST</key>
-				<string>$(BUNDLE_LOADER)</string>
-				<key>WRAPPER_EXTENSION</key>
-				<string>xctest</string>
-			</dict>
-			<key>isa</key>
-			<string>XCBuildConfiguration</string>
-			<key>name</key>
-			<string>Release</string>
-		</dict>
-		<key>000AD22B189312800035A466</key>
-		<dict>
-			<key>isa</key>
-			<string>PBXFileReference</string>
-			<key>lastKnownFileType</key>
-			<string>wrapper.framework</string>
-			<key>name</key>
-			<string>AVFoundation.framework</string>
-			<key>path</key>
-			<string>System/Library/Frameworks/AVFoundation.framework</string>
-			<key>sourceTree</key>
-			<string>SDKROOT</string>
-		</dict>
-		<key>000AD22C189312800035A466</key>
-		<dict>
-			<key>fileRef</key>
-			<string>000AD22B189312800035A466</string>
-			<key>isa</key>
-			<string>PBXBuildFile</string>
-		</dict>
-		<key>000AD22D189312880035A466</key>
-		<dict>
-			<key>isa</key>
-			<string>PBXFileReference</string>
-			<key>lastKnownFileType</key>
-			<string>wrapper.framework</string>
-			<key>name</key>
-			<string>AudioToolbox.framework</string>
-			<key>path</key>
-			<string>System/Library/Frameworks/AudioToolbox.framework</string>
-			<key>sourceTree</key>
-			<string>SDKROOT</string>
-		</dict>
-		<key>000AD22F1893128E0035A466</key>
-		<dict>
-			<key>isa</key>
-			<string>PBXFileReference</string>
-			<key>lastKnownFileType</key>
-			<string>wrapper.framework</string>
-			<key>name</key>
-			<string>AudioUnit.framework</string>
-			<key>path</key>
-			<string>System/Library/Frameworks/AudioUnit.framework</string>
-			<key>sourceTree</key>
-			<string>SDKROOT</string>
-		</dict>
-		<key>000AD23118931A030035A466</key>
-		<dict>
-			<key>isa</key>
-			<string>PBXFileReference</string>
-			<key>lastKnownFileType</key>
-			<string>wrapper.framework</string>
-			<key>name</key>
-			<string>CoreAudio.framework</string>
-			<key>path</key>
-			<string>System/Library/Frameworks/CoreAudio.framework</string>
-			<key>sourceTree</key>
-			<string>SDKROOT</string>
-		</dict>
-		<key>000AD23218931A030035A466</key>
-		<dict>
-			<key>fileRef</key>
-			<string>000AD23118931A030035A466</string>
-			<key>isa</key>
-			<string>PBXBuildFile</string>
-		</dict>
-		<key>00C4E9B218A02D1600D80291</key>
-		<dict>
-			<key>fileEncoding</key>
-			<string>4</string>
-			<key>isa</key>
-			<string>PBXFileReference</string>
-			<key>lastKnownFileType</key>
-			<string>sourcecode.c.h</string>
-			<key>path</key>
-			<string>ToneGenerator.h</string>
-			<key>sourceTree</key>
-			<string>&lt;group&gt;</string>
-		</dict>
-		<key>00C4E9B318A02D1600D80291</key>
-		<dict>
-			<key>fileEncoding</key>
-			<string>4</string>
-			<key>isa</key>
-			<string>PBXFileReference</string>
-			<key>lastKnownFileType</key>
-			<string>sourcecode.c.objc</string>
-			<key>path</key>
-			<string>ToneGenerator.m</string>
-			<key>sourceTree</key>
-			<string>&lt;group&gt;</string>
-		</dict>
-		<key>00C4E9B418A02D1600D80291</key>
-		<dict>
-			<key>fileRef</key>
-			<string>00C4E9B318A02D1600D80291</string>
-			<key>isa</key>
-			<string>PBXBuildFile</string>
-		</dict>
-		<key>21211EFEDFAA43C794B40D00</key>
-		<dict>
-			<key>fileRef</key>
-			<string>2C2FCF3CD60543EDB826F845</string>
-			<key>isa</key>
-			<string>PBXBuildFile</string>
-		</dict>
-		<key>2C2FCF3CD60543EDB826F845</key>
-		<dict>
-			<key>explicitFileType</key>
-			<string>archive.ar</string>
-			<key>includeInIndex</key>
-			<string>0</string>
-			<key>isa</key>
-			<string>PBXFileReference</string>
-			<key>path</key>
-			<string>libPods.a</string>
-			<key>sourceTree</key>
-			<string>BUILT_PRODUCTS_DIR</string>
-		</dict>
-		<key>3EFAB3C224C74BFC978241D5</key>
-		<dict>
-			<key>includeInIndex</key>
-			<string>1</string>
-			<key>isa</key>
-			<string>PBXFileReference</string>
-			<key>lastKnownFileType</key>
-			<string>text.xcconfig</string>
-			<key>name</key>
-			<string>Pods.xcconfig</string>
-			<key>path</key>
-			<string>Pods/Pods.xcconfig</string>
-			<key>sourceTree</key>
-			<string>&lt;group&gt;</string>
-		</dict>
-		<key>4C1FFAC6D9164C1483D03016</key>
-		<dict>
-			<key>buildActionMask</key>
-			<string>2147483647</string>
-			<key>files</key>
-			<array/>
-			<key>inputPaths</key>
-			<array/>
-			<key>isa</key>
-			<string>PBXShellScriptBuildPhase</string>
-			<key>name</key>
-			<string>Check Pods Manifest.lock</string>
-			<key>outputPaths</key>
-			<array/>
-			<key>runOnlyForDeploymentPostprocessing</key>
-			<string>0</string>
-			<key>shellPath</key>
-			<string>/bin/sh</string>
-			<key>shellScript</key>
-			<string>diff "${PODS_ROOT}/../Podfile.lock" "${PODS_ROOT}/Manifest.lock" &gt; /dev/null
-if [[ $? != 0 ]] ; then
-    cat &lt;&lt; EOM
-error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.
-EOM
-    exit 1
-fi
-</string>
-			<key>showEnvVarsInLog</key>
-			<string>0</string>
-		</dict>
-		<key>5B9F5DBF18A996D8002CD58B</key>
-		<dict>
-			<key>isa</key>
-			<string>PBXFileReference</string>
-			<key>lastKnownFileType</key>
-			<string>wrapper.framework</string>
-			<key>name</key>
-			<string>MediaPlayer.framework</string>
-			<key>path</key>
-			<string>System/Library/Frameworks/MediaPlayer.framework</string>
-			<key>sourceTree</key>
-			<string>SDKROOT</string>
-		</dict>
-		<key>5B9F5DC018A996D8002CD58B</key>
-		<dict>
-			<key>fileRef</key>
-			<string>5B9F5DBF18A996D8002CD58B</string>
-			<key>isa</key>
-			<string>PBXBuildFile</string>
-		</dict>
-		<key>A459016738EE4AFC9669D76E</key>
-		<dict>
-			<key>buildActionMask</key>
-			<string>2147483647</string>
-			<key>files</key>
-			<array/>
-			<key>inputPaths</key>
-			<array/>
-			<key>isa</key>
-			<string>PBXShellScriptBuildPhase</string>
-			<key>name</key>
-			<string>Copy Pods Resources</string>
-			<key>outputPaths</key>
-			<array/>
-			<key>runOnlyForDeploymentPostprocessing</key>
-			<string>0</string>
-			<key>shellPath</key>
-			<string>/bin/sh</string>
-			<key>shellScript</key>
-			<string>"${SRCROOT}/Pods/Pods-resources.sh"
-</string>
-			<key>showEnvVarsInLog</key>
-			<string>0</string>
-		</dict>
-	</dict>
-	<key>rootObject</key>
-	<string>000AD1EB189311F20035A466</string>
-</dict>
-</plist>
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		000AD1F7189311F20035A466 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 000AD1F6189311F20035A466 /* Foundation.framework */; };
+		000AD1F9189311F20035A466 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 000AD1F8189311F20035A466 /* CoreGraphics.framework */; };
+		000AD1FB189311F20035A466 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 000AD1FA189311F20035A466 /* UIKit.framework */; };
+		000AD201189311F20035A466 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 000AD1FF189311F20035A466 /* InfoPlist.strings */; };
+		000AD203189311F20035A466 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 000AD202189311F20035A466 /* main.m */; };
+		000AD207189311F20035A466 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 000AD206189311F20035A466 /* AppDelegate.m */; };
+		000AD20A189311F20035A466 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 000AD208189311F20035A466 /* Main.storyboard */; };
+		000AD20D189311F20035A466 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 000AD20C189311F20035A466 /* ViewController.m */; };
+		000AD20F189311F20035A466 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 000AD20E189311F20035A466 /* Images.xcassets */; };
+		000AD216189311F20035A466 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 000AD215189311F20035A466 /* XCTest.framework */; };
+		000AD217189311F20035A466 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 000AD1F6189311F20035A466 /* Foundation.framework */; };
+		000AD218189311F20035A466 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 000AD1FA189311F20035A466 /* UIKit.framework */; };
+		000AD220189311F20035A466 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 000AD21E189311F20035A466 /* InfoPlist.strings */; };
+		000AD222189311F20035A466 /* Headset_SensorsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 000AD221189311F20035A466 /* Headset_SensorsTests.m */; };
+		000AD22C189312800035A466 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 000AD22B189312800035A466 /* AVFoundation.framework */; };
+		000AD23218931A030035A466 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 000AD23118931A030035A466 /* CoreAudio.framework */; };
+		00C4E9B418A02D1600D80291 /* ToneGenerator.m in Sources */ = {isa = PBXBuildFile; fileRef = 00C4E9B318A02D1600D80291 /* ToneGenerator.m */; };
+		21211EFEDFAA43C794B40D00 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2C2FCF3CD60543EDB826F845 /* libPods.a */; };
+		5B402D8818BE644D009EE8CA /* GSF_Insert_sensor_alert.png in Resources */ = {isa = PBXBuildFile; fileRef = 5B402D8418BE644D009EE8CA /* GSF_Insert_sensor_alert.png */; };
+		5B9F5DC018A996D8002CD58B /* MediaPlayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5B9F5DBF18A996D8002CD58B /* MediaPlayer.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		000AD219189311F20035A466 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 000AD1EB189311F20035A466 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 000AD1F2189311F20035A466;
+			remoteInfo = "Headset Sensors";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		000AD1F3189311F20035A466 /* Headset Sensors.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Headset Sensors.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		000AD1F6189311F20035A466 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		000AD1F8189311F20035A466 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		000AD1FA189311F20035A466 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		000AD1FE189311F20035A466 /* Headset Sensors-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Headset Sensors-Info.plist"; sourceTree = "<group>"; };
+		000AD200189311F20035A466 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		000AD202189311F20035A466 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		000AD204189311F20035A466 /* Headset Sensors-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Headset Sensors-Prefix.pch"; sourceTree = "<group>"; };
+		000AD205189311F20035A466 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		000AD206189311F20035A466 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		000AD209189311F20035A466 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		000AD20B189311F20035A466 /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
+		000AD20C189311F20035A466 /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
+		000AD20E189311F20035A466 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
+		000AD214189311F20035A466 /* Headset SensorsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Headset SensorsTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		000AD215189311F20035A466 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
+		000AD21D189311F20035A466 /* Headset SensorsTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Headset SensorsTests-Info.plist"; sourceTree = "<group>"; };
+		000AD21F189311F20035A466 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		000AD221189311F20035A466 /* Headset_SensorsTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Headset_SensorsTests.m; sourceTree = "<group>"; };
+		000AD22B189312800035A466 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		000AD22D189312880035A466 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
+		000AD22F1893128E0035A466 /* AudioUnit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioUnit.framework; path = System/Library/Frameworks/AudioUnit.framework; sourceTree = SDKROOT; };
+		000AD23118931A030035A466 /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = System/Library/Frameworks/CoreAudio.framework; sourceTree = SDKROOT; };
+		00C4E9B218A02D1600D80291 /* ToneGenerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ToneGenerator.h; sourceTree = "<group>"; };
+		00C4E9B318A02D1600D80291 /* ToneGenerator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ToneGenerator.m; sourceTree = "<group>"; };
+		2C2FCF3CD60543EDB826F845 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		3EFAB3C224C74BFC978241D5 /* Pods.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.xcconfig; path = Pods/Pods.xcconfig; sourceTree = "<group>"; };
+		5B402D8418BE644D009EE8CA /* GSF_Insert_sensor_alert.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = GSF_Insert_sensor_alert.png; path = "Headset Sensors/GSF_Insert_sensor_alert.png"; sourceTree = "<group>"; };
+		5B9F5DBF18A996D8002CD58B /* MediaPlayer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaPlayer.framework; path = System/Library/Frameworks/MediaPlayer.framework; sourceTree = SDKROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		000AD1F0189311F20035A466 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5B9F5DC018A996D8002CD58B /* MediaPlayer.framework in Frameworks */,
+				000AD23218931A030035A466 /* CoreAudio.framework in Frameworks */,
+				000AD22C189312800035A466 /* AVFoundation.framework in Frameworks */,
+				000AD1F9189311F20035A466 /* CoreGraphics.framework in Frameworks */,
+				000AD1FB189311F20035A466 /* UIKit.framework in Frameworks */,
+				000AD1F7189311F20035A466 /* Foundation.framework in Frameworks */,
+				21211EFEDFAA43C794B40D00 /* libPods.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		000AD211189311F20035A466 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				000AD216189311F20035A466 /* XCTest.framework in Frameworks */,
+				000AD218189311F20035A466 /* UIKit.framework in Frameworks */,
+				000AD217189311F20035A466 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		000AD1EA189311F20035A466 = {
+			isa = PBXGroup;
+			children = (
+				000AD1FC189311F20035A466 /* Headset Sensors */,
+				5B402D8318BE6432009EE8CA /* Resources */,
+				000AD21B189311F20035A466 /* Headset SensorsTests */,
+				000AD1F5189311F20035A466 /* Frameworks */,
+				000AD1F4189311F20035A466 /* Products */,
+				3EFAB3C224C74BFC978241D5 /* Pods.xcconfig */,
+			);
+			sourceTree = "<group>";
+		};
+		000AD1F4189311F20035A466 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				000AD1F3189311F20035A466 /* Headset Sensors.app */,
+				000AD214189311F20035A466 /* Headset SensorsTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		000AD1F5189311F20035A466 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				5B9F5DBF18A996D8002CD58B /* MediaPlayer.framework */,
+				000AD23118931A030035A466 /* CoreAudio.framework */,
+				000AD22F1893128E0035A466 /* AudioUnit.framework */,
+				000AD22D189312880035A466 /* AudioToolbox.framework */,
+				000AD22B189312800035A466 /* AVFoundation.framework */,
+				000AD1F6189311F20035A466 /* Foundation.framework */,
+				000AD1F8189311F20035A466 /* CoreGraphics.framework */,
+				000AD1FA189311F20035A466 /* UIKit.framework */,
+				000AD215189311F20035A466 /* XCTest.framework */,
+				2C2FCF3CD60543EDB826F845 /* libPods.a */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		000AD1FC189311F20035A466 /* Headset Sensors */ = {
+			isa = PBXGroup;
+			children = (
+				000AD205189311F20035A466 /* AppDelegate.h */,
+				000AD206189311F20035A466 /* AppDelegate.m */,
+				000AD208189311F20035A466 /* Main.storyboard */,
+				000AD20B189311F20035A466 /* ViewController.h */,
+				000AD20C189311F20035A466 /* ViewController.m */,
+				00C4E9B218A02D1600D80291 /* ToneGenerator.h */,
+				00C4E9B318A02D1600D80291 /* ToneGenerator.m */,
+				000AD20E189311F20035A466 /* Images.xcassets */,
+				000AD1FD189311F20035A466 /* Supporting Files */,
+			);
+			path = "Headset Sensors";
+			sourceTree = "<group>";
+		};
+		000AD1FD189311F20035A466 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				000AD1FE189311F20035A466 /* Headset Sensors-Info.plist */,
+				000AD1FF189311F20035A466 /* InfoPlist.strings */,
+				000AD202189311F20035A466 /* main.m */,
+				000AD204189311F20035A466 /* Headset Sensors-Prefix.pch */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		000AD21B189311F20035A466 /* Headset SensorsTests */ = {
+			isa = PBXGroup;
+			children = (
+				000AD221189311F20035A466 /* Headset_SensorsTests.m */,
+				000AD21C189311F20035A466 /* Supporting Files */,
+			);
+			path = "Headset SensorsTests";
+			sourceTree = "<group>";
+		};
+		000AD21C189311F20035A466 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				000AD21D189311F20035A466 /* Headset SensorsTests-Info.plist */,
+				000AD21E189311F20035A466 /* InfoPlist.strings */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		5B402D8318BE6432009EE8CA /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				5B402D8418BE644D009EE8CA /* GSF_Insert_sensor_alert.png */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		000AD1F2189311F20035A466 /* Headset Sensors */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 000AD225189311F20035A466 /* Build configuration list for PBXNativeTarget "Headset Sensors" */;
+			buildPhases = (
+				4C1FFAC6D9164C1483D03016 /* Check Pods Manifest.lock */,
+				000AD1EF189311F20035A466 /* Sources */,
+				000AD1F0189311F20035A466 /* Frameworks */,
+				000AD1F1189311F20035A466 /* Resources */,
+				A459016738EE4AFC9669D76E /* Copy Pods Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Headset Sensors";
+			productName = "Headset Sensors";
+			productReference = 000AD1F3189311F20035A466 /* Headset Sensors.app */;
+			productType = "com.apple.product-type.application";
+		};
+		000AD213189311F20035A466 /* Headset SensorsTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 000AD228189311F20035A466 /* Build configuration list for PBXNativeTarget "Headset SensorsTests" */;
+			buildPhases = (
+				000AD210189311F20035A466 /* Sources */,
+				000AD211189311F20035A466 /* Frameworks */,
+				000AD212189311F20035A466 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				000AD21A189311F20035A466 /* PBXTargetDependency */,
+			);
+			name = "Headset SensorsTests";
+			productName = "Headset SensorsTests";
+			productReference = 000AD214189311F20035A466 /* Headset SensorsTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		000AD1EB189311F20035A466 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0500;
+				ORGANIZATIONNAME = Mick;
+				TargetAttributes = {
+					000AD1F2189311F20035A466 = {
+						DevelopmentTeam = Z5SLZ6QPTL;
+					};
+					000AD213189311F20035A466 = {
+						TestTargetID = 000AD1F2189311F20035A466;
+					};
+				};
+			};
+			buildConfigurationList = 000AD1EE189311F20035A466 /* Build configuration list for PBXProject "Headset Sensors" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 000AD1EA189311F20035A466;
+			productRefGroup = 000AD1F4189311F20035A466 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				000AD1F2189311F20035A466 /* Headset Sensors */,
+				000AD213189311F20035A466 /* Headset SensorsTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		000AD1F1189311F20035A466 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				000AD20F189311F20035A466 /* Images.xcassets in Resources */,
+				000AD201189311F20035A466 /* InfoPlist.strings in Resources */,
+				5B402D8818BE644D009EE8CA /* GSF_Insert_sensor_alert.png in Resources */,
+				000AD20A189311F20035A466 /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		000AD212189311F20035A466 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				000AD220189311F20035A466 /* InfoPlist.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		4C1FFAC6D9164C1483D03016 /* Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		A459016738EE4AFC9669D76E /* Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Pods-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		000AD1EF189311F20035A466 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				00C4E9B418A02D1600D80291 /* ToneGenerator.m in Sources */,
+				000AD20D189311F20035A466 /* ViewController.m in Sources */,
+				000AD207189311F20035A466 /* AppDelegate.m in Sources */,
+				000AD203189311F20035A466 /* main.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		000AD210189311F20035A466 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				000AD222189311F20035A466 /* Headset_SensorsTests.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		000AD21A189311F20035A466 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 000AD1F2189311F20035A466 /* Headset Sensors */;
+			targetProxy = 000AD219189311F20035A466 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		000AD1FF189311F20035A466 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				000AD200189311F20035A466 /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		000AD208189311F20035A466 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				000AD209189311F20035A466 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		000AD21E189311F20035A466 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				000AD21F189311F20035A466 /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		000AD223189311F20035A466 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_INCLUDING_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+			};
+			name = Debug;
+		};
+		000AD224189311F20035A466 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_INCLUDING_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				SDKROOT = iphoneos;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		000AD226189311F20035A466 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3EFAB3C224C74BFC978241D5 /* Pods.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "Headset Sensors/Headset Sensors-Prefix.pch";
+				INFOPLIST_FILE = "Headset Sensors/Headset Sensors-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Debug;
+		};
+		000AD227189311F20035A466 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3EFAB3C224C74BFC978241D5 /* Pods.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "Headset Sensors/Headset Sensors-Prefix.pch";
+				INFOPLIST_FILE = "Headset Sensors/Headset Sensors-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+		000AD229189311F20035A466 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_INCLUDING_64_BIT)";
+				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/Headset Sensors.app/Headset Sensors";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+					"$(DEVELOPER_FRAMEWORKS_DIR)",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "Headset Sensors/Headset Sensors-Prefix.pch";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = "Headset SensorsTests/Headset SensorsTests-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUNDLE_LOADER)";
+				WRAPPER_EXTENSION = xctest;
+			};
+			name = Debug;
+		};
+		000AD22A189311F20035A466 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_INCLUDING_64_BIT)";
+				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/Headset Sensors.app/Headset Sensors";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+					"$(DEVELOPER_FRAMEWORKS_DIR)",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "Headset Sensors/Headset Sensors-Prefix.pch";
+				INFOPLIST_FILE = "Headset SensorsTests/Headset SensorsTests-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUNDLE_LOADER)";
+				WRAPPER_EXTENSION = xctest;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		000AD1EE189311F20035A466 /* Build configuration list for PBXProject "Headset Sensors" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				000AD223189311F20035A466 /* Debug */,
+				000AD224189311F20035A466 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		000AD225189311F20035A466 /* Build configuration list for PBXNativeTarget "Headset Sensors" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				000AD226189311F20035A466 /* Debug */,
+				000AD227189311F20035A466 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		000AD228189311F20035A466 /* Build configuration list for PBXNativeTarget "Headset SensorsTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				000AD229189311F20035A466 /* Debug */,
+				000AD22A189311F20035A466 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 000AD1EB189311F20035A466 /* Project object */;
+}

@@ -101,6 +101,8 @@ void ToneIterruptionListner(void *inClientData, UInt32 inInterruptionState) {
         volumeSlider.minimumValue = 1.0;
         [volumeSlider addTarget:self action:@selector(sliderHandler:) forControlEvents:UIControlEventValueChanged];
         
+        //UIImage *
+        
         // Setup Alert View
         SDCAlertView *noHeadsetAlertView =
                    [[SDCAlertView alloc]
