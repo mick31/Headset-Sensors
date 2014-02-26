@@ -96,7 +96,7 @@ void ToneIterruptionListner(void *inClientData, UInt32 inInterruptionState) {
         [self->powerTone togglePowerOn:NO];
         
         // Setup image for Alert View
-        UIView *alertImageView = [[UIView alloc] initWithFrame:CGRectMake(20, 50, 250, 150)];
+        UIImageView *alertImageView = [[UIImageView alloc] initWithFrame:CGRectMake(20, 50, 250, 150)];
         [alertImageView setBackgroundColor:[UIColor colorWithPatternImage:[UIImage imageNamed:@"GSF_insert_sensor_alert.png"]]];
 
         
@@ -111,7 +111,7 @@ void ToneIterruptionListner(void *inClientData, UInt32 inInterruptionState) {
         [alertImageView setTranslatesAutoresizingMaskIntoConstraints:NO];
         [noHeadsetAlertView.contentView addSubview:alertImageView];
         
-        //[alertImageView sdc_pinWidthToWidthOfView:noHeadsetAlertView.contentView offset: -20];
+        [alertImageView sdc_pinWidthToWidthOfView:noHeadsetAlertView.contentView offset: -20];
         [alertImageView sdc_horizontallyCenterInSuperview];
         
         [noHeadsetAlertView.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|-[alertImageView]|"
@@ -213,9 +213,8 @@ void ToneIterruptionListner(void *inClientData, UInt32 inInterruptionState) {
         NSLog(@"flippedHeadset: Made it!");
         
         // Setup image for Alert View
-        UIView *alertImageView = [[UIView alloc] initWithFrame:CGRectMake(20, 50, 250, 150)];
-        [alertImageView setBackgroundColor:[UIColor colorWithPatternImage:[UIImage imageNamed:@"GSF_insert_sensor_alert.png"]]];
-        
+        UIImageView *alertImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"GSF_insert_sensor_alert.png"]];
+
         
         // Setup Alert View
         SDCAlertView *noHeadsetAlertView =
@@ -225,12 +224,11 @@ void ToneIterruptionListner(void *inClientData, UInt32 inInterruptionState) {
          delegate:self
          cancelButtonTitle:nil
          otherButtonTitles:@"Cancel", @"Use Mic", nil];
+        
         [alertImageView setTranslatesAutoresizingMaskIntoConstraints:NO];
         [noHeadsetAlertView.contentView addSubview:alertImageView];
-        
         //[alertImageView sdc_pinWidthToWidthOfView:noHeadsetAlertView.contentView offset: -20];
         [alertImageView sdc_horizontallyCenterInSuperview];
-        
         [noHeadsetAlertView.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|-[alertImageView]|"
                                                                                                options:0
                                                                                                metrics:nil

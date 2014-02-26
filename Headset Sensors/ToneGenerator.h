@@ -10,6 +10,7 @@
 #import <AudioUnit/AudioUnit.h>
 
 @interface ToneGenerator : NSObject
+
 @property AudioComponentInstance powerTone;
 @property double frequency;
 @property double sampleRate;
