@@ -10,6 +10,8 @@
 #import <AVFoundation/AVFoundation.h>
 #import <AVFoundation/AVAudioSession.h>
 #import <CoreAudio/CoreAudioTypes.h>
+#import <MediaPlayer/MPMusicPlayerController.h>
+#import <AudioToolbox/AudioToolbox.h>
 
 @import MapKit;
 #import <SDCAlertView.h>
@@ -21,6 +23,7 @@
 // input properties
 @property AVAudioRecorder *recorder;
 @property NSTimer *levelTimer;
+@property NSTimer *alertTimer;
 @property double lowPassFiltered;
 @property (weak, nonatomic) IBOutlet UILabel *avgInput;
 @property (weak, nonatomic) IBOutlet UILabel *peakInput;
@@ -41,6 +44,7 @@
 
 // function prototypes
 - (void)levelTimerCallBack:(NSTimer *) timer;
+- (void) alertTimerCallBack:(NSTimer *) timer;
 - (BOOL)isHeadsetPluggedIn;
 - (IBAction)flippedHeadset:(id)sender;
 

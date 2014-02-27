@@ -8,8 +8,6 @@
 
 #import "ViewController.h"
 
-#import <AudioToolbox/AudioToolbox.h>
-
 OSStatus RenderTone(
                     void *inRefCon,
                     AudioUnitRenderActionFlags 	*ioActionFlags,
@@ -30,13 +28,11 @@ OSStatus RenderTone(
 	Float32 *buffer = (Float32 *)ioData->mBuffers[channel].mData;
 	
 	// Generate the samples
-	for (UInt32 frame = 0; frame < inNumberFrames; frame++)
-	{
+	for (UInt32 frame = 0; frame < inNumberFrames; frame++) {
 		buffer[frame] = sin(theta) * viewController.amplitude;
 		
 		theta += theta_increment;
-		if (theta > 2.0 * M_PI)
-		{
+		if (theta > 2.0 * M_PI) {
 			theta -= 2.0 * M_PI;
 		}
 	}
@@ -47,8 +43,7 @@ OSStatus RenderTone(
 	return noErr;
 }
 
-void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState)
-{
+void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
 	ViewController *viewController =
     (__bridge ViewController *)inClientData;
 	
@@ -60,6 +55,7 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState)
 
 @synthesize recorder = _recorder;
 @synthesize levelTimer = _levelTimer;
+@synthesize alertTimer = _alertTimer;
 @synthesize lowPassFiltered = _lowPassFiltered;
 @synthesize avgInput = _avgInput;
 @synthesize peakInput = _peakInput;
@@ -79,8 +75,7 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState)
 
 
 
-- (void)createToneUnit
-{
+- (void)createToneUnit {
 	// Configure the search parameters to find the default playback output unit
 	// (called the kAudioUnitSubType_RemoteIO on iOS but
 	// kAudioUnitSubType_DefaultOutput on Mac OS X)
@@ -133,23 +128,30 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState)
 	NSAssert1(err == noErr, @"Error setting stream format: %hd", err);
 }
 
-- (void)togglePower:(BOOL)powerOn
-{
-	if (!powerOn)
-	{
-		AudioOutputUnitStop(_powerTone);
+- (void)togglePower:(BOOL)powerOn {
+	if (!powerOn) {
+        if (_powerTone) {
+            // Set master volume to 50%
+            MPMusicPlayerController* appVolume = [MPMusicPlayerController applicationMusicPlayer];
+            [appVolume setVolume:0.5];
+        }
+        
+		// Stop and release power tone
+        AudioOutputUnitStop(_powerTone);
 		AudioUnitUninitialize(_powerTone);
 		AudioComponentInstanceDispose(_powerTone);
 		_powerTone = nil;
-	}
-	else
-	{
+	} else {
 		[self createToneUnit];
 		
 		// Stop changing parameters on the unit
 		OSErr err = AudioUnitInitialize(_powerTone);
 		NSAssert1(err == noErr, @"Error initializing unit: %hd", err);
 		
+        // Set master volume to max
+        MPMusicPlayerController* appVolume = [MPMusicPlayerController applicationMusicPlayer];
+        [appVolume setVolume:1.0];
+        
 		// Start playback
 		err = AudioOutputUnitStart(_powerTone);
 		NSAssert1(err == noErr, @"Error starting unit: %hd", err);
@@ -157,8 +159,7 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState)
 }
 
 
-- (void)viewDidLoad
-{
+- (void)viewDidLoad {
     // Input Setup
     [super viewDidLoad];
 	
@@ -183,13 +184,13 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState)
     
     // Power tone setup
     _sampleRate = 44100;
-    _frequency = 2000;
+    _frequency = 5000;
+    _amplitude = 0.5;
     OSStatus result = AudioSessionInitialize(NULL,
                                              NULL,
                                              ToneInterruptionListener,
                                              (_powerTone));
-	if (result == kAudioSessionNoError)
-	{
+	if (result == kAudioSessionNoError) {
         // allows for both mic and speaker output
 		UInt32 sessionCategory = kAudioSessionCategory_PlayAndRecord;
 		AudioSessionSetProperty(kAudioSessionProperty_AudioCategory, sizeof(sessionCategory), &sessionCategory);
@@ -197,7 +198,7 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState)
 	AudioSessionSetActive(true);
 }
 
--(void) levelTimerCallBack:(NSTimer *)timer{
+-(void) levelTimerCallBack:(NSTimer *)timer {
     [_recorder updateMeters];
     
     const double ALPHA = 0.05;
@@ -216,7 +217,7 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState)
         timer = nil;
         
         // Kill power Tone
-        togglePowerOn:NO;
+        [self togglePower:NO];
         
         // Setup image for Alert View
         UIImageView *alertImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"GSF_Insert_sensor_alert-v2.png"]];
@@ -224,7 +225,7 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState)
         
         // Setup Alert View
         SDCAlertView *noHeadsetAlertView =
-        [[SDCAlertView alloc]
+         [[SDCAlertView alloc]
          initWithTitle:@"No Sensor"
          message:@"Please insert the GSF sensor to collect this data."
          delegate:self
@@ -238,22 +239,45 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState)
                                                                                                options:0
                                                                                                metrics:nil
                                                                                                  views:NSDictionaryOfVariableBindings(alertImageView)]];
+        // Alert Callback Setup
+        //_alertTimer = [NSTimer scheduledTimerWithTimeInterval:0.03 target:self selector:@selector(alertTimerCallBack:) userInfo:nil repeats:YES];
         [noHeadsetAlertView show];
-        
     } else
         _inputSource.text = @"Mic";
 }
 
+// Dismiss alertview if headset is found
+- (void) alertTimerCallBack:(NSTimer *) timer {
+    if (self.isHeadsetPluggedIn) {
+        /* ************************
+         * Note:
+         *  Make AlertView a property of ViewController so that it can be released from here
+         * ***********************/
+        NSLog(@"alertTimerCallback: **** Release Alert Here ***");
+    }
+}
 
 - (void)alertView:(SDCAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
     switch (buttonIndex) {
         case 0:
             self.headsetSwitch.on = NO ;
             _inputSource.text = @"None";
+            
+            //Disable sliders
+            _frequencySlider.userInteractionEnabled = NO;
+            _frequencySlider.tintColor = [UIColor grayColor];
+            _amplitudeSlider.userInteractionEnabled = NO;
+            _amplitudeSlider.tintColor = [UIColor grayColor];
             break;
         case 1:
             _levelTimer = [NSTimer scheduledTimerWithTimeInterval:0.03 target:self selector:@selector(levelTimerCallBack:) userInfo:nil repeats:YES];
             _inputSource.text = @"Mic";
+            
+            //Disable sliders
+            _frequencySlider.userInteractionEnabled = NO;
+            _frequencySlider.tintColor = [UIColor grayColor];
+            _amplitudeSlider.userInteractionEnabled = NO;
+            _amplitudeSlider.tintColor = [UIColor grayColor];
             break;
         default:
             NSLog(@"Blowing It: Alert not handled");
@@ -304,6 +328,12 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState)
         
         // Start Power Tone
         [self togglePower:YES];
+        
+        //Enable sliders
+        _frequencySlider.userInteractionEnabled = YES;
+        _frequencySlider.tintColor = [UIColor greenColor];
+        _amplitudeSlider.userInteractionEnabled = YES;
+        _amplitudeSlider.tintColor = [UIColor greenColor];
     } else if (!self.headsetSwitch.on){
         [_levelTimer invalidate];
         _levelTimer = nil;
@@ -311,17 +341,18 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState)
         
         // Stop Power Tone
         [self togglePower:NO];
+        
+        //Disable sliders
+        _frequencySlider.userInteractionEnabled = NO;
+        _frequencySlider.tintColor = [UIColor grayColor];
+        _amplitudeSlider.userInteractionEnabled = NO;
+        _amplitudeSlider.tintColor = [UIColor grayColor];
     } else {
         [_levelTimer invalidate];
         _levelTimer = nil;
         
         // Stop Power Tone
         [self togglePower:NO];
-        
-        /*************
-         *** Debug ***
-         *************/
-        NSLog(@"flippedHeadset: Made it!");
         
         // Setup image for Alert View
         UIImageView *alertImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"GSF_Insert_sensor_alert-v2.png"]];
@@ -336,16 +367,18 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState)
          cancelButtonTitle:nil
          otherButtonTitles:@"Cancel", @"Use Mic", nil];
          
-         [alertImageView setTranslatesAutoresizingMaskIntoConstraints:NO];
-         [noHeadsetAlertView.contentView addSubview:alertImageView];
-         [alertImageView sdc_horizontallyCenterInSuperview];
-         [noHeadsetAlertView.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|-[alertImageView]|"
-         options:0
-         metrics:nil
-         views:NSDictionaryOfVariableBindings(alertImageView)]];
+        [alertImageView setTranslatesAutoresizingMaskIntoConstraints:NO];
+        [noHeadsetAlertView.contentView addSubview:alertImageView];
+        [alertImageView sdc_horizontallyCenterInSuperview];
+        [noHeadsetAlertView.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|-[alertImageView]|"
+        options:0
+        metrics:nil
+        views:NSDictionaryOfVariableBindings(alertImageView)]];
+        
+        // Alert Callback Setup
+        _alertTimer = [NSTimer scheduledTimerWithTimeInterval:0.03 target:self selector:@selector(alertTimerCallBack:) userInfo:nil repeats:YES];
         
         [noHeadsetAlertView show];
-
     }
 }
 

@@ -139,16 +139,18 @@
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <slider opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="0.5" minValue="0.0" maxValue="1" translatesAutoresizingMaskIntoConstraints="NO" id="1sY-OX-b2f">
+                            <slider opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="0.5" minValue="0.0" maxValue="1" translatesAutoresizingMaskIntoConstraints="NO" id="1sY-OX-b2f">
                                 <rect key="frame" x="41" y="302" width="221" height="34"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <color key="tintColor" red="0.7965970335" green="0.83069378400000005" blue="0.83011993039999998" alpha="0.97999999999999998" colorSpace="calibratedRGB"/>
                                 <connections>
                                     <action selector="amplitudeSliderChange:" destination="vXZ-lx-hvc" eventType="valueChanged" id="oqc-km-sT2"/>
                                 </connections>
                             </slider>
-                            <slider opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="5000" minValue="40" maxValue="20000" translatesAutoresizingMaskIntoConstraints="NO" id="E0b-w0-Lod">
+                            <slider opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="5000" minValue="40" maxValue="20000" translatesAutoresizingMaskIntoConstraints="NO" id="E0b-w0-Lod">
                                 <rect key="frame" x="41" y="226" width="221" height="34"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <color key="tintColor" red="0.83069378400000005" green="0.82366092349999998" blue="0.80754223209999998" alpha="0.97999999999999998" colorSpace="calibratedRGB"/>
                                 <connections>
                                     <action selector="frequencySliderChange:" destination="vXZ-lx-hvc" eventType="valueChanged" id="qiO-Sn-gSo"/>
                                 </connections>
