@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>E2098372-383A-42F1-8CA6-35DD8F0699AD</string>
+	<key>IDESourceControlProjectName</key>
+	<string>Headset Sensors</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>5410D9F8-CBF2-447D-8C57-7D7FD6745B28</key>
+		<string>https://github.com/mick31/Headset-Sensors.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>Headset Sensors.xcodeproj/project.xcworkspace</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>5410D9F8-CBF2-447D-8C57-7D7FD6745B28</key>
+		<string>../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/mick31/Headset-Sensors.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>110</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>5410D9F8-CBF2-447D-8C57-7D7FD6745B28</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>5410D9F8-CBF2-447D-8C57-7D7FD6745B28</string>
+			<key>IDESourceControlWCCName</key>
+			<string>Headset-Sensors</string>
+		</dict>
+	</array>
+</dict>
+</plist>

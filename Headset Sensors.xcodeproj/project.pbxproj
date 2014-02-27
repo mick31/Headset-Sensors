@@ -23,6 +23,10 @@
 		000AD222189311F20035A466 /* Headset_SensorsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 000AD221189311F20035A466 /* Headset_SensorsTests.m */; };
 		000AD22C189312800035A466 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 000AD22B189312800035A466 /* AVFoundation.framework */; };
 		000AD23218931A030035A466 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 000AD23118931A030035A466 /* CoreAudio.framework */; };
+		21211EFEDFAA43C794B40D00 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2C2FCF3CD60543EDB826F845 /* libPods.a */; };
+		5B402D8D18BE6C2E009EE8CA /* GSF_insert_sensor_alert.png in Resources */ = {isa = PBXBuildFile; fileRef = 5B402D8C18BE6C2E009EE8CA /* GSF_insert_sensor_alert.png */; };
+		5B402D8F18BEA015009EE8CA /* GSF_Insert_sensor_alert-v2.png in Resources */ = {isa = PBXBuildFile; fileRef = 5B402D8E18BEA015009EE8CA /* GSF_Insert_sensor_alert-v2.png */; };
+		5B9F5DC018A996D8002CD58B /* MediaPlayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5B9F5DBF18A996D8002CD58B /* MediaPlayer.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -59,6 +63,11 @@
 		000AD22D189312880035A466 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		000AD22F1893128E0035A466 /* AudioUnit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioUnit.framework; path = System/Library/Frameworks/AudioUnit.framework; sourceTree = SDKROOT; };
 		000AD23118931A030035A466 /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = System/Library/Frameworks/CoreAudio.framework; sourceTree = SDKROOT; };
+		2C2FCF3CD60543EDB826F845 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		3EFAB3C224C74BFC978241D5 /* Pods.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.xcconfig; path = Pods/Pods.xcconfig; sourceTree = "<group>"; };
+		5B402D8C18BE6C2E009EE8CA /* GSF_insert_sensor_alert.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = GSF_insert_sensor_alert.png; path = "Headset Sensors/GSF_insert_sensor_alert.png"; sourceTree = "<group>"; };
+		5B402D8E18BEA015009EE8CA /* GSF_Insert_sensor_alert-v2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "GSF_Insert_sensor_alert-v2.png"; path = "Headset Sensors/GSF_Insert_sensor_alert-v2.png"; sourceTree = "<group>"; };
+		5B9F5DBF18A996D8002CD58B /* MediaPlayer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaPlayer.framework; path = System/Library/Frameworks/MediaPlayer.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -66,11 +75,13 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5B9F5DC018A996D8002CD58B /* MediaPlayer.framework in Frameworks */,
 				000AD23218931A030035A466 /* CoreAudio.framework in Frameworks */,
 				000AD22C189312800035A466 /* AVFoundation.framework in Frameworks */,
 				000AD1F9189311F20035A466 /* CoreGraphics.framework in Frameworks */,
 				000AD1FB189311F20035A466 /* UIKit.framework in Frameworks */,
 				000AD1F7189311F20035A466 /* Foundation.framework in Frameworks */,
+				21211EFEDFAA43C794B40D00 /* libPods.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -91,9 +102,11 @@
 			isa = PBXGroup;
 			children = (
 				000AD1FC189311F20035A466 /* Headset Sensors */,
+				5B402D8318BE6432009EE8CA /* Resources */,
 				000AD21B189311F20035A466 /* Headset SensorsTests */,
 				000AD1F5189311F20035A466 /* Frameworks */,
 				000AD1F4189311F20035A466 /* Products */,
+				3EFAB3C224C74BFC978241D5 /* Pods.xcconfig */,
 			);
 			sourceTree = "<group>";
 		};
@@ -109,6 +122,7 @@
 		000AD1F5189311F20035A466 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				5B9F5DBF18A996D8002CD58B /* MediaPlayer.framework */,
 				000AD23118931A030035A466 /* CoreAudio.framework */,
 				000AD22F1893128E0035A466 /* AudioUnit.framework */,
 				000AD22D189312880035A466 /* AudioToolbox.framework */,
@@ -117,6 +131,7 @@
 				000AD1F8189311F20035A466 /* CoreGraphics.framework */,
 				000AD1FA189311F20035A466 /* UIKit.framework */,
 				000AD215189311F20035A466 /* XCTest.framework */,
+				2C2FCF3CD60543EDB826F845 /* libPods.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -164,6 +179,15 @@
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
+		5B402D8318BE6432009EE8CA /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				5B402D8C18BE6C2E009EE8CA /* GSF_insert_sensor_alert.png */,
+				5B402D8E18BEA015009EE8CA /* GSF_Insert_sensor_alert-v2.png */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -171,9 +195,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 000AD225189311F20035A466 /* Build configuration list for PBXNativeTarget "Headset Sensors" */;
 			buildPhases = (
+				4C1FFAC6D9164C1483D03016 /* Check Pods Manifest.lock */,
 				000AD1EF189311F20035A466 /* Sources */,
 				000AD1F0189311F20035A466 /* Frameworks */,
 				000AD1F1189311F20035A466 /* Resources */,
+				A459016738EE4AFC9669D76E /* Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -243,8 +269,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5B402D8F18BEA015009EE8CA /* GSF_Insert_sensor_alert-v2.png in Resources */,
 				000AD20F189311F20035A466 /* Images.xcassets in Resources */,
 				000AD201189311F20035A466 /* InfoPlist.strings in Resources */,
+				5B402D8D18BE6C2E009EE8CA /* GSF_insert_sensor_alert.png in Resources */,
 				000AD20A189311F20035A466 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -258,6 +286,39 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		4C1FFAC6D9164C1483D03016 /* Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		A459016738EE4AFC9669D76E /* Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Pods-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		000AD1EF189311F20035A466 /* Sources */ = {
@@ -390,6 +451,7 @@
 		};
 		000AD226189311F20035A466 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3EFAB3C224C74BFC978241D5 /* Pods.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
@@ -404,6 +466,7 @@
 		};
 		000AD227189311F20035A466 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3EFAB3C224C74BFC978241D5 /* Pods.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
@@ -477,6 +540,7 @@
 				000AD227189311F20035A466 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		000AD228189311F20035A466 /* Build configuration list for PBXNativeTarget "Headset SensorsTests" */ = {
 			isa = XCConfigurationList;
@@ -485,6 +549,7 @@
 				000AD22A189311F20035A466 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
