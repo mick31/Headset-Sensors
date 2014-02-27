@@ -30,6 +30,7 @@
 @property (weak, nonatomic) IBOutlet UILabel *lowpassInput;
 @property (weak, nonatomic) IBOutlet UILabel *inputSource;
 @property (weak, nonatomic) IBOutlet UISwitch *headsetSwitch;
+@property SDCAlertView *sensorAlert;
 
 // output properties
 @property AudioComponentInstance powerTone;
