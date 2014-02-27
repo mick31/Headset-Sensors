@@ -242,6 +242,8 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
                                                                                                  views:NSDictionaryOfVariableBindings(alertImageView)]];
         // Alert Callback Setup
         _alertTimer = [NSTimer scheduledTimerWithTimeInterval:0.03 target:self selector:@selector(alertTimerCallBack:) userInfo:nil repeats:YES];
+        
+        // Show Alert
         [_sensorAlert show];
     } else
         _inputSource.text = @"Mic";
@@ -289,6 +291,10 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
             NSLog(@"Blowing It: Alert not handled");
             break;
     }
+    
+    //Disable alert Timer
+    [_alertTimer invalidate];
+    _levelTimer = nil;
 }
 
 
@@ -325,7 +331,7 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
         }
     }
     
-    /* One possible alternative
+    /* One possible alternative that is not depricated
     NSArray *outputs = [[AVAudioSession sharedInstance] currentRoute].outputs;
     NSString *portNameOut = [[outputs objectAtIndex:0] portName];
     NSArray *inputs = [[AVAudioSession sharedInstance] currentRoute].inputs;
@@ -411,8 +417,10 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
 }
 
 - (IBAction)amplitudeSliderChange:(id)sender {
-    _amplitude = _amplitudeSlider.value;
-	_amplitudeOut.text = [NSString stringWithFormat:@"%3.0f", _amplitude*100];
+    if (_amplitudeSlider.value < 0.75) {
+        _amplitude = _amplitudeSlider.value;
+        _amplitudeOut.text = [NSString stringWithFormat:@"%3.0f", _amplitude*100];
+    }
 }
 
 - (void)didReceiveMemoryWarning
