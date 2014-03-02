@@ -175,6 +175,7 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
     NSError *err;
     
     _recorder = [[AVAudioRecorder alloc] initWithURL:url settings:settings error:&err];
+    NSLog(@"Made it: Initialized Recorder");
     
     if (_recorder) {
         [_recorder prepareToRecord];
