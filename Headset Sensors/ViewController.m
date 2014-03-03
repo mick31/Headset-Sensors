@@ -161,9 +161,9 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
 
 
 - (void)viewDidLoad {
-    // Input Setup
     [super viewDidLoad];
 	
+    // MIC Input Setup
     NSURL *url = [NSURL fileURLWithPath:@"dev/null"];
     
     NSDictionary *settings =  [NSDictionary dictionaryWithObjectsAndKeys:
@@ -255,7 +255,7 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
     if (self.isHeadsetPluggedIn) {
         //Disable alert Timer
         [_alertTimer invalidate];
-        _levelTimer = nil;
+        _alertTimer = nil;
         
         // Dismiss alert and set headsetswitch to on
         [_sensorAlert dismissWithClickedButtonIndex:0 animated:YES];
@@ -280,6 +280,19 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
             break;
         case 1:
             _levelTimer = [NSTimer scheduledTimerWithTimeInterval:0.03 target:self selector:@selector(levelTimerCallBack:) userInfo:nil repeats:YES];
+            /**************
+             Debug  |
+                    \/
+             *************/
+            if (_levelTimer)
+                NSLog(@"AlertView: Level timer");
+            else
+                NSLog(@"Blowing it AlertView");
+            /**************
+                   /\
+             Debug |
+             *************/
+            
             _inputSource.text = @"Mic";
             
             //Disable sliders
@@ -295,7 +308,7 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
     
     //Disable alert Timer
     [_alertTimer invalidate];
-    _levelTimer = nil;
+    _alertTimer = nil;
 }
 
 
@@ -354,7 +367,18 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
     if (self.headsetSwitch.on && self.isHeadsetPluggedIn) {
         // Start Sampler
         _levelTimer = [NSTimer scheduledTimerWithTimeInterval:0.03 target:self selector:@selector(levelTimerCallBack:) userInfo:nil repeats:YES];
-        
+        /**************
+         Debug  |
+         \/
+         *************/
+        if (_levelTimer)
+            NSLog(@"Switch ON: Level timer");
+        else
+            NSLog(@"Blowing it Switch ON");
+        /**************
+         /\
+         Debug |
+         *************/
         // Start Power Tone
         [self togglePower:YES];
         
@@ -367,6 +391,20 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
         // Stop level timer
         [_levelTimer invalidate];
         _levelTimer = nil;
+        
+        /**************
+         Debug  |
+         \/
+         *************/
+        if (_levelTimer)
+            NSLog(@"Blowing it Switch OFF");
+        else
+            NSLog(@"Switch OFF: Level timer");
+        /**************
+         /\
+         Debug |
+         *************/
+        
         _inputSource.text = @"None";
         
         // Stop Power Tone
@@ -380,6 +418,19 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
     } else {
         [_levelTimer invalidate];
         _levelTimer = nil;
+        
+        /**************
+         Debug  |
+         \/
+         *************/
+        if (_levelTimer)
+            NSLog(@"Blowing it Switch ON no Headset");
+        else
+            NSLog(@"Switch ON no Headset: Level timer");
+        /**************
+         /\
+         Debug |
+         *************/
         
         // Stop Power Tone
         [self togglePower:NO];
