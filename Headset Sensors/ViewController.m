@@ -163,6 +163,18 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
 - (void)viewDidLoad {
     [super viewDidLoad];
 	
+    AVAudioSession *session = [AVAudioSession sharedInstance];
+    BOOL success;
+    NSError *error;
+    
+    success = [session setCategory:AVAudioSessionCategoryPlayAndRecord error:&error];
+    
+	if (!success) NSLog(@"ERROR viewDidLoad: AVAudioSession failed overrideOutputAudio- %@", error);
+    
+    success = [session setActive:YES error:&error];
+    if(!success) NSLog(@"ERROR viewDidLoad: AVAudioSession failed activating- %@", error);
+    else NSLog(@"audioSession active");
+    
     // MIC Input Setup
     NSURL *url = [NSURL fileURLWithPath:@"dev/null"];
     
@@ -188,16 +200,6 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
     _sampleRate = 44100;
     _frequency = 5000;
     _amplitude = 0.0;
-    OSStatus result = AudioSessionInitialize(NULL,
-                                             NULL,
-                                             ToneInterruptionListener,
-                                             (_powerTone));
-	if (result == kAudioSessionNoError) {
-        // allows for both mic and speaker output
-		UInt32 sessionCategory = kAudioSessionCategory_PlayAndRecord;
-		AudioSessionSetProperty(kAudioSessionProperty_AudioCategory, sizeof(sessionCategory), &sessionCategory);
-	}
-	AudioSessionSetActive(true);
 }
 
 -(void) levelTimerCallBack:(NSTimer *)timer {
@@ -269,6 +271,7 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
 - (void)alertView:(SDCAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
     switch (buttonIndex) {
         case 0:
+            // Set switch to off and change input label text
             self.headsetSwitch.on = NO ;
             _inputSource.text = @"None";
             
@@ -279,20 +282,10 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
             _amplitudeSlider.tintColor = [UIColor grayColor];
             break;
         case 1:
+            // Start level timer
             _levelTimer = [NSTimer scheduledTimerWithTimeInterval:0.03 target:self selector:@selector(levelTimerCallBack:) userInfo:nil repeats:YES];
-            /**************
-             Debug  |
-                    \/
-             *************/
-            if (_levelTimer)
-                NSLog(@"AlertView: Level timer");
-            else
-                NSLog(@"Blowing it AlertView");
-            /**************
-                   /\
-             Debug |
-             *************/
             
+            // Change input label text
             _inputSource.text = @"Mic";
             
             //Disable sliders
@@ -313,53 +306,28 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
 
 
 - (BOOL)isHeadsetPluggedIn {
-    /* Depricated As of iOS 7 */
-    UInt32 routeSize = sizeof (CFStringRef);
-    CFStringRef route;
-    
-    OSStatus error = AudioSessionGetProperty (kAudioSessionProperty_AudioRoute,
-                                              &routeSize,
-                                              &route);
-    
-    if (!error && (route != NULL)) {
-        
-        NSString* routeStr = (__bridge NSString *)route;
-        
-        /* Known routes-
-                MicrophoneWired
-                MicrophoneBuiltIn
-                Headphones
-                Speaker
-                HeadsetInOut
-                ReceiverAndMicrophone
-         */
-        /*************
-         *** Debug ***
-         *************/
-        //NSLog(@"%@", routeStr);
-        
-        // HeadsetInOut should allow for two way communicaiton and power
-        NSRange headphoneRange = [routeStr rangeOfString : @"HeadsetInOut"];
-        if (headphoneRange.location != NSNotFound) {
-            return YES;
-        }
-    }
-    
-    /* One possible alternative that is not depricated
     NSArray *outputs = [[AVAudioSession sharedInstance] currentRoute].outputs;
     NSString *portNameOut = [[outputs objectAtIndex:0] portName];
     NSArray *inputs = [[AVAudioSession sharedInstance] currentRoute].inputs;
     NSString *portNameIn = [[inputs objectAtIndex:0] portName];
+    
+    /* Known routes-
+         Headset Microphone
+         Headphones
+         iPhone Microphone
+         Receiver
     */
+    
     /*************
-     *** Debug ***
+     *** Debug:
+     ***    Shows current audio in/out routes iDevice
      *************/
     //NSLog(@"%@", portNameOut);
     //NSLog(@"%@", portNameIn);
-    /*
-    if ([portNameOut isEqualToString:@"HeadsetInOut"])
+    
+    if ([portNameOut isEqualToString:@"Headphones"] && [portNameIn isEqualToString:@"Headset Microphone"])
         return YES;
-    */
+    
     return NO;
 }
 
@@ -367,18 +335,7 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
     if (self.headsetSwitch.on && self.isHeadsetPluggedIn) {
         // Start Sampler
         _levelTimer = [NSTimer scheduledTimerWithTimeInterval:0.03 target:self selector:@selector(levelTimerCallBack:) userInfo:nil repeats:YES];
-        /**************
-         Debug  |
-         \/
-         *************/
-        if (_levelTimer)
-            NSLog(@"Switch ON: Level timer");
-        else
-            NSLog(@"Blowing it Switch ON");
-        /**************
-         /\
-         Debug |
-         *************/
+        
         // Start Power Tone
         [self togglePower:YES];
         
@@ -392,19 +349,7 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
         [_levelTimer invalidate];
         _levelTimer = nil;
         
-        /**************
-         Debug  |
-         \/
-         *************/
-        if (_levelTimer)
-            NSLog(@"Blowing it Switch OFF");
-        else
-            NSLog(@"Switch OFF: Level timer");
-        /**************
-         /\
-         Debug |
-         *************/
-        
+        // Change input text
         _inputSource.text = @"None";
         
         // Stop Power Tone
@@ -416,21 +361,9 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
         _amplitudeSlider.userInteractionEnabled = NO;
         _amplitudeSlider.tintColor = [UIColor grayColor];
     } else {
+        // Stop level timer
         [_levelTimer invalidate];
         _levelTimer = nil;
-        
-        /**************
-         Debug  |
-         \/
-         *************/
-        if (_levelTimer)
-            NSLog(@"Blowing it Switch ON no Headset");
-        else
-            NSLog(@"Switch ON no Headset: Level timer");
-        /**************
-         /\
-         Debug |
-         *************/
         
         // Stop Power Tone
         [self togglePower:NO];
@@ -438,7 +371,6 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
         // Setup image for Alert View
         UIImageView *alertImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"GSF_Insert_sensor_alert-v2.png"]];
 
-        
         // Setup Alert View
         _sensorAlert =
          [[SDCAlertView alloc]
