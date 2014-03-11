@@ -11,6 +11,7 @@
 #import <AVFoundation/AVAudioSession.h>
 #import <CoreAudio/CoreAudioTypes.h>
 #import <MediaPlayer/MPMusicPlayerController.h>
+#import <MediaPlayer/MPVolumeView.h>
 #import <AudioToolbox/AudioToolbox.h>
 
 @import MapKit;
