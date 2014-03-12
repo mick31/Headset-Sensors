@@ -25,13 +25,17 @@
 @property AVAudioRecorder *recorder;
 @property NSTimer *levelTimer;
 @property NSTimer *alertTimer;
-@property double lowPassFiltered;
-@property (weak, nonatomic) IBOutlet UILabel *avgInput;
-@property (weak, nonatomic) IBOutlet UILabel *peakInput;
-@property (weak, nonatomic) IBOutlet UILabel *lowpassInput;
+@property NSTimer *secondTimer;
+@property double timerInterval;
+@property int runningTotal;
+@property int lastBit;
 @property (weak, nonatomic) IBOutlet UILabel *inputSource;
+@property (weak, nonatomic) IBOutlet UILabel *inputThroughput;
+@property (weak, nonatomic) IBOutlet UILabel *currentBitLabel;
 @property (weak, nonatomic) IBOutlet UISwitch *headsetSwitch;
 @property SDCAlertView *sensorAlert;
+@property (weak, nonatomic) IBOutlet UILabel *timeIntervalLabel;
+@property (weak, nonatomic) IBOutlet UISlider *timeIntervalSlider;
 
 // output properties
 @property AudioComponentInstance powerTone;
@@ -47,14 +51,15 @@
 
 // function prototypes
 - (void)levelTimerCallBack:(NSTimer *) timer;
-- (void) alertTimerCallBack:(NSTimer *) timer;
+- (void)alertTimerCallBack:(NSTimer *) timer;
+- (void)secondTimerCallBack:(NSTimer *) timer;
 - (BOOL)isHeadsetPluggedIn;
 - (IBAction)flippedHeadset:(id)sender;
+- (IBAction)timerSliderChange:(id)sender;
 
 - (IBAction)frequencySliderChange:(id)sender;
 - (IBAction)amplitudeSliderChange:(id)sender;
 - (void)togglePower:(BOOL)powerOn;
-- (void) processInput: (AudioBufferList*) bufferList;
 
 @end
 
