@@ -39,6 +39,7 @@
 @property double amplitude;
 @property double sampleRate;
 @property double theta;
+@property (nonatomic, strong) UISlider *volumeSlider;
 @property (weak, nonatomic) IBOutlet UISlider *frequencySlider;
 @property (weak, nonatomic) IBOutlet UILabel *frequencyOut;
 @property (weak, nonatomic) IBOutlet UISlider *amplitudeSlider;
@@ -53,5 +54,9 @@
 - (IBAction)frequencySliderChange:(id)sender;
 - (IBAction)amplitudeSliderChange:(id)sender;
 - (void)togglePower:(BOOL)powerOn;
+- (void) processInput: (AudioBufferList*) bufferList;
 
 @end
+
+// global audioIO variable to be accessed in callbacks
+extern ViewController* audioIO;

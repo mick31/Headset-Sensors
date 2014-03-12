@@ -8,15 +8,22 @@
 
 #import "ViewController.h"
 
-OSStatus RenderTone(
-                    void *inRefCon,
-                    AudioUnitRenderActionFlags 	*ioActionFlags,
-                    const AudioTimeStamp 		*inTimeStamp,
-                    UInt32 						inBusNumber,
-                    UInt32 						inNumberFrames,
-                    AudioBufferList 			*ioData)
+ViewController* audioIO;
 
-{
+void checkStatus(int status){
+	if (status) {
+		printf("Status not 0! %d\n", status);
+//        exit(1);
+	}
+}
+
+static OSStatus renderToneCallback(void *inRefCon,
+                                   AudioUnitRenderActionFlags 	*ioActionFlags,
+                                   const AudioTimeStamp 		*inTimeStamp,
+                                   UInt32 						inBusNumber,
+                                   UInt32 						inNumberFrames,
+                                   AudioBufferList              *ioData) {
+    
 	// Get the tone parameters out of the view controller
 	ViewController *viewController =
     (__bridge ViewController *)inRefCon;
@@ -41,6 +48,38 @@ OSStatus RenderTone(
 	viewController.theta = theta;
     
 	return noErr;
+}
+
+// Not being invoked because still using AVAudioRecoder which utilizes a timer callback
+static OSStatus recordingCallpack(void *inRefCon,
+                                  AudioUnitRenderActionFlags 	*ioActionFlags,
+                                  const AudioTimeStamp 		*inTimeStamp,
+                                  UInt32 						inBusNumber,
+                                  UInt32 						inNumberFrames,
+                                  AudioBufferList              *ioData) {
+
+    AudioBuffer inBuffer;
+    
+    inBuffer.mDataByteSize = inNumberFrames *2;
+    inBuffer.mNumberChannels = 1;
+    inBuffer.mData = malloc(inNumberFrames * 2);
+    
+    AudioBufferList inBufferList;
+    inBufferList.mNumberBuffers = 1;
+    inBufferList.mBuffers[0] = inBuffer;
+    
+    OSStatus status;
+    status = AudioUnitRender((__bridge AudioUnit)([audioIO recorder]),
+                             ioActionFlags,
+                             inTimeStamp,
+                             inBusNumber,
+                             inNumberFrames,
+                             &inBufferList);
+    checkStatus(status);
+    
+    [audioIO processInput:&inBufferList];
+    
+    return noErr;
 }
 
 void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
@@ -69,11 +108,75 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
 @synthesize amplitude = _amplitude;
 @synthesize sampleRate = _sampleRate;
 @synthesize theta = _theta;
+@synthesize volumeSlider = _volumeSlider;
 @synthesize frequencySlider = _frequencySlider;
 @synthesize frequencyOut = _frequencyOut;
 @synthesize amplitudeSlider = _amplitudeSlider;
 @synthesize amplitudeOut = _amplitudeOut;
 
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+	
+    // Set up AVAudioSession
+    AVAudioSession *session = [AVAudioSession sharedInstance];
+    BOOL success;
+    NSError *error;
+    
+    success = [session setCategory:AVAudioSessionCategoryPlayAndRecord error:&error];
+    
+	if (!success) NSLog(@"ERROR viewDidLoad: AVAudioSession failed overrideOutputAudio- %@", error);
+    
+    success = [session setActive:YES error:&error];
+    if(!success) NSLog(@"ERROR viewDidLoad: AVAudioSession failed activating- %@", error);
+    else NSLog(@"audioSession active");
+    
+    // MIC Input Setup
+    NSURL *url = [NSURL fileURLWithPath:@"dev/null"];
+    
+    NSDictionary *settings =  [NSDictionary dictionaryWithObjectsAndKeys:
+                               [NSNumber numberWithFloat:44100.0],
+                               AVSampleRateKey,
+                               [NSNumber numberWithInt:kAudioFormatAppleLossless],
+                               AVFormatIDKey,
+                               [NSNumber numberWithInt:1],
+                               AVNumberOfChannelsKey,
+                               [NSNumber numberWithInt:AVAudioQualityMax],
+                               AVEncoderAudioQualityKey,
+                               nil];
+    NSError *err;
+    
+    _recorder = [[AVAudioRecorder alloc] initWithURL:url settings:settings error:&err];
+    
+    if (_recorder) {
+        [_recorder prepareToRecord];
+        _recorder.meteringEnabled = YES;
+        [_recorder record];
+    } else
+        NSLog(@"%@",[err description]);
+    
+    // Power tone setup
+    _sampleRate = 44100;
+    _frequency = 5000;
+    _amplitude = 0.0;
+    
+    // Setup master volume controller
+    MPVolumeView *volumeView = [MPVolumeView new];
+    volumeView.showsRouteButton = NO;
+    volumeView.showsVolumeSlider = NO;
+    [self.view addSubview:volumeView];
+    
+    __weak __typeof(self)weakSelf = self;
+    [[volumeView subviews] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        if ([obj isKindOfClass:[UISlider class]]) {
+            __strong __typeof(weakSelf)strongSelf = weakSelf;
+            strongSelf.volumeSlider = obj;
+            *stop = YES;
+        }
+    }];
+    
+    [self.volumeSlider addTarget:self action:@selector(handleVolumeChanged:) forControlEvents:UIControlEventValueChanged];
+}
 
 
 - (void)createToneUnit {
@@ -97,7 +200,7 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
 	
 	// Set our tone rendering function on the unit
 	AURenderCallbackStruct input;
-	input.inputProc = RenderTone;
+	input.inputProc = renderToneCallback;
 	input.inputProcRefCon = (__bridge void *)(self);
 	err = AudioUnitSetProperty(_powerTone,
                                kAudioUnitProperty_SetRenderCallback,
@@ -131,11 +234,8 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
 
 - (void)togglePower:(BOOL)powerOn {
 	if (!powerOn) {
-        if (_powerTone) {
-            // Set master volume to 50%
-            MPMusicPlayerController* appVolume = [MPMusicPlayerController applicationMusicPlayer];
-            [appVolume setVolume:0.5];
-        }
+        // Set Master Volume to 50%
+        self.volumeSlider.value = 0.5f;
         
 		// Stop and release power tone
         AudioOutputUnitStop(_powerTone);
@@ -149,9 +249,8 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
 		OSErr err = AudioUnitInitialize(_powerTone);
 		NSAssert1(err == noErr, @"Error initializing unit: %hd", err);
 		
-        // Set master volume to max
-        MPMusicPlayerController* appVolume = [MPMusicPlayerController applicationMusicPlayer];
-        [appVolume setVolume:1.0];
+        // Set Master Volume to 100%
+        self.volumeSlider.value = 1.0f;
         
 		// Start playback
 		err = AudioOutputUnitStart(_powerTone);
@@ -159,47 +258,8 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
 	}
 }
 
-
-- (void)viewDidLoad {
-    [super viewDidLoad];
-	
-    AVAudioSession *session = [AVAudioSession sharedInstance];
-    BOOL success;
-    NSError *error;
-    
-    success = [session setCategory:AVAudioSessionCategoryPlayAndRecord error:&error];
-    
-	if (!success) NSLog(@"ERROR viewDidLoad: AVAudioSession failed overrideOutputAudio- %@", error);
-    
-    success = [session setActive:YES error:&error];
-    if(!success) NSLog(@"ERROR viewDidLoad: AVAudioSession failed activating- %@", error);
-    else NSLog(@"audioSession active");
-    
-    // MIC Input Setup
-    NSURL *url = [NSURL fileURLWithPath:@"dev/null"];
-    
-    NSDictionary *settings =  [NSDictionary dictionaryWithObjectsAndKeys:
-                              [NSNumber numberWithFloat:44100.0], AVSampleRateKey,
-                              [NSNumber numberWithInt:kAudioFormatAppleLossless], AVFormatIDKey,
-                              [NSNumber numberWithInt:1], AVNumberOfChannelsKey,
-                              [NSNumber numberWithInt:AVAudioQualityMax], AVEncoderAudioQualityKey,
-                              nil];
-    NSError *err;
-    
-    _recorder = [[AVAudioRecorder alloc] initWithURL:url settings:settings error:&err];
-    NSLog(@"Made it: Initialized Recorder");
-    
-    if (_recorder) {
-        [_recorder prepareToRecord];
-        _recorder.meteringEnabled = YES;
-        [_recorder record];
-    } else
-        NSLog(@"%@",[err description]);
-    
-    // Power tone setup
-    _sampleRate = 44100;
-    _frequency = 5000;
-    _amplitude = 0.0;
+- (void)handleVolumeChanged:(id)sender{
+    if (self.powerTone) self.volumeSlider.value = 1.0f;
 }
 
 -(void) levelTimerCallBack:(NSTimer *)timer {
@@ -405,6 +465,11 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
         _amplitude = _amplitudeSlider.value;
         _amplitudeOut.text = [NSString stringWithFormat:@"%3.0f", _amplitude*100];
     }
+}
+
+// Process input from mic line using recordingCallback function
+- (void) processInput: (AudioBufferList*) bufferList {
+    
 }
 
 - (void)didReceiveMemoryWarning
