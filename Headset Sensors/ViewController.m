@@ -461,8 +461,11 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
 }
 
 - (IBAction)amplitudeSliderChange:(id)sender {
-    if (_amplitudeSlider.value < 0.75) {
+    if (_amplitudeSlider.value < 0.75f) {
         _amplitude = _amplitudeSlider.value;
+        _amplitudeOut.text = [NSString stringWithFormat:@"%3.0f", _amplitude*100];
+    } else {
+        _amplitude = 0.75f;
         _amplitudeOut.text = [NSString stringWithFormat:@"%3.0f", _amplitude*100];
     }
 }
