@@ -20,7 +20,7 @@
                                 <rect key="frame" x="136" y="416" width="51" height="31"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <connections>
-                                    <action selector="flippedHeadset:" destination="vXZ-lx-hvc" eventType="valueChanged" id="AGk-WB-DLo"/>
+                                    <action selector="flippedHeadset:" destination="vXZ-lx-hvc" eventType="valueChanged" id="mZX-LT-Igo"/>
                                 </connections>
                             </switch>
                             <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Mointor Sensor" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="b3K-x5-9Wh">
@@ -123,15 +123,6 @@
                                     <action selector="frequencySliderChange:" destination="vXZ-lx-hvc" eventType="valueChanged" id="qiO-Sn-gSo"/>
                                 </connections>
                             </slider>
-                            <slider opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="50" minValue="0.0" maxValue="100" translatesAutoresizingMaskIntoConstraints="NO" id="Frp-6f-sx5">
-                                <rect key="frame" x="41" y="156" width="221" height="34"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <connections>
-                                    <action selector="timeIntervalSlider:" destination="vXZ-lx-hvc" eventType="valueChanged" id="WHS-Ob-D9w"/>
-                                    <action selector="timerIntervalSlider:" destination="vXZ-lx-hvc" eventType="valueChanged" id="0vQ-fY-q5I"/>
-                                    <action selector="timerSliderChange:" destination="vXZ-lx-hvc" eventType="valueChanged" id="BGA-3E-FHt"/>
-                                </connections>
-                            </slider>
                             <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Current Bit Value:" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="OW8-jR-AbF">
                                 <rect key="frame" x="37" y="98" width="134" height="21"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
@@ -158,6 +149,14 @@
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <slider opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="0.050000000000000003" minValue="0.001" maxValue="0.10000000000000001" translatesAutoresizingMaskIntoConstraints="NO" id="t6G-Lm-32W">
+                                <rect key="frame" x="41" y="156" width="221" height="34"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <color key="tintColor" red="0.83069378400000005" green="0.82366092349999998" blue="0.80754223209999998" alpha="0.97999999999999998" colorSpace="calibratedRGB"/>
+                                <connections>
+                                    <action selector="timeSliderChange:" destination="vXZ-lx-hvc" eventType="valueChanged" id="GuZ-p5-fBO"/>
+                                </connections>
+                            </slider>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                     </view>
@@ -171,11 +170,12 @@
                         <outlet property="inputSource" destination="qye-8V-emE" id="iW2-vn-j3G"/>
                         <outlet property="inputThroughput" destination="Rtz-4w-t4w" id="OoH-5B-Dix"/>
                         <outlet property="timeIntervalLabel" destination="53Y-Z5-SWO" id="qGd-Dj-hvB"/>
-                        <outlet property="timeIntervalSlider" destination="Frp-6f-sx5" id="vzL-ef-Ot7"/>
+                        <outlet property="timeIntervalSlider" destination="t6G-Lm-32W" id="Iyh-1o-BwY"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="x5A-6p-PRh" sceneMemberID="firstResponder"/>
             </objects>
+            <point key="canvasLocation" x="171" y="109"/>
         </scene>
     </scenes>
     <simulatedMetricsContainer key="defaultSimulatedMetrics">

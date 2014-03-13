@@ -244,7 +244,7 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
     double peakDBInput = [self.recorder peakPowerForChannel:0];
     int currentBit = 0;
     
-    if (avgDBInput > -1.0f && peakDBInput > 0.5f) {
+    if (avgDBInput > -20.0f && peakDBInput > -0.5f) {
         currentBit = 1;
     }
     
@@ -322,11 +322,9 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
             self.headsetSwitch.on = NO ;
             self.inputSource.text = @"None";
             
-            //Disable sliders
-            self.frequencySlider.userInteractionEnabled = NO;
-            self.frequencySlider.tintColor = [UIColor grayColor];
-            self.amplitudeSlider.userInteractionEnabled = NO;
-            self.amplitudeSlider.tintColor = [UIColor grayColor];
+            //Disable slider
+            self.timeIntervalSlider.userInteractionEnabled = NO;
+            self.timeIntervalSlider.tintColor = [UIColor grayColor];
             break;
         case 1:
             // Start level timer
@@ -336,15 +334,19 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
             // Change input label text
             self.inputSource.text = @"Mic";
             
-            //Disable sliders
-            self.frequencySlider.userInteractionEnabled = NO;
-            self.frequencySlider.tintColor = [UIColor grayColor];
-            self.amplitudeSlider.userInteractionEnabled = NO;
-            self.amplitudeSlider.tintColor = [UIColor grayColor];
+            //Enable slider
+            self.timeIntervalSlider.userInteractionEnabled = YES;
+            self.timeIntervalSlider.tintColor = [UIColor greenColor];
             break;
         default:
             NSLog(@"Blowing It: Alert not handled");
             break;
+         
+        //Disable sliders
+        self.frequencySlider.userInteractionEnabled = NO;
+        self.frequencySlider.tintColor = [UIColor grayColor];
+        self.amplitudeSlider.userInteractionEnabled = NO;
+        self.amplitudeSlider.tintColor = [UIColor grayColor];
     }
     
     //Disable alert Timer
@@ -389,6 +391,8 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
         [self togglePower:YES];
         
         //Enable sliders
+        self.timeIntervalSlider.userInteractionEnabled = YES;
+        self.timeIntervalSlider.tintColor = [UIColor greenColor];
         self.frequencySlider.userInteractionEnabled = YES;
         self.frequencySlider.tintColor = [UIColor greenColor];
         self.amplitudeSlider.userInteractionEnabled = YES;
@@ -407,6 +411,8 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
         [self togglePower:NO];
         
         //Disable sliders
+        self.timeIntervalSlider.userInteractionEnabled = NO;
+        self.timeIntervalSlider.tintColor = [UIColor grayColor];
         self.frequencySlider.userInteractionEnabled = NO;
         self.frequencySlider.tintColor = [UIColor grayColor];
         self.amplitudeSlider.userInteractionEnabled = NO;
@@ -423,23 +429,23 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
         
         // Setup image for Alert View
         UIImageView *alertImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"GSF_Insert_sensor_alert-v2.png"]];
-
+        
         // Setup Alert View
         self.sensorAlert =
-         [[SDCAlertView alloc]
+        [[SDCAlertView alloc]
          initWithTitle:@"No Sensor"
          message:@"Please insert the GSF sensor to collect this data."
          delegate:self
          cancelButtonTitle:nil
          otherButtonTitles:@"Cancel", @"Use Mic", nil];
-         
+        
         [alertImageView setTranslatesAutoresizingMaskIntoConstraints:NO];
         [self.sensorAlert.contentView addSubview:alertImageView];
         [alertImageView sdc_horizontallyCenterInSuperview];
         [self.sensorAlert.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|-[alertImageView]|"
-        options:0
-        metrics:nil
-        views:NSDictionaryOfVariableBindings(alertImageView)]];
+                                                                                             options:0
+                                                                                             metrics:nil
+                                                                                               views:NSDictionaryOfVariableBindings(alertImageView)]];
         
         // Alert Callback Setup
         self.alertTimer = [NSTimer scheduledTimerWithTimeInterval:0.03 target:self selector:@selector(alertTimerCallBack:) userInfo:nil repeats:YES];
@@ -448,9 +454,9 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
     }
 }
 
-- (IBAction)timerSliderChange:(id)sender {
+- (IBAction)timeSliderChange:(id)sender {
     self.timerInterval = self.timeIntervalSlider.value;
-    self.timeIntervalLabel.text = [NSString stringWithFormat:@"%3.2f", self.timerInterval];
+    self.timeIntervalLabel.text = [NSString stringWithFormat:@"%3.2f", self.timerInterval*1000];
     
     // Stop samplers
     [self.levelTimer invalidate];
@@ -462,6 +468,7 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
     self.levelTimer = [NSTimer scheduledTimerWithTimeInterval:self.timerInterval target:self selector:@selector(levelTimerCallBack:) userInfo:nil repeats:YES];
     self.secondTimer = [NSTimer scheduledTimerWithTimeInterval:1.0f target:self selector:@selector(secondTimerCallBack:) userInfo:nil repeats:YES];
 }
+
 
 - (IBAction)frequencySliderChange:(id)sender {
     self.frequency = self.frequencySlider.value;

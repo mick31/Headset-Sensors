@@ -53,9 +53,8 @@
 - (void)levelTimerCallBack:(NSTimer *) timer;
 - (void)alertTimerCallBack:(NSTimer *) timer;
 - (void)secondTimerCallBack:(NSTimer *) timer;
-- (BOOL)isHeadsetPluggedIn;
-- (IBAction)flippedHeadset:(id)sender;
-- (IBAction)timerSliderChange:(id)sender;
+- (BOOL)isHeadsetPluggedIn;- (IBAction)flippedHeadset:(id)sender;
+- (IBAction)timeSliderChange:(id)sender;
 
 - (IBAction)frequencySliderChange:(id)sender;
 - (IBAction)amplitudeSliderChange:(id)sender;
