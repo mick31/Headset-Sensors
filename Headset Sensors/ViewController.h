@@ -22,11 +22,7 @@
 @interface ViewController : UIViewController
 
 // input properties
-@property AVAudioRecorder *recorder;
-@property NSTimer *levelTimer;
-@property NSTimer *alertTimer;
 @property NSTimer *secondTimer;
-@property double timerInterval;
 @property int runningTotal;
 @property int lastBit;
 @property double cutOff;
@@ -41,11 +37,6 @@
 @property (weak, nonatomic) IBOutlet UISlider *cutOffSlider;
 
 // output properties
-@property AudioComponentInstance powerTone;
-@property double frequency;
-@property double amplitude;
-@property double sampleRate;
-@property double theta;
 @property (nonatomic, strong) UISlider *volumeSlider;
 @property (weak, nonatomic) IBOutlet UILabel *frequencyOut;
 @property (weak, nonatomic) IBOutlet UILabel *amplitudeOut;
@@ -58,7 +49,7 @@
 - (IBAction)flippedHeadset:(id)sender;
 - (IBAction)timeSliderChange:(id)sender;
 - (IBAction)cutOffSliderChange:(id)sender;
-
+- (void) processAudio: (AudioBufferList*) bufferList;
 - (void)togglePower:(BOOL)powerOn;
 
 @end

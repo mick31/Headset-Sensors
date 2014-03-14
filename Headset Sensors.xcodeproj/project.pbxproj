@@ -24,6 +24,7 @@
 		000AD22C189312800035A466 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 000AD22B189312800035A466 /* AVFoundation.framework */; };
 		000AD23218931A030035A466 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 000AD23118931A030035A466 /* CoreAudio.framework */; };
 		21211EFEDFAA43C794B40D00 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2C2FCF3CD60543EDB826F845 /* libPods.a */; };
+		5B04D83B18D3674900E407AF /* AudioIOController.m in Sources */ = {isa = PBXBuildFile; fileRef = 5B04D83A18D3674900E407AF /* AudioIOController.m */; };
 		5B402D8D18BE6C2E009EE8CA /* GSF_insert_sensor_alert.png in Resources */ = {isa = PBXBuildFile; fileRef = 5B402D8C18BE6C2E009EE8CA /* GSF_insert_sensor_alert.png */; };
 		5B402D8F18BEA015009EE8CA /* GSF_Insert_sensor_alert-v2.png in Resources */ = {isa = PBXBuildFile; fileRef = 5B402D8E18BEA015009EE8CA /* GSF_Insert_sensor_alert-v2.png */; };
 		5B9F5DC018A996D8002CD58B /* MediaPlayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5B9F5DBF18A996D8002CD58B /* MediaPlayer.framework */; };
@@ -65,6 +66,8 @@
 		000AD23118931A030035A466 /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = System/Library/Frameworks/CoreAudio.framework; sourceTree = SDKROOT; };
 		2C2FCF3CD60543EDB826F845 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		3EFAB3C224C74BFC978241D5 /* Pods.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.xcconfig; path = Pods/Pods.xcconfig; sourceTree = "<group>"; };
+		5B04D83918D3674900E407AF /* AudioIOController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AudioIOController.h; sourceTree = "<group>"; };
+		5B04D83A18D3674900E407AF /* AudioIOController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AudioIOController.m; sourceTree = "<group>"; };
 		5B402D8C18BE6C2E009EE8CA /* GSF_insert_sensor_alert.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = GSF_insert_sensor_alert.png; path = "Headset Sensors/GSF_insert_sensor_alert.png"; sourceTree = "<group>"; };
 		5B402D8E18BEA015009EE8CA /* GSF_Insert_sensor_alert-v2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "GSF_Insert_sensor_alert-v2.png"; path = "Headset Sensors/GSF_Insert_sensor_alert-v2.png"; sourceTree = "<group>"; };
 		5B9F5DBF18A996D8002CD58B /* MediaPlayer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaPlayer.framework; path = System/Library/Frameworks/MediaPlayer.framework; sourceTree = SDKROOT; };
@@ -144,6 +147,8 @@
 				000AD208189311F20035A466 /* Main.storyboard */,
 				000AD20B189311F20035A466 /* ViewController.h */,
 				000AD20C189311F20035A466 /* ViewController.m */,
+				5B04D83918D3674900E407AF /* AudioIOController.h */,
+				5B04D83A18D3674900E407AF /* AudioIOController.m */,
 				000AD20E189311F20035A466 /* Images.xcassets */,
 				000AD1FD189311F20035A466 /* Supporting Files */,
 			);
@@ -325,6 +330,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5B04D83B18D3674900E407AF /* AudioIOController.m in Sources */,
 				000AD20D189311F20035A466 /* ViewController.m in Sources */,
 				000AD207189311F20035A466 /* AppDelegate.m in Sources */,
 				000AD203189311F20035A466 /* main.m in Sources */,

@@ -12,6 +12,7 @@
 
 int main(int argc, char * argv[])
 {
+    audioIO = [[UIViewController alloc] init];
     @autoreleasepool {
         return UIApplicationMain(argc, argv, nil, NSStringFromClass([AppDelegate class]));
     }

@@ -50,6 +50,53 @@ static OSStatus renderToneCallback(void *inRefCon,
 	return noErr;
 }
 
+static OSStatus recordingCallback(void *inRefCon,
+                                  AudioUnitRenderActionFlags *ioActionFlags,
+                                  const AudioTimeStamp *inTimeStamp,
+                                  UInt32 inBusNumber,
+                                  UInt32 inNumberFrames,
+                                  AudioBufferList *ioData) {
+	
+	// Because of the way our audio format (setup below) is chosen:
+	// we only need 1 buffer, since it is mono
+	// Samples are 16 bits = 2 bytes.
+	// 1 frame includes only 1 sample
+	
+	AudioBuffer buffer;
+	
+	buffer.mNumberChannels = 1;
+	buffer.mDataByteSize = inNumberFrames * 2;
+	buffer.mData = malloc( inNumberFrames * 2 );
+	
+	// Put buffer in a AudioBufferList
+	AudioBufferList bufferList;
+	bufferList.mNumberBuffers = 1;
+	bufferList.mBuffers[0] = buffer;
+	
+    // Then:
+    // Obtain recorded samples
+	
+    OSStatus status;
+	
+    status = AudioUnitRender([audioIO micInput],
+                             ioActionFlags,
+                             inTimeStamp,
+                             inBusNumber,
+                             inNumberFrames,
+                             &bufferList);
+	checkStatus(status);
+	
+    // Now, we have the samples we just read sitting in buffers in bufferList
+	// Process the new data
+	[iosAudio processAudio:&bufferList];
+	
+	// release the malloc'ed data in the buffer we created earlier
+	free(bufferList.mBuffers[0].mData);
+	
+    return noErr;
+}
+
+
 void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
 	ViewController *viewController =
     (__bridge ViewController *)inClientData;
@@ -151,8 +198,24 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
     }];
     
     [self.volumeSlider addTarget:self action:@selector(handleVolumeChanged:) forControlEvents:UIControlEventValueChanged];
+    
+    // Add audio route change listner
+    [[NSNotificationCenter defaultCenter] addObserver:session selector:@selector(audioRouteChangeListener:) name:AVAudioSessionRouteChangeNotification object:nil];
+    
 }
 
+- (void)audioRouteChangeListener: (NSNotification*)notification {
+    if (self.isHeadsetPluggedIn && self.headsetSwitch.on) {
+        // Dismiss alert and set headsetswitch to on
+        [self.sensorAlert dismissWithClickedButtonIndex:0 animated:YES];
+        self.headsetSwitch.on = YES;
+        [self flippedHeadset:self];
+    } else if (!self.isHeadsetPluggedIn && self.headsetSwitch.on) {
+        // Stop all services
+        [self flippedHeadset:self];
+    } else
+        self.inputSource.text = @"Poop";
+}
 
 - (void)createToneUnit {
 	// Configure the search parameters to find the default playback output unit
@@ -235,66 +298,6 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
     if (self.powerTone) self.volumeSlider.value = 1.0f;
 }
 
--(void) levelTimerCallBack:(NSTimer *)timer {
-    [self.recorder updateMeters];
-    
-    double avgDBInput = [self.recorder averagePowerForChannel:0];
-//    double peakDBInput = [self.recorder peakPowerForChannel:0];
-    int currentBit = 0;
-    
-    if (avgDBInput > self.cutOff) {
-        currentBit = 1;
-    }
-    
-    NSLog(@"Avg DB:     %3.3f", avgDBInput);
-    NSLog(@"Cut Off DB: %3.3f", self.cutOff);
-    
-    self.currentBitLabel.text = [NSString stringWithFormat:@"%d", currentBit];
-    
-    if (currentBit != self.lastBit) {
-        self.runningTotal++;
-        self.lastBit = currentBit;
-        NSLog(@"                    Bit Flipped");
-    }
-    
-    if (self.isHeadsetPluggedIn)
-        self.inputSource.text = @"Headset";
-    else if ([self.inputSource.text isEqualToString:@"Headset"]) {
-        // Stop Timer
-        [timer invalidate];
-        timer = nil;
-        
-        // Kill power Tone
-        [self togglePower:NO];
-        
-        // Setup image for Alert View
-        UIImageView *alertImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"GSF_Insert_sensor_alert-v2.png"]];
-        
-        
-        // Setup Alert View
-        self.sensorAlert =
-         [[SDCAlertView alloc]
-         initWithTitle:@"No Sensor"
-         message:@"Please insert the GSF sensor to collect this data."
-         delegate:self
-         cancelButtonTitle:nil
-         otherButtonTitles:@"Cancel", @"Use Mic", nil];
-        
-        [alertImageView setTranslatesAutoresizingMaskIntoConstraints:NO];
-        [self.sensorAlert.contentView addSubview:alertImageView];
-        [alertImageView sdc_horizontallyCenterInSuperview];
-        [self.sensorAlert.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|-[alertImageView]|"
-                                                                                               options:0
-                                                                                               metrics:nil
-                                                                                                 views:NSDictionaryOfVariableBindings(alertImageView)]];
-        // Alert Callback Setup
-        self.alertTimer = [NSTimer scheduledTimerWithTimeInterval:0.03 target:self selector:@selector(alertTimerCallBack:) userInfo:nil repeats:YES];
-        
-        // Show Alert
-        [self.sensorAlert show];
-    } else
-        self.inputSource.text = @"Mic";
-}
 
 // Dismiss alertview if headset is found
 - (void) alertTimerCallBack:(NSTimer *) timer {
