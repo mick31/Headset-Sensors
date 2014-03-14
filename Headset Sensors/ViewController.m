@@ -66,6 +66,7 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
 @synthesize timerInterval = _timerInterval;
 @synthesize runningTotal = _runningTotal;
 @synthesize lastBit = _lastBit;
+@synthesize cutOff = _cutOff;
 @synthesize inputThroughput = _inputThroughput;
 @synthesize inputSource = _inputSource;
 @synthesize headsetSwitch = _headsetSwitch;
@@ -73,6 +74,7 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
 @synthesize sensorAlert = _sensorAlert;
 @synthesize timeIntervalLabel = _timeIntervalLabel;
 @synthesize timeIntervalSlider =_timeIntervalSlider;
+@synthesize cutOffSlider = _cutOffSlider;
 
 @synthesize powerTone = _powerTone;
 @synthesize frequency = _frequency;
@@ -80,9 +82,7 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
 @synthesize sampleRate = _sampleRate;
 @synthesize theta = _theta;
 @synthesize volumeSlider = _volumeSlider;
-@synthesize frequencySlider = _frequencySlider;
 @synthesize frequencyOut = _frequencyOut;
-@synthesize amplitudeSlider = _amplitudeSlider;
 @synthesize amplitudeOut = _amplitudeOut;
 
 
@@ -100,7 +100,6 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
     
     success = [session setActive:YES error:&error];
     if(!success) NSLog(@"ERROR viewDidLoad: AVAudioSession failed activating- %@", error);
-    else NSLog(@"audioSession active");
     
     // MIC Input Setup
     NSURL *url = [NSURL fileURLWithPath:@"dev/null"];
@@ -126,14 +125,15 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
     } else
         NSLog(@"%@",[err description]);
     
-    _timerInterval = 0.03;
+    _timerInterval = 0.001;
     _runningTotal = 0;
     _lastBit = 0;
+    _cutOff = -1.000;
     
     // Power tone setup
     _sampleRate = 44100;
-    _frequency = 5000;
-    _amplitude = 0.0;
+    _frequency = 20000;
+    _amplitude = 0.75;
     
     // Setup master volume controller
     MPVolumeView *volumeView = [MPVolumeView new];
@@ -156,8 +156,6 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
 
 - (void)createToneUnit {
 	// Configure the search parameters to find the default playback output unit
-	// (called the kAudioUnitSubType_RemoteIO on iOS but
-	// kAudioUnitSubType_DefaultOutput on Mac OS X)
 	AudioComponentDescription defaultOutputDescription;
 	defaultOutputDescription.componentType = kAudioUnitType_Output;
 	defaultOutputDescription.componentSubType = kAudioUnitSubType_RemoteIO;
@@ -241,18 +239,22 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
     [self.recorder updateMeters];
     
     double avgDBInput = [self.recorder averagePowerForChannel:0];
-    double peakDBInput = [self.recorder peakPowerForChannel:0];
+//    double peakDBInput = [self.recorder peakPowerForChannel:0];
     int currentBit = 0;
     
-    if (avgDBInput > -20.0f && peakDBInput > -0.5f) {
+    if (avgDBInput > self.cutOff) {
         currentBit = 1;
     }
+    
+    NSLog(@"Avg DB:     %3.3f", avgDBInput);
+    NSLog(@"Cut Off DB: %3.3f", self.cutOff);
     
     self.currentBitLabel.text = [NSString stringWithFormat:@"%d", currentBit];
     
     if (currentBit != self.lastBit) {
         self.runningTotal++;
         self.lastBit = currentBit;
+        NSLog(@"                    Bit Flipped");
     }
     
     if (self.isHeadsetPluggedIn)
@@ -311,8 +313,9 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
 }
 
 - (void)secondTimerCallBack:(NSTimer *)timer {
-    self.inputThroughput.text = [NSString stringWithFormat:@"%3d", self.runningTotal];
+    self.inputThroughput.text = [NSString stringWithFormat:@"%d", self.runningTotal];
     self.runningTotal = 0;
+    NSLog(@"                    One Second");
 }
 
 - (void)alertView:(SDCAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
@@ -322,7 +325,9 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
             self.headsetSwitch.on = NO ;
             self.inputSource.text = @"None";
             
-            //Disable slider
+            //Disable sliders
+            self.cutOffSlider.userInteractionEnabled = NO;
+            self.cutOffSlider.tintColor = [UIColor grayColor];
             self.timeIntervalSlider.userInteractionEnabled = NO;
             self.timeIntervalSlider.tintColor = [UIColor grayColor];
             break;
@@ -334,19 +339,15 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
             // Change input label text
             self.inputSource.text = @"Mic";
             
-            //Enable slider
+            //Enable sliders
+            self.cutOffSlider.userInteractionEnabled = YES;
+            self.cutOffSlider.tintColor = [UIColor greenColor];
             self.timeIntervalSlider.userInteractionEnabled = YES;
             self.timeIntervalSlider.tintColor = [UIColor greenColor];
             break;
         default:
             NSLog(@"Blowing It: Alert not handled");
             break;
-         
-        //Disable sliders
-        self.frequencySlider.userInteractionEnabled = NO;
-        self.frequencySlider.tintColor = [UIColor grayColor];
-        self.amplitudeSlider.userInteractionEnabled = NO;
-        self.amplitudeSlider.tintColor = [UIColor grayColor];
     }
     
     //Disable alert Timer
@@ -393,10 +394,8 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
         //Enable sliders
         self.timeIntervalSlider.userInteractionEnabled = YES;
         self.timeIntervalSlider.tintColor = [UIColor greenColor];
-        self.frequencySlider.userInteractionEnabled = YES;
-        self.frequencySlider.tintColor = [UIColor greenColor];
-        self.amplitudeSlider.userInteractionEnabled = YES;
-        self.amplitudeSlider.tintColor = [UIColor greenColor];
+        self.cutOffSlider.userInteractionEnabled = YES;
+        self.cutOffSlider.tintColor = [UIColor greenColor];
     } else if (!self.headsetSwitch.on){
         // Stop samplers
         [self.levelTimer invalidate];
@@ -413,10 +412,8 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
         //Disable sliders
         self.timeIntervalSlider.userInteractionEnabled = NO;
         self.timeIntervalSlider.tintColor = [UIColor grayColor];
-        self.frequencySlider.userInteractionEnabled = NO;
-        self.frequencySlider.tintColor = [UIColor grayColor];
-        self.amplitudeSlider.userInteractionEnabled = NO;
-        self.amplitudeSlider.tintColor = [UIColor grayColor];
+        self.cutOffSlider.userInteractionEnabled = NO;
+        self.cutOffSlider.tintColor = [UIColor grayColor];
     } else {
         // Stop samplers
         [self.levelTimer invalidate];
@@ -469,20 +466,9 @@ void ToneInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
     self.secondTimer = [NSTimer scheduledTimerWithTimeInterval:1.0f target:self selector:@selector(secondTimerCallBack:) userInfo:nil repeats:YES];
 }
 
-
-- (IBAction)frequencySliderChange:(id)sender {
-    self.frequency = self.frequencySlider.value;
-	self.frequencyOut.text = [NSString stringWithFormat:@"%4.1f Hz", self.frequency];
-}
-
-- (IBAction)amplitudeSliderChange:(id)sender {
-    if (self.amplitudeSlider.value < 0.75f) {
-        self.amplitude = self.amplitudeSlider.value;
-        self.amplitudeOut.text = [NSString stringWithFormat:@"%3.0f", self.amplitude*100];
-    } else {
-        self.amplitude = 0.75f;
-        self.amplitudeOut.text = [NSString stringWithFormat:@"%3.0f", self.amplitude*100];
-    }
+- (IBAction)cutOffSliderChange:(id)sender {
+    self.cutOff = self.cutOffSlider.value;
+    self.cutOffLabel.text = [NSString stringWithFormat:@"%3.3f", self.cutOff];
 }
 
 
