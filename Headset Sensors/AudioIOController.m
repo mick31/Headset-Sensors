@@ -150,39 +150,55 @@ static OSStatus playbackCallback(void *inRefCon,
 								  sizeof(flag));
 	checkStatus(status);
 	
-	// Describe format
-	AudioStreamBasicDescription audioFormat;
-	audioFormat.mSampleRate			= 44100.00;
-	audioFormat.mFormatID			= kAudioFormatLinearPCM;
-	audioFormat.mFormatFlags		= kAudioFormatFlagIsSignedInteger | kAudioFormatFlagIsPacked;
-	audioFormat.mFramesPerPacket	= 1;
-	audioFormat.mChannelsPerFrame	= 1;
-	audioFormat.mBitsPerChannel		= 16;
-	audioFormat.mBytesPerPacket		= 2;
-	audioFormat.mBytesPerFrame		= 2;
+	// Describe input format
+	AudioStreamBasicDescription audioInFormat;
+	audioInFormat.mSampleRate			= 44100.00;
+	audioInFormat.mFormatID			= kAudioFormatLinearPCM;
+	audioInFormat.mFormatFlags		= kAudioFormatFlagIsSignedInteger | kAudioFormatFlagIsPacked;
+	audioInFormat.mFramesPerPacket	= 1;
+	audioInFormat.mChannelsPerFrame	= 1;
+	audioInFormat.mBitsPerChannel		= 16;
+	audioInFormat.mBytesPerPacket		= 2;
+	audioInFormat.mBytesPerFrame		= 2;
 	
-	// Apply format
-	status = AudioUnitSetProperty(audioUnit,
+    // Describe output format
+    // Set the format to 32 bit, single channel, floating point, linear PCM
+	const int four_bytes_per_float = 4;
+	const int eight_bits_per_byte = 8;
+	AudioStreamBasicDescription streamFormat;
+	streamFormat.mSampleRate = _sampleRate;
+	streamFormat.mFormatID = kAudioFormatLinearPCM;
+	streamFormat.mFormatFlags =
+    kAudioFormatFlagsNativeFloatPacked | kAudioFormatFlagIsNonInterleaved;
+	streamFormat.mBytesPerPacket = four_bytes_per_float;
+	streamFormat.mFramesPerPacket = 1;
+	streamFormat.mBytesPerFrame = four_bytes_per_float;
+	streamFormat.mChannelsPerFrame = 1;
+	streamFormat.mBitsPerChannel = four_bytes_per_float * eight_bits_per_byte;
+    
+	// Apply formats
+	status = AudioUnitSetProperty([audioIO inputAudioUnit],
 								  kAudioUnitProperty_StreamFormat,
 								  kAudioUnitScope_Output,
 								  kInputBus,
-								  &audioFormat,
-								  sizeof(audioFormat));
+								  &audioInFormat,
+								  sizeof(audioInFormat));
 	checkStatus(status);
-	status = AudioUnitSetProperty(audioUnit,
+    
+	status = AudioUnitSetProperty([audioIO powerOutAudioUnit],
 								  kAudioUnitProperty_StreamFormat,
 								  kAudioUnitScope_Input,
 								  kOutputBus,
-								  &audioFormat,
-								  sizeof(audioFormat));
+								  &streamFormat,
+								  sizeof(streamFormat));
 	checkStatus(status);
 	
 	
 	// Set input callback
 	AURenderCallbackStruct callbackStruct;
 	callbackStruct.inputProc = recordingCallback;
-	callbackStruct.inputProcRefCon = self;
-	status = AudioUnitSetProperty(audioUnit,
+	callbackStruct.inputProcRefCon = (__bridge void *)(self);
+	status = AudioUnitSetProperty([audioIO inputAudioUnit],
 								  kAudioOutputUnitProperty_SetInputCallback,
 								  kAudioUnitScope_Global,
 								  kInputBus,
@@ -192,8 +208,8 @@ static OSStatus playbackCallback(void *inRefCon,
 	
 	// Set output callback
 	callbackStruct.inputProc = playbackCallback;
-	callbackStruct.inputProcRefCon = self;
-	status = AudioUnitSetProperty(audioUnit,
+	callbackStruct.inputProcRefCon = (__bridge void *)(self);
+	status = AudioUnitSetProperty([audioIO powerOutAudioUnit],
 								  kAudioUnitProperty_SetRenderCallback,
 								  kAudioUnitScope_Global,
 								  kOutputBus,
@@ -201,27 +217,74 @@ static OSStatus playbackCallback(void *inRefCon,
 								  sizeof(callbackStruct));
 	checkStatus(status);
 	
-	// Disable buffer allocation for the recorder (optional - do this if we want to pass in our own)
-	flag = 0;
-	status = AudioUnitSetProperty(audioUnit,
-								  kAudioUnitProperty_ShouldAllocateBuffer,
-								  kAudioUnitScope_Output,
-								  kInputBus,
-								  &flag,
-								  sizeof(flag));
-	
+		
 	// Allocate our own buffers (1 channel, 16 bits per sample, thus 16 bits per frame, thus 2 bytes per frame).
 	// Practice learns the buffers used contain 512 frames, if this changes it will be fixed in processAudio.
-	tempBuffer.mNumberChannels = 1;
-	tempBuffer.mDataByteSize = 512 * 2;
-	tempBuffer.mData = malloc( 512 * 2 );
+	_micBuffer.mNumberChannels = 1;
+	_micBuffer.mDataByteSize = 512 * 2;
+	_micBuffer.mData = malloc( 512 * 2 );
 	
 	// Initialise
-	status = AudioUnitInitialize(audioUnit);
+	status = AudioUnitInitialize([audioIO inputAudioUnit]);
 	checkStatus(status);
+    
+    status = AudioUnitInitialize([audioIO powerOutAudioUnit]);
+	checkStatus(status);
+    
+    // Setup master volume controller
+    MPVolumeView *volumeView = [MPVolumeView new];
+    volumeView.showsRouteButton = NO;
+    volumeView.showsVolumeSlider = NO;
+    [self.view addSubview:volumeView];
+    
+    __weak __typeof(self)weakSelf = self;
+    [[volumeView subviews] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        if ([obj isKindOfClass:[UISlider class]]) {
+            __strong __typeof(weakSelf)strongSelf = weakSelf;
+            strongSelf.volumeSlider = obj;
+            *stop = YES;
+        }
+    }];
+    
+    [self.volumeSlider addTarget:self action:@selector(handleVolumeChanged:) forControlEvents:UIControlEventValueChanged];
+    
+    // Add audio route change listner
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(audioRouteChangeListener:) name:AVAudioSessionRouteChangeNotification object:nil];
 	
 	return self;
 }
+
+- (void)togglePower:(BOOL)powerOn {
+	if (!powerOn) {
+        // Set Master Volume to 50%
+        self.volumeSlider.value = 0.5f;
+        
+		// Stop and release power tone
+        AudioOutputUnitStop([self.powerOutAudioUnit]);
+		AudioUnitUninitialize(self.powerOutAudioUnit);
+		AudioComponentInstanceDispose(self.powerOutAudioUnit);
+		self.powerOutAudioUnit = nil;
+	} else {
+		[self createToneUnit];
+		
+		// Stop changing parameters on the unit
+		OSErr err = AudioUnitInitialize(self.powerTone);
+		NSAssert1(err == noErr, @"Error initializing unit: %hd", err);
+		
+        // Set Master Volume to 100%
+        self.volumeSlider.value = 1.0f;
+        
+		// Start playback
+		err = AudioOutputUnitStart(self.powerTone);
+		NSAssert1(err == noErr, @"Error starting unit: %hd", err);
+	}
+}
+
+
+- (void)processInputAudio: (AudioBufferList*) bufferlist {
+    
+}
+
 
 
 @end
