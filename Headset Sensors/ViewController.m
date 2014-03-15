@@ -48,7 +48,7 @@ static OSStatus recordingCallback(void *inRefCon,
 	
     OSStatus status;
 	
-    status = AudioUnitRender([audioIO inputAudioUnit],
+    status = AudioUnitRender(audioIO.inputAudioUnit,
                              ioActionFlags,
                              inTimeStamp,
                              inBusNumber,
@@ -175,7 +175,7 @@ void routeInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
 	
 	// Enable IO for recording
 	UInt32 flag = 1;
-	checkStatus(AudioUnitSetProperty([audioIO inputAudioUnit],
+	checkStatus(AudioUnitSetProperty(audioIO.inputAudioUnit,
                                      kAudioOutputUnitProperty_EnableIO,
                                      kAudioUnitScope_Input,
                                      kInputBus,
@@ -183,7 +183,7 @@ void routeInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
                                      sizeof(flag)), (char *) "initRemotIO- AudioUnitSetProperty- kAudioOutputUnitProperty_EnableIO- inputAudioUnit");
 	
 	// Enable IO for playback
-	checkStatus(AudioUnitSetProperty([audioIO powerOutAudioUnit],
+	checkStatus(AudioUnitSetProperty(audioIO.powerOutAudioUnit,
                                      kAudioOutputUnitProperty_EnableIO,
                                      kAudioUnitScope_Output,
                                      kOutputBus,
@@ -217,14 +217,14 @@ void routeInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
 	powerOutFormat.mBitsPerChannel    = four_bytes_per_float * eight_bits_per_byte;
     
 	// Apply formats
-	checkStatus(AudioUnitSetProperty([audioIO inputAudioUnit],
+	checkStatus(AudioUnitSetProperty(audioIO.inputAudioUnit,
                                      kAudioUnitProperty_StreamFormat,
                                      kAudioUnitScope_Output,
                                      kInputBus,
                                      &audioInFormat,
                                      sizeof(audioInFormat)), (char *) "initRemotIO- AudioUnitSetProperty- kAudioUnitProperty_StreamFormat- inputAudioUnit");
     
-	checkStatus(AudioUnitSetProperty([audioIO powerOutAudioUnit],
+	checkStatus(AudioUnitSetProperty(audioIO.powerOutAudioUnit,
                                      kAudioUnitProperty_StreamFormat,
                                      kAudioUnitScope_Input,
                                      kOutputBus,
@@ -236,7 +236,7 @@ void routeInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
 	AURenderCallbackStruct callbackStruct;
 	callbackStruct.inputProc = recordingCallback;
 	callbackStruct.inputProcRefCon = (__bridge void *)(self);
-	checkStatus(AudioUnitSetProperty([audioIO inputAudioUnit],
+	checkStatus(AudioUnitSetProperty(audioIO.inputAudioUnit,
                                      kAudioOutputUnitProperty_SetInputCallback,
                                      kAudioUnitScope_Global,
                                      kInputBus,
@@ -246,7 +246,7 @@ void routeInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
 	// Set output callback
 	callbackStruct.inputProc = playbackCallback;
 	callbackStruct.inputProcRefCon = (__bridge void *)(self);
-	checkStatus(AudioUnitSetProperty([audioIO powerOutAudioUnit],
+	checkStatus(AudioUnitSetProperty(audioIO.powerOutAudioUnit,
                                      kAudioUnitProperty_SetRenderCallback,
                                      kAudioUnitScope_Global,
                                      kOutputBus,
@@ -261,8 +261,8 @@ void routeInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
 	_micBuffer.mData = malloc( 512 * 2 );
 	
 	// Initialise both audio units
-	checkStatus(AudioUnitInitialize([audioIO inputAudioUnit]), (char *) "initRemotIO- AudioUnitSetProperty- inputAudioUnit");
-	checkStatus(AudioUnitInitialize([audioIO powerOutAudioUnit]), (char *) "initRemotIO- AudioUnitSetProperty- powerOutAudioUnit");
+	checkStatus(AudioUnitInitialize(audioIO.inputAudioUnit), (char *) "initRemotIO- AudioUnitSetProperty- inputAudioUnit");
+	checkStatus(AudioUnitInitialize(audioIO.powerOutAudioUnit), (char *) "initRemotIO- AudioUnitSetProperty- powerOutAudioUnit");
 }
 
 - (void) processInput: (AudioBufferList*) bufferList{
