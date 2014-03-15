@@ -14,14 +14,23 @@
 #import <MediaPlayer/MPVolumeView.h>
 #import <AudioToolbox/AudioToolbox.h>
 
-@import MapKit;
 #import <SDCAlertView.h>
 #import <UIView+SDCAutoLayout.h>
 
 
+#ifndef max
+#define max( a, b ) ( ((a) > (b)) ? (a) : (b) )
+#endif
+
+#ifndef min
+#define min( a, b ) ( ((a) < (b)) ? (a) : (b) )
+#endif
+
 @interface ViewController : UIViewController
 
 // input properties
+@property AudioComponentInstance inputAudioUnit;
+@property AudioBuffer micBuffer;
 @property NSTimer *secondTimer;
 @property int runningTotal;
 @property int lastBit;
@@ -40,17 +49,18 @@
 @property (nonatomic, strong) UISlider *volumeSlider;
 @property (weak, nonatomic) IBOutlet UILabel *frequencyOut;
 @property (weak, nonatomic) IBOutlet UILabel *amplitudeOut;
+@property AudioComponentInstance powerOutAudioUnit;
+@property double frequency;
+@property double amplitude;
+@property double sampleRate;
+@property double theta;
 
 // function prototypes
-- (void)levelTimerCallBack:(NSTimer *) timer;
-- (void)alertTimerCallBack:(NSTimer *) timer;
 - (void)secondTimerCallBack:(NSTimer *) timer;
 - (BOOL)isHeadsetPluggedIn;
 - (IBAction)flippedHeadset:(id)sender;
-- (IBAction)timeSliderChange:(id)sender;
-- (IBAction)cutOffSliderChange:(id)sender;
-- (void) processAudio: (AudioBufferList*) bufferList;
-- (void)togglePower:(BOOL)powerOn;
+- (void)toggleCollectIO:(BOOL)connect;
+- (void)processInput: (AudioBufferList*) bufferlist;
 
 @end
 

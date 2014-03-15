@@ -35,12 +35,6 @@
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Timer Interval (ms):" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="qfR-y2-iXM">
-                                <rect key="frame" x="24" y="127" width="146" height="21"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <nil key="highlightedColor"/>
-                            </label>
                             <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Source:" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="DuJ-pK-bQL">
                                 <rect key="frame" x="103" y="387" width="60" height="21"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
@@ -127,55 +121,16 @@
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="1" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="53Y-Z5-SWO">
-                                <rect key="frame" x="185" y="127" width="75" height="21"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                            <slider opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="0.001" minValue="0.001" maxValue="0.10000000000000001" translatesAutoresizingMaskIntoConstraints="NO" id="t6G-Lm-32W">
-                                <rect key="frame" x="41" y="156" width="221" height="34"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <color key="tintColor" red="0.83069378400000005" green="0.82366092349999998" blue="0.80754223209999998" alpha="0.97999999999999998" colorSpace="calibratedRGB"/>
-                                <connections>
-                                    <action selector="timeSliderChange:" destination="vXZ-lx-hvc" eventType="valueChanged" id="GuZ-p5-fBO"/>
-                                </connections>
-                            </slider>
-                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Bit Cutoff (dB):" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="XD5-Iy-tmi">
-                                <rect key="frame" x="49" y="197" width="114" height="21"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="-1.000" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="4Wi-hG-i8g">
-                                <rect key="frame" x="171" y="197" width="89" height="21"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                            <slider opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="-1" minValue="-20" maxValue="0.0" translatesAutoresizingMaskIntoConstraints="NO" id="MPi-TI-gfP">
-                                <rect key="frame" x="41" y="226" width="221" height="34"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <color key="tintColor" red="0.7965970335" green="0.83069378400000005" blue="0.83011993039999998" alpha="0.97999999999999998" colorSpace="calibratedRGB"/>
-                                <connections>
-                                    <action selector="cutOffSliderChange:" destination="vXZ-lx-hvc" eventType="valueChanged" id="BXW-Sn-PVB"/>
-                                </connections>
-                            </slider>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                     </view>
                     <connections>
                         <outlet property="amplitudeOut" destination="kBr-Oh-iiV" id="Ehw-Vz-Gtm"/>
                         <outlet property="currentBitLabel" destination="LU6-h3-xuF" id="0H3-pZ-pfw"/>
-                        <outlet property="cutOffLabel" destination="4Wi-hG-i8g" id="Q6Y-zz-Yt0"/>
-                        <outlet property="cutOffSlider" destination="MPi-TI-gfP" id="VWj-tX-CKi"/>
                         <outlet property="frequencyOut" destination="29H-2M-ZCk" id="71M-Se-60D"/>
                         <outlet property="headsetSwitch" destination="2m0-iL-3ib" id="CNy-FT-YqK"/>
                         <outlet property="inputSource" destination="qye-8V-emE" id="iW2-vn-j3G"/>
                         <outlet property="inputThroughput" destination="Rtz-4w-t4w" id="OoH-5B-Dix"/>
-                        <outlet property="timeIntervalLabel" destination="53Y-Z5-SWO" id="qGd-Dj-hvB"/>
-                        <outlet property="timeIntervalSlider" destination="t6G-Lm-32W" id="Iyh-1o-BwY"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="x5A-6p-PRh" sceneMemberID="firstResponder"/>
