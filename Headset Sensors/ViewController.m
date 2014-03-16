@@ -103,14 +103,6 @@ static OSStatus playbackCallback(void *inRefCon,
 	return noErr;
 }
 
-void routeInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
-	ViewController *viewController =
-    (__bridge ViewController *)inClientData;
-	
-    // turn power off if interruption occurs
-	[viewController toggleCollectIO:NO];
-}
-
 @implementation ViewController
 
 @synthesize runningTotal = _runningTotal;
@@ -154,7 +146,13 @@ void routeInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
     [self.volumeSlider addTarget:self action:@selector(handleVolumeChanged:) forControlEvents:UIControlEventValueChanged];
     
     // Add audio route change listner
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(audioRouteChangeListener:) name:AVAudioSessionRouteChangeNotification object:nil];
+    AVAudioSession *session = [AVAudioSession sharedInstance];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(audioRouteChangeListener:) name:AVAudioSessionRouteChangeNotification object:session];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(routeInterruptionListener:) name:AVAudioSessionInterruptionNotification object:session];
+}
+
+- (void)handleVolumeChanged:(id)sender{
+    if (self.ioAudioUnit) self.volumeSlider.value = 1.0f;
 }
 
 - (void) initRemoteIO {
@@ -328,8 +326,11 @@ void routeInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
         self.inputSource.text = @"Poop";
 }
 
-- (void)handleVolumeChanged:(id)sender{
-    if (self.ioAudioUnit) self.volumeSlider.value = 1.0f;
+void routeInterruptionListener (void *inClientData, UInt32 inInterruptionState) {
+	ViewController *viewController = (__bridge ViewController *)(inClientData);
+	
+    // turn power off if interruption occurs
+	[viewController toggleCollectIO:NO];
 }
 
 - (void)secondTimerCallBack:(NSTimer *)timer {
