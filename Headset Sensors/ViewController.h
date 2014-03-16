@@ -29,7 +29,7 @@
 @interface ViewController : UIViewController
 
 // input properties
-@property AudioComponentInstance inputAudioUnit;
+@property AudioComponentInstance ioAudioUnit;
 @property AudioBuffer micBuffer;
 @property NSTimer *secondTimer;
 @property int runningTotal;
@@ -49,7 +49,6 @@
 @property (nonatomic, strong) UISlider *volumeSlider;
 @property (weak, nonatomic) IBOutlet UILabel *frequencyOut;
 @property (weak, nonatomic) IBOutlet UILabel *amplitudeOut;
-@property AudioComponentInstance powerOutAudioUnit;
 @property double frequency;
 @property double amplitude;
 @property double sampleRate;

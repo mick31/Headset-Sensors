@@ -48,7 +48,7 @@ static OSStatus recordingCallback(void *inRefCon,
 	
     OSStatus status;
 	
-    status = AudioUnitRender(audioIO.inputAudioUnit,
+    status = AudioUnitRender(audioIO.ioAudioUnit,
                              ioActionFlags,
                              inTimeStamp,
                              inBusNumber,
@@ -170,89 +170,84 @@ void routeInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
 	AudioComponent inputComponent = AudioComponentFindNext(NULL, &desc);
 	
 	// Get input audio unit
-	checkStatus(AudioComponentInstanceNew(inputComponent, &_powerOutAudioUnit), (char *) "initRemotIO- AudioComponenInstanceNew- powerOutAudioUnit");
-    checkStatus(AudioComponentInstanceNew(inputComponent, &_inputAudioUnit), (char *) "initRemotIO- AudioComponenInstanceNew- inputAudioUnit");
+	checkStatus(AudioComponentInstanceNew(inputComponent, &_ioAudioUnit), (char *) "initRemotIO- AudioComponenInstanceNew- ioAudioUnit");
 	
 	// Enable IO for recording
 	UInt32 flag = 1;
-	checkStatus(AudioUnitSetProperty(audioIO.inputAudioUnit,
+	checkStatus(AudioUnitSetProperty(audioIO.ioAudioUnit,
                                      kAudioOutputUnitProperty_EnableIO,
                                      kAudioUnitScope_Input,
                                      kInputBus,
                                      &flag,
-                                     sizeof(flag)), (char *) "initRemotIO- AudioUnitSetProperty- kAudioOutputUnitProperty_EnableIO- inputAudioUnit");
+                                     sizeof(flag)), (char *) "initRemotIO- AudioUnitSetProperty- kAudioOutputUnitProperty_EnableIO- ioAudioUnit");
 	
 	// Enable IO for playback
-	checkStatus(AudioUnitSetProperty(audioIO.powerOutAudioUnit,
+	checkStatus(AudioUnitSetProperty(audioIO.ioAudioUnit,
                                      kAudioOutputUnitProperty_EnableIO,
                                      kAudioUnitScope_Output,
                                      kOutputBus,
                                      &flag,
-                                     sizeof(flag)), (char *) "initRemotIO- AudioUnitSetProperty- kAudioOutputUnitProperty_EnableIO- powerOutAudioUnit");
-	
-	// Describe input format
-	AudioStreamBasicDescription audioInFormat;
-	audioInFormat.mSampleRate		= 44100.00;
-	audioInFormat.mFormatID         = kAudioFormatLinearPCM;
-	audioInFormat.mFormatFlags		= kAudioFormatFlagIsSignedInteger | kAudioFormatFlagIsPacked;
-	audioInFormat.mFramesPerPacket	= 1;
-	audioInFormat.mChannelsPerFrame	= 1;
-	audioInFormat.mBitsPerChannel	= 16;
-	audioInFormat.mBytesPerPacket	= 2;
-	audioInFormat.mBytesPerFrame	= 2;
+                                     sizeof(flag)), (char *) "initRemotIO- AudioUnitSetProperty- kAudioOutputUnitProperty_EnableIO- ioAudioUnit");
 	
     // Describe output format
     // Set the format to 32 bit, single channel, floating point, linear PCM
 	const int four_bytes_per_float = 4;
 	const int eight_bits_per_byte = 8;
-	AudioStreamBasicDescription powerOutFormat;
-	powerOutFormat.mSampleRate        = _sampleRate;
-	powerOutFormat.mFormatID          = kAudioFormatLinearPCM;
-	powerOutFormat.mFormatFlags       =
+	AudioStreamBasicDescription audioFormat;
+	audioFormat.mSampleRate        = _sampleRate;
+	audioFormat.mFormatID          = kAudioFormatLinearPCM;
+	audioFormat.mFormatFlags       =
     kAudioFormatFlagsNativeFloatPacked | kAudioFormatFlagIsNonInterleaved;
-	powerOutFormat.mBytesPerPacket    = four_bytes_per_float;
-	powerOutFormat.mFramesPerPacket   = 1;
-	powerOutFormat.mBytesPerFrame     = four_bytes_per_float;
-	powerOutFormat.mChannelsPerFrame  = 1;
-	powerOutFormat.mBitsPerChannel    = four_bytes_per_float * eight_bits_per_byte;
+	audioFormat.mBytesPerPacket    = four_bytes_per_float;
+	audioFormat.mFramesPerPacket   = 1;
+	audioFormat.mBytesPerFrame     = four_bytes_per_float;
+	audioFormat.mChannelsPerFrame  = 1;
+	audioFormat.mBitsPerChannel    = four_bytes_per_float * eight_bits_per_byte;
     
-	// Apply formats
-	checkStatus(AudioUnitSetProperty(audioIO.inputAudioUnit,
+	// Apply format
+	checkStatus(AudioUnitSetProperty(audioIO.ioAudioUnit,
                                      kAudioUnitProperty_StreamFormat,
                                      kAudioUnitScope_Output,
                                      kInputBus,
-                                     &audioInFormat,
-                                     sizeof(audioInFormat)), (char *) "initRemotIO- AudioUnitSetProperty- kAudioUnitProperty_StreamFormat- inputAudioUnit");
+                                     &audioFormat,
+                                     sizeof(audioFormat)), (char *) "initRemotIO- AudioUnitSetProperty- kAudioUnitProperty_StreamFormat- ioAudioUnit");
     
-	checkStatus(AudioUnitSetProperty(audioIO.powerOutAudioUnit,
+	checkStatus(AudioUnitSetProperty(audioIO.ioAudioUnit,
                                      kAudioUnitProperty_StreamFormat,
                                      kAudioUnitScope_Input,
                                      kOutputBus,
-                                     &powerOutFormat,
-                                     sizeof(powerOutFormat)), (char *) "initRemotIO- AudioUnitSetProperty- kAudioUnitProperty_StreamFormat- powerOutAudioUnit");
+                                     &audioFormat,
+                                     sizeof(audioFormat)), (char *) "initRemotIO- AudioUnitSetProperty- kAudioUnitProperty_StreamFormat- ioAudioUnit");
 	
 	
 	// Set input callback
 	AURenderCallbackStruct callbackStruct;
 	callbackStruct.inputProc = recordingCallback;
 	callbackStruct.inputProcRefCon = (__bridge void *)(self);
-	checkStatus(AudioUnitSetProperty(audioIO.inputAudioUnit,
+	checkStatus(AudioUnitSetProperty(audioIO.ioAudioUnit,
                                      kAudioOutputUnitProperty_SetInputCallback,
                                      kAudioUnitScope_Global,
                                      kInputBus,
                                      &callbackStruct,
-                                     sizeof(callbackStruct)), (char *) "initRemotIO- AudioUnitSetProperty- kAudioOutputUnitProperty_SetInputCallback- inputAudioUnit");
+                                     sizeof(callbackStruct)), (char *) "initRemotIO- AudioUnitSetProperty- kAudioOutputUnitProperty_SetInputCallback- ioAudioUnit");
 	
 	// Set output callback
 	callbackStruct.inputProc = playbackCallback;
 	callbackStruct.inputProcRefCon = (__bridge void *)(self);
-	checkStatus(AudioUnitSetProperty(audioIO.powerOutAudioUnit,
+	checkStatus(AudioUnitSetProperty(audioIO.ioAudioUnit,
                                      kAudioUnitProperty_SetRenderCallback,
                                      kAudioUnitScope_Global,
                                      kOutputBus,
                                      &callbackStruct,
-                                     sizeof(callbackStruct)), (char *) "initRemotIO- AudioUnitSetProperty- kAudioOutputUnitProperty_SetInputCallback- powerOutAudioUnit");
+                                     sizeof(callbackStruct)), (char *) "initRemotIO- AudioUnitSetProperty- kAudioOutputUnitProperty_SetInputCallback- ioAudioUnit");
 	
+    flag = 0;
+	checkStatus(AudioUnitSetProperty(audioIO.ioAudioUnit,
+								  kAudioUnitProperty_ShouldAllocateBuffer,
+								  kAudioUnitScope_Output,
+								  kInputBus,
+								  &flag,
+								  sizeof(flag)), (char *) "setup custom output");
     
 	// Allocate our own buffers (1 channel, 16 bits per sample, thus 16 bits per frame, thus 2 bytes per frame).
 	// Practice learns the buffers used contain 512 frames, if this changes it will be fixed in processAudio.
@@ -261,8 +256,7 @@ void routeInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
 	_micBuffer.mData = malloc( 512 * 2 );
 	
 	// Initialise both audio units
-	checkStatus(AudioUnitInitialize(audioIO.inputAudioUnit), (char *) "initRemotIO- AudioUnitSetProperty- inputAudioUnit");
-	checkStatus(AudioUnitInitialize(audioIO.powerOutAudioUnit), (char *) "initRemotIO- AudioUnitSetProperty- powerOutAudioUnit");
+	checkStatus(AudioUnitInitialize(audioIO.ioAudioUnit), (char *) "initRemotIO- AudioUnitSetProperty- ioAudioUnit");
 }
 
 - (void) processInput: (AudioBufferList*) bufferList{
@@ -290,33 +284,33 @@ void routeInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
         // Set Master Volume to 50%
         self.volumeSlider.value = 0.5f;
         
-        if (self.powerOutAudioUnit) {
+        if (self.ioAudioUnit) {
             // Stop and release power tone audio unit
-            checkStatus(AudioOutputUnitStop(self.powerOutAudioUnit), (char *) "toggleCollectIO- AudioOutputUnitStop- powerOutAudioUnit");
-            checkStatus(AudioUnitUninitialize(self.powerOutAudioUnit), (char *) "toggleCollectIO- AudioUnitUninitialize- powerOutAudioUnit");
-            checkStatus(AudioComponentInstanceDispose(self.powerOutAudioUnit), (char *) "toggleCollectIO- AudioComponentInstanceDispose- powerOutAudioUnit");
-            self.powerOutAudioUnit = nil;
+            checkStatus(AudioOutputUnitStop(self.ioAudioUnit), (char *) "toggleCollectIO- AudioOutputUnitStop- ioAudioUnit");
+            checkStatus(AudioUnitUninitialize(self.ioAudioUnit), (char *) "toggleCollectIO- AudioUnitUninitialize- ioAudioUnit");
+            checkStatus(AudioComponentInstanceDispose(self.ioAudioUnit), (char *) "toggleCollectIO- AudioComponentInstanceDispose- ioAudioUnit");
+            self.ioAudioUnit = nil;
         }
-		if (self.inputAudioUnit) {
+		if (self.ioAudioUnit) {
             // Stop and release mic audio unit
-            checkStatus(AudioOutputUnitStop(self.inputAudioUnit), (char *) "toggleCollectIO- AudioOutputUnitStop- inputAudioUnit");
-            checkStatus(AudioUnitUninitialize(self.inputAudioUnit), (char *) "toggleCollectIO- AudioUnitUninitialize- inputAudioUnit");
-            checkStatus(AudioComponentInstanceDispose(self.inputAudioUnit), (char *) "toggleCollectIO- AudioComponentInstanceDispose- inputAudioUnit");
-            self.inputAudioUnit = nil;
+            checkStatus(AudioOutputUnitStop(self.ioAudioUnit), (char *) "toggleCollectIO- AudioOutputUnitStop- ioAudioUnit");
+            checkStatus(AudioUnitUninitialize(self.ioAudioUnit), (char *) "toggleCollectIO- AudioUnitUninitialize- ioAudioUnit");
+            checkStatus(AudioComponentInstanceDispose(self.ioAudioUnit), (char *) "toggleCollectIO- AudioComponentInstanceDispose- ioAudioUnit");
+            self.ioAudioUnit = nil;
         }
 	} else {
         // Set Master Volume to 100%
         self.volumeSlider.value = 1.0f;
         
-        if (!self.powerOutAudioUnit){
+        if (!self.ioAudioUnit){
             // Initialize and Start playback
-            checkStatus(AudioUnitInitialize(self.powerOutAudioUnit), (char *) "toggleCollectIO- AudioUnitInitialize- powerOutAudioUnit");
-            checkStatus(AudioOutputUnitStart(self.powerOutAudioUnit), (char *) "toggleCollectIO- AudioOutputUnitStart- powerOutAudioUnit");
+            checkStatus(AudioUnitInitialize(self.ioAudioUnit), (char *) "toggleCollectIO- AudioUnitInitialize- ioAudioUnit");
+            checkStatus(AudioOutputUnitStart(self.ioAudioUnit), (char *) "toggleCollectIO- AudioOutputUnitStart- ioAudioUnit");
         }
-        if (!self.inputAudioUnit) {
+        if (!self.ioAudioUnit) {
             // Initialize and Start input
-            checkStatus(AudioUnitInitialize(self.inputAudioUnit), (char *) "toggleCollectIO- AudioUnitInitialize- inputAudioUnit");
-            checkStatus(AudioOutputUnitStart(self.inputAudioUnit), (char *) "toggleCollectIO- AudioUnitInitialize- inputAudioUnit");
+            checkStatus(AudioUnitInitialize(self.ioAudioUnit), (char *) "toggleCollectIO- AudioUnitInitialize- ioAudioUnit");
+            checkStatus(AudioOutputUnitStart(self.ioAudioUnit), (char *) "toggleCollectIO- AudioUnitInitialize- ioAudioUnit");
         }
 	}
 }
@@ -335,7 +329,7 @@ void routeInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
 }
 
 - (void)handleVolumeChanged:(id)sender{
-    if (self.powerOutAudioUnit) self.volumeSlider.value = 1.0f;
+    if (self.ioAudioUnit) self.volumeSlider.value = 1.0f;
 }
 
 - (void)secondTimerCallBack:(NSTimer *)timer {
@@ -356,9 +350,9 @@ void routeInterruptionListener(void *inClientData, UInt32 inInterruptionState) {
             break;
         case 1:
             // Initialize and start mic callback
-            if (!self.inputAudioUnit) {
-                checkStatus(AudioUnitInitialize(self.inputAudioUnit), (char *) "alertView- AudioUnitInitialize- inputAudioUnit");
-                checkStatus(AudioOutputUnitStart(self.inputAudioUnit), (char *) "alertView- AudioOutputUnitStart- inputAudioUnit");
+            if (!self.ioAudioUnit) {
+                checkStatus(AudioUnitInitialize(self.ioAudioUnit), (char *) "alertView- AudioUnitInitialize- ioAudioUnit");
+                checkStatus(AudioOutputUnitStart(self.ioAudioUnit), (char *) "alertView- AudioOutputUnitStart- ioAudioUnit");
             }
             
             // Change input label text
