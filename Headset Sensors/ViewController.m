@@ -148,7 +148,7 @@ static OSStatus playbackCallback(void *inRefCon,
     // Add audio route change listner
     AVAudioSession *session = [AVAudioSession sharedInstance];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(audioRouteChangeListener:) name:AVAudioSessionRouteChangeNotification object:session];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(routeInterruptionListener:) name:AVAudioSessionInterruptionNotification object:session];
+    //[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(routeInterruptionListener:) name:AVAudioSessionInterruptionNotification object:session];
 }
 
 - (void)handleVolumeChanged:(id)sender{
