@@ -74,7 +74,7 @@ static OSStatus outputCallback(void *inRefCon,
     
     // Communication out on left and right channel if new communication out
     AudioSampleType *outLeftSamples = (AudioSampleType *) ioData->mBuffers[0].mData;
-    AudioSampleType *outRightSamples = (AudioSampleType *) ioData->mBuffers[1].mData;
+    //AudioSampleType *outRightSamples = (AudioSampleType *) ioData->mBuffers[0].mData;
     
     // Set up power tone attributes
     float freq = 20000.00f;
@@ -88,10 +88,10 @@ static OSStatus outputCallback(void *inRefCon,
         // Generate power tone on left channel
         sinSignal = sin(phase);
         outLeftSamples[curFrame] = (SInt16) ((sinSignal * 32767.0f) /2);
-        //outRightSamples[curFrame] = (SInt16) (0);               // **** ERROR HERE ****
+        //outRightSamples[curFrame] = (SInt16) ((sinSignal * 32767.0f) /2);//(0);               // **** ERROR HERE ****
         phase += phaseInc;
         if (phase >= 2 * M_PI * freq) {
-            phase = phase - (2 * M_PI * freq);
+            phase -= (2 * M_PI * freq);
         }
     }
     
@@ -175,29 +175,29 @@ static OSStatus outputCallback(void *inRefCon,
     
     // Get component
     AudioComponent inputComponent = AudioComponentFindNext(NULL, &desc);
-    /*
+    
     // Mono ASBD
     AudioStreamBasicDescription monoStreamFormat;
     monoStreamFormat.mSampleRate          = 44100.00;
     monoStreamFormat.mFormatID            = kAudioFormatLinearPCM;
-    monoStreamFormat.mFormatFlags         = kAudioFormatFlagsCanonical;
+    monoStreamFormat.mFormatFlags         = kAudioFormatFlagIsSignedInteger | kAudioFormatFlagIsPacked;
     monoStreamFormat.mBytesPerPacket      = 2;
     monoStreamFormat.mBytesPerFrame       = 2;
     monoStreamFormat.mFramesPerPacket     = 1;
     monoStreamFormat.mChannelsPerFrame    = 1;
     monoStreamFormat.mBitsPerChannel      = 16;
-    */
+    /*
     // Stereo ASBD
     AudioStreamBasicDescription stereoStreamFormat;
     stereoStreamFormat.mSampleRate          = 44100.00;
     stereoStreamFormat.mFormatID            = kAudioFormatLinearPCM;
-    stereoStreamFormat.mFormatFlags         = kAudioFormatFlagsCanonical;
+    stereoStreamFormat.mFormatFlags         = kAudioFormatFlagIsSignedInteger | kAudioFormatFlagIsPacked;
     stereoStreamFormat.mBytesPerPacket      = 4;
     stereoStreamFormat.mBytesPerFrame       = 4;
     stereoStreamFormat.mFramesPerPacket     = 1;
     stereoStreamFormat.mChannelsPerFrame    = 2;
     stereoStreamFormat.mBitsPerChannel      = 16;
-    
+    */
     OSErr err;
     @try {
         // Get Audio units
@@ -205,21 +205,21 @@ static OSStatus outputCallback(void *inRefCon,
         NSAssert1(err == noErr, @"Error setting input component: %hd", err);
         
         // Enable input, which is disabled by default. Output is enabled by default
-        UInt32 enableInput = 1;
+        UInt32 enable = 1;
         err = AudioUnitSetProperty(_ioUnit,
                              kAudioOutputUnitProperty_EnableIO,
                              kAudioUnitScope_Input,
                              kInputBus,
-                             &enableInput,
-                             sizeof(enableInput));
+                             &enable,
+                             sizeof(enable));
         NSAssert1(err == noErr, @"Error enable input: %hd", err);
         
         err = AudioUnitSetProperty(_ioUnit,
                              kAudioOutputUnitProperty_EnableIO,
                              kAudioUnitScope_Output,
                              kOutputBus,
-                             &enableInput,
-                             sizeof(enableInput));
+                             &enable,
+                             sizeof(enable));
         NSAssert1(err == noErr, @"Error setting output: %hd", err);
         
         // Apply format to input of ioUnit
@@ -227,8 +227,8 @@ static OSStatus outputCallback(void *inRefCon,
                              kAudioUnitProperty_StreamFormat,
                              kAudioUnitScope_Input,
                              kOutputBus,
-                             &stereoStreamFormat,
-                             sizeof(stereoStreamFormat));
+                             &monoStreamFormat,
+                             sizeof(monoStreamFormat));
         NSAssert1(err == noErr, @"Error setting input ASBD: %hd", err);
         
         // Apply format to output of ioUnit
@@ -236,8 +236,8 @@ static OSStatus outputCallback(void *inRefCon,
                              kAudioUnitProperty_StreamFormat,
                              kAudioUnitScope_Output,
                              kInputBus,
-                             &stereoStreamFormat,
-                             sizeof(stereoStreamFormat));
+                             &monoStreamFormat,
+                             sizeof(monoStreamFormat));
         NSAssert1(err == noErr, @"Error setting output ASBD: %hd", err);
         
         // Set input callback
@@ -516,10 +516,10 @@ static OSStatus outputCallback(void *inRefCon,
 	
 	// copy incoming audio data to inBuffer
 	memcpy(_inBuffer.mData, bufferList->mBuffers[0].mData, bufferList->mBuffers[0].mDataByteSize);
-    /*
-    SInt16 *buffer = (SInt16 *) bufferList->mBuffers[0].mData;
     
-    **** DEBUG: Prints contents of input buffer to consol ****
+    //SInt16 *buffer = (SInt16 *) bufferList->mBuffers[0].mData;
+    
+    /**** DEBUG: Prints contents of input buffer to consol ****
     for (int i = 0; i < (_inBuffer.mDataByteSize / sizeof(_inBuffer)); i++) {
         NSLog(@"%d", buffer[i]);
     }
