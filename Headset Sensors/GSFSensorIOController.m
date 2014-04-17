@@ -74,8 +74,7 @@ static OSStatus outputCallback(void *inRefCon,
     
     // Communication out on left and right channel if new communication out
     AudioSampleType *outLeftSamples = (AudioSampleType *) ioData->mBuffers[0].mData;
-    AudioSampleType *outRightSamples = (AudioSampleType *) ioData->mBuffers[0].mData;
-    //AudioBuffer outRightSamples = ioData->mBuffers[1];
+    AudioSampleType *outRightSamples = (AudioSampleType *) ioData->mBuffers[1].mData;
     
     // Set up power tone attributes
     float freq = 20000.00f;
@@ -89,23 +88,11 @@ static OSStatus outputCallback(void *inRefCon,
         // Generate power tone on left channel
         sinSignal = sin(phase);
         outLeftSamples[curFrame] = (SInt16) ((sinSignal * 32767.0f) /2);
-        outRightSamples[curFrame] = (SInt16) ((sinSignal * 32767.0f) /2);
+        //outRightSamples[curFrame] = (SInt16) (0);               // **** ERROR HERE ****
         phase += phaseInc;
         if (phase >= 2 * M_PI * freq) {
             phase = phase - (2 * M_PI * freq);
         }
-        /*
-        // Check if new output flag is set and fill right channel buffer accordingly
-        if (THIS.newDataOut) {
-            UInt32 size = min(outRightSamples.mDataByteSize, THIS.outBuffer.mDataByteSize);
-            memcpy(outRightSamples.mData, THIS.outBuffer.mData, size);
-            outRightSamples.mDataByteSize = size;
-        } else {
-            UInt32 size = outRightSamples.mDataByteSize;
-            memcpy(outRightSamples.mData, 0, size);
-            outRightSamples.mDataByteSize = size;
-        }
-         */
     }
     
     // Save sine wave phase wave for next callback
@@ -188,23 +175,23 @@ static OSStatus outputCallback(void *inRefCon,
     
     // Get component
     AudioComponent inputComponent = AudioComponentFindNext(NULL, &desc);
-    
+    /*
     // Mono ASBD
     AudioStreamBasicDescription monoStreamFormat;
     monoStreamFormat.mSampleRate          = 44100.00;
     monoStreamFormat.mFormatID            = kAudioFormatLinearPCM;
-    monoStreamFormat.mFormatFlags         = kAudioFormatFlagIsSignedInteger | kAudioFormatFlagIsPacked;
+    monoStreamFormat.mFormatFlags         = kAudioFormatFlagsCanonical;
     monoStreamFormat.mBytesPerPacket      = 2;
     monoStreamFormat.mBytesPerFrame       = 2;
     monoStreamFormat.mFramesPerPacket     = 1;
     monoStreamFormat.mChannelsPerFrame    = 1;
     monoStreamFormat.mBitsPerChannel      = 16;
-     
+    */
     // Stereo ASBD
     AudioStreamBasicDescription stereoStreamFormat;
     stereoStreamFormat.mSampleRate          = 44100.00;
     stereoStreamFormat.mFormatID            = kAudioFormatLinearPCM;
-    stereoStreamFormat.mFormatFlags         = kAudioFormatFlagIsSignedInteger | kAudioFormatFlagIsPacked;
+    stereoStreamFormat.mFormatFlags         = kAudioFormatFlagsCanonical;
     stereoStreamFormat.mBytesPerPacket      = 4;
     stereoStreamFormat.mBytesPerFrame       = 4;
     stereoStreamFormat.mFramesPerPacket     = 1;
@@ -240,8 +227,8 @@ static OSStatus outputCallback(void *inRefCon,
                              kAudioUnitProperty_StreamFormat,
                              kAudioUnitScope_Input,
                              kOutputBus,
-                             &monoStreamFormat,
-                             sizeof(monoStreamFormat));
+                             &stereoStreamFormat,
+                             sizeof(stereoStreamFormat));
         NSAssert1(err == noErr, @"Error setting input ASBD: %hd", err);
         
         // Apply format to output of ioUnit
@@ -276,6 +263,20 @@ static OSStatus outputCallback(void *inRefCon,
                              sizeof(callbackStruct));
         NSAssert1(err == noErr, @"Error setting output callback: %hd", err);
         
+        // Disable buffer allocation
+        UInt32 disableBufferAlloc = 0;
+        err = AudioUnitSetProperty(self.ioUnit,
+                                   kAudioUnitProperty_ShouldAllocateBuffer,
+                                   kAudioUnitScope_Output,
+                                   kInputBus,
+                                   &disableBufferAlloc,
+                                   sizeof(disableBufferAlloc));
+        
+        // Allocate input buffers (1 channel, 16 bits per sample, thus 16 bits per frame and therefore 2 bytes per frame
+        _inBuffer.mNumberChannels = 1;
+        _inBuffer.mDataByteSize = 512 * 2;
+        _inBuffer.mData = malloc( 512 * 2 );
+        
         // Initialize audio unit
         err = AudioUnitInitialize(self.ioUnit);
         NSAssert1(err == noErr, @"Error initializing unit: %hd", err);
@@ -299,14 +300,8 @@ static OSStatus outputCallback(void *inRefCon,
         // Start IO communication
         [self startCollecting];
         
-        // Register audio route change listner with notification callback
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(audioRouteChangeListener:) name:AVAudioSessionRouteChangeNotification object:nil];
-        
         NSLog(@"Sensor monitor STARTED");
     } else {
-        // Unregister notification callbacks
-        [[NSNotificationCenter defaultCenter] removeObserver: self];
-        
         // Stop IO communication
         if (self.ioUnit) {
             [self stopCollecting];
@@ -321,12 +316,18 @@ static OSStatus outputCallback(void *inRefCon,
     [self setUpSensorIO];
     // Set Master Volume to 100%
     self.volumeSlider.value = 1.0f;
+    
+    // Register audio route change listner with notification callback
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(audioRouteChangeListener:) name:AVAudioSessionRouteChangeNotification object:nil];
 }
 
 
 - (void) stopCollecting {
     // Set Master Volume to 50%
     self.volumeSlider.value = 0.5f;
+    
+    // Unregister notification callbacks
+    [[NSNotificationCenter defaultCenter] removeObserver: self];
     
     // Stop and release audio unit
     AudioOutputUnitStop(self.ioUnit);
@@ -506,23 +507,23 @@ static OSStatus outputCallback(void *inRefCon,
 - (void) processIO: (AudioBufferList*) bufferList {
     AudioBuffer sourceBuffer = bufferList->mBuffers[0];
 	
-	// fix tempBuffer size if it's the wrong size
-	if (self.inBuffer.mDataByteSize != sourceBuffer.mDataByteSize) {
+	// fix inBuffer size if needed
+	if (_inBuffer.mDataByteSize != sourceBuffer.mDataByteSize) {
 		free(self.inBuffer.mData);
 		_inBuffer.mDataByteSize = sourceBuffer.mDataByteSize;
 		_inBuffer.mData = malloc(sourceBuffer.mDataByteSize);
 	}
 	
-	// copy incoming audio data to temporary buffer
+	// copy incoming audio data to inBuffer
 	memcpy(_inBuffer.mData, bufferList->mBuffers[0].mData, bufferList->mBuffers[0].mDataByteSize);
-    
+    /*
     SInt16 *buffer = (SInt16 *) bufferList->mBuffers[0].mData;
     
-    /**** DEBUG: Prints contents of input buffer to consol ****/
+    **** DEBUG: Prints contents of input buffer to consol ****
     for (int i = 0; i < (_inBuffer.mDataByteSize / sizeof(_inBuffer)); i++) {
         NSLog(@"%d", buffer[i]);
     }
-    
+    */
     // Fill output buffer with commands and set new output data flag
     
 }
