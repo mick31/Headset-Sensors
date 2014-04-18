@@ -24,9 +24,9 @@
 
 - (IBAction)collectDataButton:(id)sender {
     if (self.monitorSensorSwitch.on) {
-        [self.sensorIO monitorSensors:YES];
+        [self.sensorIO monitorSensors:self.view :YES];
     } else {
-        [self.sensorIO monitorSensors:NO];
+        [self.sensorIO monitorSensors:self.view :NO];
     }
 }
 @end

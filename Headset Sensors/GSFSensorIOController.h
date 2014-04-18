@@ -16,8 +16,10 @@
 #import <UIView+SDCAutoLayout.h>                    // Layout Control for custom alert view
 
 // Defined
-#define kOutputBus   0
-#define kInputBus  1
+#define kOutputBus  0
+#define kInputBus   1
+#define highMin     600
+#define lowMax      -600
 
 #ifndef min
 #define min( a, b ) ( ((a) < (b)) ? (a) : (b) )
@@ -29,14 +31,17 @@
 
 @interface GSFSensorIOController : NSObject 
 
+// Output data to app
+@property int curBit;
+
 // Public control properties
 @property SDCAlertView *sensorAlert;
 @property (nonatomic, strong) UISlider *volumeSlider;
 @property (nonatomic) int audioChangeReason;
 
 // Function prototypes
-- (void) monitorSensors: (BOOL) enable;
+- (void) monitorSensors: (UIView *) view : (BOOL) enable;
 - (void) processIO: (AudioBufferList*) bufferList;
-- (BOOL) isSensorConnected;
-- (void) addAlertViewToView:(UIView*)view :(NSInteger) changeReason;
+- (void) checkAudioStatus: (UIView *) view;
+
 @end

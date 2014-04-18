@@ -12,7 +12,9 @@
 
 @property (weak, nonatomic) IBOutlet UISwitch *monitorSensorSwitch;
 
-- (IBAction)collectDataButton:(id)sender;
+@property NSTimer* oneSecondTimer;
 
+- (void) oneSecondCallback;
+- (IBAction)collectDataButton:(id)sender;
 
 @end
