@@ -12,6 +12,7 @@
 @interface ViewController ()
 
 @property GSFSensorIOController *sensorIO;
+@property NSTimer* oneSecondTimer;
 
 @end
 
@@ -29,4 +30,9 @@
         [self.sensorIO monitorSensors:self.view :NO];
     }
 }
+
+- (void) oneSecondCallback: (NSTimer*) timer {
+    
+}
+
 @end

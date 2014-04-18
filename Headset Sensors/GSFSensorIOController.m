@@ -34,10 +34,16 @@ static OSStatus inputCallback(void *inRefCon,
     // Scope reference to GSFSensorIOController class
     GSFSensorIOController *THIS = (__bridge GSFSensorIOController *) inRefCon;
     
+    // Input audio buffer
+    AudioBuffer buffer;
+	buffer.mNumberChannels = 1;
+	buffer.mDataByteSize = inNumberFrames * 2;
+	buffer.mData = malloc( inNumberFrames * 2 );
+    
     // Place buffer in an AudioBufferList
     AudioBufferList bufferList;
     bufferList.mNumberBuffers = 1;
-    bufferList.mBuffers[0] = THIS.inBuffer;
+    bufferList.mBuffers[0] = buffer;
     
     // Grab the samples and place them in the buffer list
     AudioUnitRender(THIS.ioUnit,
@@ -51,7 +57,7 @@ static OSStatus inputCallback(void *inRefCon,
     [THIS processIO:&bufferList];
     
     // Free allocated buffer
-    //free(bufferList.mBuffers[0].mData);
+    free(bufferList.mBuffers[0].mData);
     
     return noErr;
 }
