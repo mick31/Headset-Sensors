@@ -16,8 +16,15 @@
 #import <UIView+SDCAutoLayout.h>                    // Layout Control for custom alert view
 
 // Defined
+#define kOutputBus   0
+#define kInputBus  1
+
 #ifndef min
 #define min( a, b ) ( ((a) < (b)) ? (a) : (b) )
+#endif
+
+#ifndef max
+#define max( a, b ) ( ((a) > (b)) ? (a) : (b) )
 #endif
 
 @interface GSFSensorIOController : NSObject 

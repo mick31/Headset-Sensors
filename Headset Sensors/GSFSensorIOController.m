@@ -9,9 +9,6 @@
 #import "GSFSensorIOController.h"
 #import "ViewController.h"
 
-#define kOutputBus   0
-#define kInputBus  1
-
 ViewController *dataView;
 
 @interface GSFSensorIOController ()
@@ -74,7 +71,7 @@ static OSStatus outputCallback(void *inRefCon,
     
     // Communication out on left and right channel if new communication out
     AudioSampleType *outLeftSamples = (AudioSampleType *) ioData->mBuffers[0].mData;
-    //AudioSampleType *outRightSamples = (AudioSampleType *) ioData->mBuffers[0].mData;
+    AudioSampleType *outRightSamples = (AudioSampleType *) ioData->mBuffers[0].mData;
     
     // Set up power tone attributes
     float freq = 20000.00f;
@@ -88,7 +85,7 @@ static OSStatus outputCallback(void *inRefCon,
         // Generate power tone on left channel
         sinSignal = sin(phase);
         outLeftSamples[curFrame] = (SInt16) ((sinSignal * 32767.0f) /2);
-        //outRightSamples[curFrame] = (SInt16) ((sinSignal * 32767.0f) /2);//(0);               // **** ERROR HERE ****
+        outRightSamples[curFrame] = (SInt16)(0);               // **** ERROR HERE ****
         phase += phaseInc;
         if (phase >= 2 * M_PI * freq) {
             phase -= (2 * M_PI * freq);
@@ -186,18 +183,18 @@ static OSStatus outputCallback(void *inRefCon,
     monoStreamFormat.mFramesPerPacket     = 1;
     monoStreamFormat.mChannelsPerFrame    = 1;
     monoStreamFormat.mBitsPerChannel      = 16;
-    /*
+    
     // Stereo ASBD
     AudioStreamBasicDescription stereoStreamFormat;
     stereoStreamFormat.mSampleRate          = 44100.00;
     stereoStreamFormat.mFormatID            = kAudioFormatLinearPCM;
     stereoStreamFormat.mFormatFlags         = kAudioFormatFlagIsSignedInteger | kAudioFormatFlagIsPacked;
-    stereoStreamFormat.mBytesPerPacket      = 4;
-    stereoStreamFormat.mBytesPerFrame       = 4;
+    stereoStreamFormat.mBytesPerPacket      = 2;
+    stereoStreamFormat.mBytesPerFrame       = 2;
     stereoStreamFormat.mFramesPerPacket     = 1;
     stereoStreamFormat.mChannelsPerFrame    = 2;
     stereoStreamFormat.mBitsPerChannel      = 16;
-    */
+    
     OSErr err;
     @try {
         // Get Audio units
@@ -236,8 +233,8 @@ static OSStatus outputCallback(void *inRefCon,
                              kAudioUnitProperty_StreamFormat,
                              kAudioUnitScope_Output,
                              kInputBus,
-                             &monoStreamFormat,
-                             sizeof(monoStreamFormat));
+                             &stereoStreamFormat,
+                             sizeof(stereoStreamFormat));
         NSAssert1(err == noErr, @"Error setting output ASBD: %hd", err);
         
         // Set input callback
@@ -517,7 +514,17 @@ static OSStatus outputCallback(void *inRefCon,
 	// copy incoming audio data to inBuffer
 	memcpy(_inBuffer.mData, bufferList->mBuffers[0].mData, bufferList->mBuffers[0].mDataByteSize);
     
-    //SInt16 *buffer = (SInt16 *) bufferList->mBuffers[0].mData;
+    SInt16 *buffer = (SInt16 *) bufferList->mBuffers[0].mData;
+    
+    SInt16 maxBufferPoint = 0;
+    SInt16 lastPoint = 0;
+    for (int i = 1; (_inBuffer.mDataByteSize / sizeof(_inBuffer)); i++) {
+        maxBufferPoint = max(buffer[i], lastPoint);
+        if (maxBufferPoint != lastPoint) {
+            lastPoint = maxBufferPoint;
+        }
+    }
+    
     
     /**** DEBUG: Prints contents of input buffer to consol ****
     for (int i = 0; i < (_inBuffer.mDataByteSize / sizeof(_inBuffer)); i++) {
