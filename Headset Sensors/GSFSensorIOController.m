@@ -42,7 +42,7 @@ static OSStatus inputCallback(void *inRefCon,
     
     // Place buffer in an AudioBufferList
     AudioBufferList bufferList;
-    bufferList.mNumberBuffers = 1;
+    bufferList.mNumberBuffers = kNumberofBuffers;
     bufferList.mBuffers[0] = buffer;
     
     // Grab the samples and place them in the buffer list
@@ -68,9 +68,41 @@ static OSStatus outputCallback(void *inRefCon,
                               UInt32 						inBusNumber,
                               UInt32 						inNumberFrames,
                               AudioBufferList               *ioData) {
+   
     // Scope reference to GSFSensorIOController class
     GSFSensorIOController *THIS = (__bridge GSFSensorIOController *) inRefCon;
     
+    // Set up power tone attributes
+    float freq = 20000.00f;
+    float sampleRate = 44100.00f;
+    float phase = THIS.sinPhase;
+    float sinSignal;
+    
+    double phaseInc = 2 * M_PI * freq / sampleRate;
+    
+    for(size_t i = 0; i < ioData->mNumberBuffers; ++i) {
+        AudioBuffer buffer = ioData->mBuffers[i];
+        for(size_t sampleIdx = 0; sampleIdx < inNumberFrames; ++sampleIdx) {
+            // Grab sample buffer
+            SInt16 *sampleBuffer = buffer.mData;
+            
+            // Generate power tone on left channel
+            sinSignal = sin(phase);
+            sampleBuffer[2 * sampleIdx] = 0;//(SInt16)((sinSignal * 32767.0f) /2);
+            
+            // Mute right channel as necessary
+            if(THIS.newDataOut)
+                sampleBuffer[2*sampleIdx + 1] = (SInt16)((sinSignal * 32767.0f) /2);
+            else
+                sampleBuffer[2*sampleIdx + 1] = 0;
+            
+            phase += phaseInc;
+            if (phase >= 2 * M_PI * freq) {
+                phase -= (2 * M_PI * freq);
+            }
+        }
+    }
+    /*
     // Communication out on left and right channel if new communication out
     AudioSampleType *outLeftSamples = (AudioSampleType *) ioData->mBuffers[0].mData;
     //AudioSampleType *outRightSamples = (AudioSampleType *) ioData->mBuffers[1].mData;
@@ -96,7 +128,7 @@ static OSStatus outputCallback(void *inRefCon,
     
     // Save sine wave phase wave for next callback
     THIS.sinPhase = phase;
-    
+    */
     return noErr;
 }
 
@@ -174,7 +206,7 @@ static OSStatus outputCallback(void *inRefCon,
     
     // Get component
     AudioComponent inputComponent = AudioComponentFindNext(NULL, &desc);
-    
+    /*
     // Mono ASBD
     AudioStreamBasicDescription monoStreamFormat;
     monoStreamFormat.mSampleRate          = 44100.00;
@@ -185,14 +217,14 @@ static OSStatus outputCallback(void *inRefCon,
     monoStreamFormat.mFramesPerPacket     = 1;
     monoStreamFormat.mChannelsPerFrame    = 1;
     monoStreamFormat.mBitsPerChannel      = 16;
-    
+    */
     // Stereo ASBD
     AudioStreamBasicDescription stereoStreamFormat;
     stereoStreamFormat.mSampleRate          = 44100.00;
     stereoStreamFormat.mFormatID            = kAudioFormatLinearPCM;
-    stereoStreamFormat.mFormatFlags         = kAudioFormatFlagIsSignedInteger | kAudioFormatFlagIsPacked;
-    stereoStreamFormat.mBytesPerPacket      = 2;
-    stereoStreamFormat.mBytesPerFrame       = 2;
+    stereoStreamFormat.mFormatFlags         = kAudioFormatFlagsCanonical;
+    stereoStreamFormat.mBytesPerPacket      = 4;
+    stereoStreamFormat.mBytesPerFrame       = 4;
     stereoStreamFormat.mFramesPerPacket     = 1;
     stereoStreamFormat.mChannelsPerFrame    = 2;
     stereoStreamFormat.mBitsPerChannel      = 16;
@@ -228,8 +260,8 @@ static OSStatus outputCallback(void *inRefCon,
                              kAudioUnitProperty_StreamFormat,
                              kAudioUnitScope_Input,
                              kOutputBus,
-                             &monoStreamFormat,
-                             sizeof(monoStreamFormat));
+                             &stereoStreamFormat,
+                             sizeof(stereoStreamFormat));
         NSAssert1(err == noErr, @"Error setting input ASBD: %hd", err);
         
         // Apply format to output of ioUnit
@@ -519,58 +551,61 @@ static OSStatus outputCallback(void *inRefCon,
  *  @param bufferList This is list of buffers containing the input from the mic line
  */
 - (void) processIO: (AudioBufferList*) bufferList {
-    AudioBuffer sourceBuffer = bufferList->mBuffers[0];
-	
-	// fix inBuffer size if needed
-	if (_inBuffer.mDataByteSize != sourceBuffer.mDataByteSize) {
-		free(self.inBuffer.mData);
-		_inBuffer.mDataByteSize = sourceBuffer.mDataByteSize;
-		_inBuffer.mData = malloc(sourceBuffer.mDataByteSize);
-	}
-	
-	// copy incoming audio data to inBuffer
-	memcpy(_inBuffer.mData, bufferList->mBuffers[0].mData, bufferList->mBuffers[0].mDataByteSize);
-    
-    SInt16 *buffer = (SInt16 *) bufferList->mBuffers[0].mData;
-    SInt16 maxBufferPoint = 0;
-    SInt16 minBufferPoint = 0;
-    
-    // Find min and max points in current buffer
-    for (int i = 0; i < (_inBuffer.mDataByteSize / sizeof(_inBuffer)); i++) {
-        maxBufferPoint = max(buffer[i], maxBufferPoint);
-        minBufferPoint = min(buffer[i], minBufferPoint);
-    }
-    
-    // Associate current bit value based on min/max values
-    if ( (maxBufferPoint < highMin && minBufferPoint > lowMax) ) {
-        self.curState = 0;
+    for (int j = 0 ; j < bufferList->mNumberBuffers ; j++) {
+        AudioBuffer sourceBuffer = bufferList->mBuffers[j];
         
-        // **** DEBUG ****
-        self.curBit = 0;
-    } else {
-        self.curState = 1;
+        // fix inBuffer size if needed
+        if (_inBuffer.mDataByteSize != sourceBuffer.mDataByteSize) {
+            free(self.inBuffer.mData);
+            _inBuffer.mDataByteSize = sourceBuffer.mDataByteSize;
+            _inBuffer.mData = malloc(sourceBuffer.mDataByteSize);
+        }
         
-        // **** DEBUG ****
-        self.curBit = 0;
-    }
-/*
-    // Check for bit flip against last bit value
-    if (self.curState != self.lastState) {
-        self.lastState = self.curState;
-        if (self.curState == 1) {
-            self.curBit = 1;
+        // copy incoming audio data to inBuffer
+        memcpy(_inBuffer.mData, bufferList->mBuffers[j].mData, bufferList->mBuffers[j].mDataByteSize);
+        
+        SInt16 *buffer = (SInt16 *) bufferList->mBuffers[j].mData;
+        SInt16 maxBufferPoint = 0;
+        SInt16 minBufferPoint = 0;
+        
+        // Find min and max points in current buffer
+        for (int i = 0; i < (_inBuffer.mDataByteSize / sizeof(_inBuffer)); i++) {
+            maxBufferPoint = max(buffer[i], maxBufferPoint);
+            minBufferPoint = min(buffer[i], minBufferPoint);
+        }
+        
+        // Associate current bit value based on min/max values
+        if ( (maxBufferPoint < highMin && minBufferPoint > lowMax) ) {
+            self.curState = 0;
+            
+            // **** DEBUG ****
+            self.curBit = 0;
         } else {
+            self.curState = 1;
+            
+            // **** DEBUG ****
             self.curBit = 0;
         }
+        /*
+         // Check for bit flip against last bit value
+         if (self.curState != self.lastState) {
+            self.lastState = self.curState;
+            if (self.curState == 1) {
+                self.curBit = 1;
+            } else {
+                self.curBit = 0;
+            }
+         }
+         */
+        /**** DEBUG: Prints contents of input buffer to consol ****/
+        NSLog(@"***** BUFFER %d START ******", j);
+        for (int i = 0; i < (_inBuffer.mDataByteSize / sizeof(_inBuffer)); i++) {
+            NSLog(@"%d", buffer[i]);
+        }
+        NSLog(@"***** BUFFER %d STOP ******", j);
+        // Fill output buffer with commands and set new output data flag
+
     }
-*/
-    /**** DEBUG: Prints contents of input buffer to consol ****
-    for (int i = 0; i < (_inBuffer.mDataByteSize / sizeof(_inBuffer)); i++) {
-        NSLog(@"%d", buffer[i]);
-    }
-    */
-    // Fill output buffer with commands and set new output data flag
-    
 }
 
 @end

@@ -16,10 +16,11 @@
 #import <UIView+SDCAutoLayout.h>                    // Layout Control for custom alert view
 
 // Defined
-#define kOutputBus  0
-#define kInputBus   1
-#define highMin     600
-#define lowMax      -600
+#define kOutputBus      0
+#define kInputBus       1
+#define kNumberofBuffers 1
+#define highMin         600
+#define lowMax          -600
 
 #ifndef min
 #define min( a, b ) ( ((a) < (b)) ? (a) : (b) )
