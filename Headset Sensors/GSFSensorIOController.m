@@ -40,24 +40,61 @@ static OSStatus inputCallback(void *inRefCon,
 	buffer.mDataByteSize = inNumberFrames * 2;
 	buffer.mData = malloc( inNumberFrames * 2 );
     
+    NSLog(@"Hey");
+    
     // Place buffer in an AudioBufferList
     AudioBufferList bufferList;
     bufferList.mNumberBuffers = kNumberofBuffers;
     bufferList.mBuffers[0] = buffer;
     
     // Grab the samples and place them in the buffer list
-    AudioUnitRender(THIS.ioUnit,
+    AudioUnit ioUnit = THIS.ioUnit;
+    AudioUnitRender(ioUnit,
                     ioActionFlags,
                     inTimeStamp,
                     inBusNumber,
                     inNumberFrames,
                     &bufferList);
-    
+    /*
     // Process data
     [THIS processIO:&bufferList];
+    */
+    
+    // Set up power tone attributes
+    float freq = 20000.00f;
+    float sampleRate = 44100.00f;
+    float phase = THIS.sinPhase;
+    float sinSignal;
+    
+    double phaseInc = 2 * M_PI * freq / sampleRate;
+    
+    for(size_t i = 0; i < bufferList.mNumberBuffers; ++i) {
+        AudioBuffer buffer = bufferList.mBuffers[i];
+        for(size_t sampleIdx = 0; sampleIdx < inNumberFrames; ++sampleIdx) {
+            // Grab sample buffer
+            SInt16 *sampleBuffer = buffer.mData;
+            
+            // Generate power tone on left channel
+            sinSignal = sin(phase);
+            sampleBuffer[2 * sampleIdx] = (SInt16)((sinSignal * 32767.0f) /2);
+            
+            // Mute right channel as necessary
+            if(THIS.newDataOut)
+                sampleBuffer[2*sampleIdx + 1] = (SInt16)((sinSignal * 32767.0f) /2);
+            else
+                sampleBuffer[2*sampleIdx + 1] = 0;
+            
+            phase += phaseInc;
+            if (phase >= 2 * M_PI * freq) {
+                phase -= (2 * M_PI * freq);
+            }
+        }
+    }
     
     // Free allocated buffer
-    free(bufferList.mBuffers[0].mData);
+    //free(bufferList.mBuffers[0].mData);
+    
+    THIS.sinPhase = phase;
     
     return noErr;
 }
@@ -125,10 +162,10 @@ static OSStatus outputCallback(void *inRefCon,
             phase -= (2 * M_PI * freq);
         }
     }
-    
+    */
     // Save sine wave phase wave for next callback
     THIS.sinPhase = phase;
-    */
+    
     return noErr;
 }
 
@@ -229,6 +266,9 @@ static OSStatus outputCallback(void *inRefCon,
     stereoStreamFormat.mChannelsPerFrame    = 2;
     stereoStreamFormat.mBitsPerChannel      = 16;
     
+    NSLog(@"FormatID: %d", kAudioFormatLinearPCM);
+    NSLog(@"FormatFlags: %d", kAudioFormatFlagsCanonical);
+    
     OSErr err;
     @try {
         // Get Audio units
@@ -245,7 +285,7 @@ static OSStatus outputCallback(void *inRefCon,
                              sizeof(enable));
         NSAssert1(err == noErr, @"Error enabling input: %hd", err);
         
-        
+        /*
         // Output is suppose to be enabled by default but for some reason isn't so take car of that too
         err = AudioUnitSetProperty(_ioUnit,
                              kAudioOutputUnitProperty_EnableIO,
@@ -254,7 +294,7 @@ static OSStatus outputCallback(void *inRefCon,
                              &enable,
                              sizeof(enable));
         NSAssert1(err == noErr, @"Error enabling output: %hd", err);
-        
+        */
         // Apply format to input of ioUnit
         err = AudioUnitSetProperty(self.ioUnit,
                              kAudioUnitProperty_StreamFormat,
@@ -284,7 +324,7 @@ static OSStatus outputCallback(void *inRefCon,
                              &callbackStruct,
                              sizeof(callbackStruct));
         NSAssert1(err == noErr, @"Error setting input callback: %hd", err);
-        
+        /*
         // Set output callback
         callbackStruct.inputProc = outputCallback;
         callbackStruct.inputProcRefCon = (__bridge void *)(self);
@@ -305,7 +345,7 @@ static OSStatus outputCallback(void *inRefCon,
                                    &disableBufferAlloc,
                                    sizeof(disableBufferAlloc));
         NSAssert1(err == noErr, @"Error disabling input to output callback: %hd", err);
-        
+        */
         // Allocate input buffers (1 channel, 16 bits per sample, thus 16 bits per frame and therefore 2 bytes per frame
         _inBuffer.mNumberChannels = 1;
         _inBuffer.mDataByteSize = 512 * 2;
