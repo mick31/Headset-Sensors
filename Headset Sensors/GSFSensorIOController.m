@@ -14,10 +14,11 @@ ViewController *dataView;
 @interface GSFSensorIOController ()
 
 // Private variables
-@property AudioComponentInstance ioUnit;
-@property AudioBuffer inBuffer;
-@property AudioBuffer outBuffer;
+@property AUGraph auGraph;
+@property AUNode ioNode;
+@property AudioUnit ioUnit;
 @property AVAudioSession* sensorAudioSession;
+@property NSMutableArray *sensorData;
 @property double sinPhase;
 @property BOOL newDataOut;
 @property int curState;
@@ -25,51 +26,43 @@ ViewController *dataView;
 
 @end
 
-static OSStatus inputCallback(void *inRefCon,
+static OSStatus hardwareIOCallback(void *inRefCon,
                                    AudioUnitRenderActionFlags 	*ioActionFlags,
                                    const AudioTimeStamp 		*inTimeStamp,
                                    UInt32 						inBusNumber,
                                    UInt32 						inNumberFrames,
                                    AudioBufferList              *ioData) {
     // Scope reference to GSFSensorIOController class
-    GSFSensorIOController *THIS = (__bridge GSFSensorIOController *) inRefCon;
+    GSFSensorIOController *sensorIO = (__bridge GSFSensorIOController *) inRefCon;
     
-    // Input audio buffer
-    AudioBuffer buffer;
-	buffer.mNumberChannels = 1;
-	buffer.mDataByteSize = inNumberFrames * 2;
-	buffer.mData = malloc( inNumberFrames * 2 );
+    //
+    static UInt64 framesProcessed = 0;
+    framesProcessed += inNumberFrames;
     
-    NSLog(@"Hey");
-    
-    // Place buffer in an AudioBufferList
-    AudioBufferList bufferList;
-    bufferList.mNumberBuffers = kNumberofBuffers;
-    bufferList.mBuffers[0] = buffer;
     
     // Grab the samples and place them in the buffer list
-    AudioUnit ioUnit = THIS.ioUnit;
+    AudioUnit ioUnit = sensorIO.ioUnit;
     AudioUnitRender(ioUnit,
                     ioActionFlags,
                     inTimeStamp,
                     inBusNumber,
                     inNumberFrames,
-                    &bufferList);
-    /*
-    // Process data
-    [THIS processIO:&bufferList];
-    */
+                    ioData);
+    
+    // Process input data
+    [sensorIO processIO:ioData];
     
     // Set up power tone attributes
     float freq = 20000.00f;
     float sampleRate = 44100.00f;
-    float phase = THIS.sinPhase;
+    float phase = sensorIO.sinPhase;
     float sinSignal;
     
     double phaseInc = 2 * M_PI * freq / sampleRate;
     
-    for(size_t i = 0; i < bufferList.mNumberBuffers; ++i) {
-        AudioBuffer buffer = bufferList.mBuffers[i];
+    // Write to output buffers
+    for(size_t i = 0; i < ioData->mNumberBuffers; ++i) {
+        AudioBuffer buffer = ioData->mBuffers[i];
         for(size_t sampleIdx = 0; sampleIdx < inNumberFrames; ++sampleIdx) {
             // Grab sample buffer
             SInt16 *sampleBuffer = buffer.mData;
@@ -79,7 +72,7 @@ static OSStatus inputCallback(void *inRefCon,
             sampleBuffer[2 * sampleIdx] = (SInt16)((sinSignal * 32767.0f) /2);
             
             // Mute right channel as necessary
-            if(THIS.newDataOut)
+            if(sensorIO.newDataOut)
                 sampleBuffer[2*sampleIdx + 1] = (SInt16)((sinSignal * 32767.0f) /2);
             else
                 sampleBuffer[2*sampleIdx + 1] = 0;
@@ -91,80 +84,8 @@ static OSStatus inputCallback(void *inRefCon,
         }
     }
     
-    // Free allocated buffer
-    //free(bufferList.mBuffers[0].mData);
-    
-    THIS.sinPhase = phase;
-    
-    return noErr;
-}
-
-static OSStatus outputCallback(void *inRefCon,
-                              AudioUnitRenderActionFlags 	*ioActionFlags,
-                              const AudioTimeStamp          *inTimeStamp,
-                              UInt32 						inBusNumber,
-                              UInt32 						inNumberFrames,
-                              AudioBufferList               *ioData) {
-   
-    // Scope reference to GSFSensorIOController class
-    GSFSensorIOController *THIS = (__bridge GSFSensorIOController *) inRefCon;
-    
-    // Set up power tone attributes
-    float freq = 20000.00f;
-    float sampleRate = 44100.00f;
-    float phase = THIS.sinPhase;
-    float sinSignal;
-    
-    double phaseInc = 2 * M_PI * freq / sampleRate;
-    
-    for(size_t i = 0; i < ioData->mNumberBuffers; ++i) {
-        AudioBuffer buffer = ioData->mBuffers[i];
-        for(size_t sampleIdx = 0; sampleIdx < inNumberFrames; ++sampleIdx) {
-            // Grab sample buffer
-            SInt16 *sampleBuffer = buffer.mData;
-            
-            // Generate power tone on left channel
-            sinSignal = sin(phase);
-            sampleBuffer[2 * sampleIdx] = 0;//(SInt16)((sinSignal * 32767.0f) /2);
-            
-            // Mute right channel as necessary
-            if(THIS.newDataOut)
-                sampleBuffer[2*sampleIdx + 1] = (SInt16)((sinSignal * 32767.0f) /2);
-            else
-                sampleBuffer[2*sampleIdx + 1] = 0;
-            
-            phase += phaseInc;
-            if (phase >= 2 * M_PI * freq) {
-                phase -= (2 * M_PI * freq);
-            }
-        }
-    }
-    /*
-    // Communication out on left and right channel if new communication out
-    AudioSampleType *outLeftSamples = (AudioSampleType *) ioData->mBuffers[0].mData;
-    //AudioSampleType *outRightSamples = (AudioSampleType *) ioData->mBuffers[1].mData;
-    
-    // Set up power tone attributes
-    float freq = 20000.00f;
-    float sampleRate = 44100.00f;
-    float phase = THIS.sinPhase;
-    float sinSignal;
-    
-    double phaseInc = 2 * M_PI * freq / sampleRate;
-    
-    for (UInt32 curFrame = 0; curFrame < inNumberFrames; ++curFrame) {
-        // Generate power tone on left channel
-        sinSignal = sin(phase);
-        outLeftSamples[curFrame] = (SInt16) ((sinSignal * 32767.0f) /2);
-        //outRightSamples[curFrame] = (SInt16)(0);               // **** ERROR HERE ****
-        phase += phaseInc;
-        if (phase >= 2 * M_PI * freq) {
-            phase -= (2 * M_PI * freq);
-        }
-    }
-    */
-    // Save sine wave phase wave for next callback
-    THIS.sinPhase = phase;
+    // Store sine wave phase for next callback
+    sensorIO.sinPhase = phase;
     
     return noErr;
 }
@@ -172,6 +93,7 @@ static OSStatus outputCallback(void *inRefCon,
 @implementation GSFSensorIOController
 
 @synthesize curBit = _curBit;
+@synthesize ioUnit = _ioUnit;
 
 /**
  *  Initializes the audio session and audio units when class is instantiated.
@@ -188,7 +110,10 @@ static OSStatus outputCallback(void *inRefCon,
     NSError *error;
     
     success = [self.sensorAudioSession setCategory:AVAudioSessionCategoryPlayAndRecord error:&error];
-	if (!success) NSLog(@"ERROR viewDidLoad: AVAudioSession failed overrideOutputAudio- %@", error);
+	if (!success) NSLog(@"ERROR viewDidLoad: AVAudioSession failed setting category- %@", error);
+    
+    success = [self.sensorAudioSession setPreferredIOBufferDuration:0.005 error:&error];
+    if (!success) NSLog(@"ERROR viewDidLoad: AVAudioSession failed setting buffer duration- %@", error);
     
     // Make the sensor AVAudioSession active
     success = [self.sensorAudioSession setActive:YES error:&error];
@@ -241,20 +166,6 @@ static OSStatus outputCallback(void *inRefCon,
     desc.componentFlags         = 0;
     desc.componentFlagsMask     = 0;
     
-    // Get component
-    AudioComponent inputComponent = AudioComponentFindNext(NULL, &desc);
-    /*
-    // Mono ASBD
-    AudioStreamBasicDescription monoStreamFormat;
-    monoStreamFormat.mSampleRate          = 44100.00;
-    monoStreamFormat.mFormatID            = kAudioFormatLinearPCM;
-    monoStreamFormat.mFormatFlags         = kAudioFormatFlagIsSignedInteger | kAudioFormatFlagIsPacked;
-    monoStreamFormat.mBytesPerPacket      = 2;
-    monoStreamFormat.mBytesPerFrame       = 2;
-    monoStreamFormat.mFramesPerPacket     = 1;
-    monoStreamFormat.mChannelsPerFrame    = 1;
-    monoStreamFormat.mBitsPerChannel      = 16;
-    */
     // Stereo ASBD
     AudioStreamBasicDescription stereoStreamFormat;
     stereoStreamFormat.mSampleRate          = 44100.00;
@@ -271,30 +182,37 @@ static OSStatus outputCallback(void *inRefCon,
     
     OSErr err;
     @try {
-        // Get Audio units
-        err = AudioComponentInstanceNew(inputComponent, &_ioUnit);
-        NSAssert1(err == noErr, @"Error setting inputComponent: %hd", err);
+        // Create new AUGraph
+        err = NewAUGraph(&_auGraph);
+        NSAssert1(err == noErr, @"Error creating AUGraph: %hd", err);
+        
+        // Add node to AUGraph
+        err = AUGraphAddNode(_auGraph,
+                             &desc,
+                             &_ioNode);
+        NSAssert1(err == noErr, @"Error adding AUNode: %hd", err);
+        
+        // Open AUGraph
+        err = AUGraphOpen(_auGraph);
+        NSAssert1(err == noErr, @"Error opening AUGraph: %hd", err);
+        
+        // Add AUGraph node info
+        err = AUGraphNodeInfo(_auGraph,
+                              _ioNode,
+                              &desc,
+                              &_ioUnit);
+        NSAssert1(err == noErr, @"Error adding noe info to AUGraph: %hd", err);
         
         // Enable input, which is disabled by default.
-        UInt32 enable = 1;
+        UInt32 enabled = 1;
         err = AudioUnitSetProperty(_ioUnit,
                              kAudioOutputUnitProperty_EnableIO,
                              kAudioUnitScope_Input,
                              kInputBus,
-                             &enable,
-                             sizeof(enable));
+                             &enabled,
+                             sizeof(enabled));
         NSAssert1(err == noErr, @"Error enabling input: %hd", err);
         
-        /*
-        // Output is suppose to be enabled by default but for some reason isn't so take car of that too
-        err = AudioUnitSetProperty(_ioUnit,
-                             kAudioOutputUnitProperty_EnableIO,
-                             kAudioUnitScope_Output,
-                             kOutputBus,
-                             &enable,
-                             sizeof(enable));
-        NSAssert1(err == noErr, @"Error enabling output: %hd", err);
-        */
         // Apply format to input of ioUnit
         err = AudioUnitSetProperty(self.ioUnit,
                              kAudioUnitProperty_StreamFormat,
@@ -313,51 +231,23 @@ static OSStatus outputCallback(void *inRefCon,
                              sizeof(stereoStreamFormat));
         NSAssert1(err == noErr, @"Error setting output ASBD: %hd", err);
         
-        // Set input callback
+        // Set hardware IO callback
         AURenderCallbackStruct callbackStruct;
-        callbackStruct.inputProc = inputCallback;
+        callbackStruct.inputProc = hardwareIOCallback;
         callbackStruct.inputProcRefCon = (__bridge void *)(self);
-        err = AudioUnitSetProperty(self.ioUnit,
-                             kAudioOutputUnitProperty_SetInputCallback,
-                             kAudioUnitScope_Global,
-                             kInputBus,
-                             &callbackStruct,
-                             sizeof(callbackStruct));
-        NSAssert1(err == noErr, @"Error setting input callback: %hd", err);
-        /*
-        // Set output callback
-        callbackStruct.inputProc = outputCallback;
-        callbackStruct.inputProcRefCon = (__bridge void *)(self);
-        err = AudioUnitSetProperty(self.ioUnit,
-                             kAudioUnitProperty_SetRenderCallback,
-                             kAudioUnitScope_Global,
-                             kOutputBus,
-                             &callbackStruct,
-                             sizeof(callbackStruct));
-        NSAssert1(err == noErr, @"Error setting output callback: %hd", err);
+        err = AUGraphSetNodeInputCallback(_auGraph,
+                                          _ioNode,
+                                          kInputBus,
+                                          &callbackStruct);
+        NSAssert1(err == noErr, @"Error setting IO callback: %hd", err);
         
-        // Disable buffer allocation
-        UInt32 disableBufferAlloc = 0;
-        err = AudioUnitSetProperty(self.ioUnit,
-                                   kAudioUnitProperty_ShouldAllocateBuffer,
-                                   kAudioUnitScope_Output,
-                                   kInputBus,
-                                   &disableBufferAlloc,
-                                   sizeof(disableBufferAlloc));
-        NSAssert1(err == noErr, @"Error disabling input to output callback: %hd", err);
-        */
-        // Allocate input buffers (1 channel, 16 bits per sample, thus 16 bits per frame and therefore 2 bytes per frame
-        _inBuffer.mNumberChannels = 1;
-        _inBuffer.mDataByteSize = 512 * 2;
-        _inBuffer.mData = malloc( 512 * 2 );
-        
-        // Initialize audio unit
-        err = AudioUnitInitialize(self.ioUnit);
-        NSAssert1(err == noErr, @"Error initializing unit: %hd", err);
+        // Initialize AudioGraph
+        err = AUGraphInitialize(_auGraph);
+        NSAssert1(err == noErr, @"Error initializing AUGraph: %hd", err);
         
         // Start audio unit
-        err = AudioOutputUnitStart(self.ioUnit);
-        NSAssert1(err == noErr, @"Error starting unit: %hd", err);
+        err = AUGraphStart(_auGraph);
+        NSAssert1(err == noErr, @"Error starting AUGraph: %hd", err);
 
     }
     @catch (NSException *exception) {
@@ -369,7 +259,7 @@ static OSStatus outputCallback(void *inRefCon,
 
 - (void) monitorSensors: (UIView *) view : (BOOL) enable {
     if (enable){
-        if (!self.ioUnit) {
+        if (!self.auGraph) {
             // Start IO communication
             [self startCollecting];
         }
@@ -381,7 +271,7 @@ static OSStatus outputCallback(void *inRefCon,
         NSLog(@"Sensor monitor STARTED");
     } else {
         // Stop IO communication
-        if (self.ioUnit) {
+        if (self.auGraph) {
             [self stopCollecting];
         }
         
@@ -411,10 +301,9 @@ static OSStatus outputCallback(void *inRefCon,
     [[NSNotificationCenter defaultCenter] removeObserver: self];
     
     // Stop and release audio unit
-    AudioOutputUnitStop(self.ioUnit);
-    AudioUnitUninitialize(self.ioUnit);
-    AudioComponentInstanceDispose(self.ioUnit);
-    self.ioUnit = nil;
+    AUGraphStop(self.auGraph);
+    AUGraphUninitialize(self.auGraph);
+    self.auGraph = nil;
 }
 
 - (void) checkAudioStatus: (UIView *) view {
@@ -521,7 +410,7 @@ static OSStatus outputCallback(void *inRefCon,
             self.sensorAlert =
             [[SDCAlertView alloc]
              initWithTitle:@"No Sensor"
-             message:@"Please insert the GSF sensor to collect this data. Pressing \"Cancel\" will end sensor data collection."
+             message:@"Please insert the GSF sensor to collect sensorIO data. Pressing \"Cancel\" will end sensor data collection."
              delegate:self
              cancelButtonTitle:nil
              otherButtonTitles:@"Cancel", nil];
@@ -588,61 +477,46 @@ static OSStatus outputCallback(void *inRefCon,
 /**
  *  Process Input readinga and fills right channel output buffer with any response
  *
- *  @param bufferList This is list of buffers containing the input from the mic line
+ *  @param bufferList sensorIO is list of buffers containing the input from the mic line
  */
 - (void) processIO: (AudioBufferList*) bufferList {
     for (int j = 0 ; j < bufferList->mNumberBuffers ; j++) {
         AudioBuffer sourceBuffer = bufferList->mBuffers[j];
-        
-        // fix inBuffer size if needed
-        if (_inBuffer.mDataByteSize != sourceBuffer.mDataByteSize) {
-            free(self.inBuffer.mData);
-            _inBuffer.mDataByteSize = sourceBuffer.mDataByteSize;
-            _inBuffer.mData = malloc(sourceBuffer.mDataByteSize);
-        }
-        
-        // copy incoming audio data to inBuffer
-        memcpy(_inBuffer.mData, bufferList->mBuffers[j].mData, bufferList->mBuffers[j].mDataByteSize);
-        
         SInt16 *buffer = (SInt16 *) bufferList->mBuffers[j].mData;
-        SInt16 maxBufferPoint = 0;
-        SInt16 minBufferPoint = 0;
         
-        // Find min and max points in current buffer
-        for (int i = 0; i < (_inBuffer.mDataByteSize / sizeof(_inBuffer)); i++) {
-            maxBufferPoint = max(buffer[i], maxBufferPoint);
-            minBufferPoint = min(buffer[i], minBufferPoint);
-        }
-        
-        // Associate current bit value based on min/max values
-        if ( (maxBufferPoint < highMin && minBufferPoint > lowMax) ) {
-            self.curState = 0;
+        for (int i = 0; i < (sourceBuffer.mDataByteSize / sizeof(sourceBuffer)); i++) {
+            SInt16 maxBufferPoint = 0;
+            SInt16 minBufferPoint = 0;
             
-            // **** DEBUG ****
-            self.curBit = 0;
-        } else {
-            self.curState = 1;
-            
-            // **** DEBUG ****
-            self.curBit = 0;
-        }
-        /*
-         // Check for bit flip against last bit value
-         if (self.curState != self.lastState) {
-            self.lastState = self.curState;
-            if (self.curState == 1) {
-                self.curBit = 1;
-            } else {
-                self.curBit = 0;
+            // Find min and max points in current buffer
+            for (int j = 0; j < kSamplesPerCheck; j++) {
+                maxBufferPoint = max(buffer[i+j], maxBufferPoint);
+                minBufferPoint = min(buffer[i+j], minBufferPoint);
             }
-         }
-         */
-        /**** DEBUG: Prints contents of input buffer to consol ****/
-        NSLog(@"***** BUFFER %d START ******", j);
-        for (int i = 0; i < (_inBuffer.mDataByteSize / sizeof(_inBuffer)); i++) {
-            NSLog(@"%d", buffer[i]);
+            
+            // Associate current bit value based on min/max values
+            if ( (maxBufferPoint < kHighMin && minBufferPoint > kLowMax) ) {
+                self.curState = 0;
+            } else {
+                self.curState = 1;
+            }
+            
+            // Check for bit flip against last bit value
+            if (self.curState != self.lastState) {
+                self.lastState = self.curState;
+                if (self.curState == 1) {
+                    self.curBit = 1;
+                } else {
+                    self.curBit = 0;
+                }
+            }
+            
+            /**** DEBUG: Prints contents of input buffer to consol ****/
+            for (int i = 0; i < (sourceBuffer.mDataByteSize / sizeof(sourceBuffer)); i++) {
+                
+            }
         }
-        NSLog(@"***** BUFFER %d STOP ******", j);
+        
         // Fill output buffer with commands and set new output data flag
 
     }

@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <AVFoundation/AVFoundation.h>               // Audio session APIs
 #import <MediaPlayer/MPVolumeView.h>                // For master volume control
+#import <AudioUnit/AudioUnit.h>
 #import <AudioToolbox/AudioToolbox.h>               // Audio unit control
 #import <Accelerate/Accelerate.h>                   // DSP functions
 
@@ -16,11 +17,12 @@
 #import <UIView+SDCAutoLayout.h>                    // Layout Control for custom alert view
 
 // Defined
-#define kOutputBus      0
-#define kInputBus       1
-#define kNumberofBuffers 1
-#define highMin         600
-#define lowMax          -600
+#define kOutputBus          0
+#define kInputBus           1
+#define kSamplesPerCheck    20
+#define kHighMin            600
+#define kLowMax             -600
+#define kGraphSampleRate    44100.00f
 
 #ifndef min
 #define min( a, b ) ( ((a) < (b)) ? (a) : (b) )
