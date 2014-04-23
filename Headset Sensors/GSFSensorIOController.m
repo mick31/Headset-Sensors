@@ -9,14 +9,33 @@
 #import "GSFSensorIOController.h"
 #import "ViewController.h"
 
+// Defined Macros
+#define kOutputBus          0
+#define kInputBus           1
+#define kSamplesPerCheck    20
+#define kHighMin            600
+#define kLowMax             -600
+#define kSampleRate         44100.00f
+#define kManchesterZero     0
+#define kManchesterOne      1
+
+#ifndef min
+#define min( a, b ) ( ((a) < (b)) ? (a) : (b) )
+#endif
+
+#ifndef max
+#define max( a, b ) ( ((a) > (b)) ? (a) : (b) )
+#endif
+
+// Pointer to associated view controller
 ViewController *dataView;
 
-@interface GSFSensorIOController ()
-
-// Private variables
-@property AUGraph auGraph;
-@property AUNode ioNode;
-@property AudioUnit ioUnit;
+// Private interface
+@interface GSFSensorIOController () {
+    AUGraph auGraph;
+    AUNode ioNode;
+}
+@property(assign) AudioUnit ioUnit;
 @property AVAudioSession* sensorAudioSession;
 @property NSMutableArray *sensorData;
 @property double sinPhase;
@@ -26,7 +45,7 @@ ViewController *dataView;
 
 @end
 
-static OSStatus hardwareIOCallback(void *inRefCon,
+static OSStatus hardwareIOCallback(void                         *inRefCon,
                                    AudioUnitRenderActionFlags 	*ioActionFlags,
                                    const AudioTimeStamp 		*inTimeStamp,
                                    UInt32 						inBusNumber,
@@ -35,19 +54,15 @@ static OSStatus hardwareIOCallback(void *inRefCon,
     // Scope reference to GSFSensorIOController class
     GSFSensorIOController *sensorIO = (__bridge GSFSensorIOController *) inRefCon;
     
-    //
-    static UInt64 framesProcessed = 0;
-    framesProcessed += inNumberFrames;
-    
-    
     // Grab the samples and place them in the buffer list
     AudioUnit ioUnit = sensorIO.ioUnit;
-    AudioUnitRender(ioUnit,
-                    ioActionFlags,
-                    inTimeStamp,
-                    inBusNumber,
-                    inNumberFrames,
-                    ioData);
+
+    OSStatus result = AudioUnitRender(ioUnit,
+                                   ioActionFlags,
+                                   inTimeStamp,
+                                   kInputBus,
+                                   inNumberFrames,
+                                   ioData);
     
     // Process input data
     [sensorIO processIO:ioData];
@@ -71,7 +86,7 @@ static OSStatus hardwareIOCallback(void *inRefCon,
             sinSignal = sin(phase);
             sampleBuffer[2 * sampleIdx] = (SInt16)((sinSignal * 32767.0f) /2);
             
-            // Mute right channel as necessary
+            // Write to commands to Atmel on right channel as necessary
             if(sensorIO.newDataOut)
                 sampleBuffer[2*sampleIdx + 1] = (SInt16)((sinSignal * 32767.0f) /2);
             else
@@ -87,12 +102,11 @@ static OSStatus hardwareIOCallback(void *inRefCon,
     // Store sine wave phase for next callback
     sensorIO.sinPhase = phase;
     
-    return noErr;
+    return result;
 }
 
 @implementation GSFSensorIOController
 
-@synthesize curBit = _curBit;
 @synthesize ioUnit = _ioUnit;
 
 /**
@@ -102,7 +116,10 @@ static OSStatus hardwareIOCallback(void *inRefCon,
  */
 - (id) init {
     self = [super init];
-    if (!self) return nil;
+    if (!self) {
+        NSLog(@"ERROR viewDidLoad: GSFSensorIOController Failed to initialize");
+        return nil;
+    }
     
     // Set up AVAudioSession
     self.sensorAudioSession = [AVAudioSession sharedInstance];
@@ -138,6 +155,9 @@ static OSStatus hardwareIOCallback(void *inRefCon,
     // Add volume change callback
     [self.volumeSlider addTarget:self action:@selector(handleVolumeChanged:) forControlEvents:UIControlEventValueChanged];
     
+    // Setup AUGraph
+    [self setUpSensorIO];
+    
     return self;
 }
 
@@ -148,18 +168,19 @@ static OSStatus hardwareIOCallback(void *inRefCon,
  *  @param sender NSNotification containing the master volume slider.
  */
 - (void) handleVolumeChanged:(id)sender{
-    if (self.ioUnit) self.volumeSlider.value = 1.0f;
+    if (self->auGraph) self.volumeSlider.value = 1.0f;
 }
 
 
 - (void) setUpSensorIO {
-    // Initialize input bit/states
-    self.curBit = 0;
+    // Initialize input data buffer/states
     self.curState = 0;
     self.lastState = 0;
+    self.sensorData = [NSMutableArray array];
     
     // Audio component description
     AudioComponentDescription desc;
+    bzero(&desc, sizeof(AudioComponentDescription));
     desc.componentType          = kAudioUnitType_Output;
     desc.componentSubType       = kAudioUnitSubType_RemoteIO;
     desc.componentManufacturer  = kAudioUnitManufacturer_Apple;
@@ -168,7 +189,8 @@ static OSStatus hardwareIOCallback(void *inRefCon,
     
     // Stereo ASBD
     AudioStreamBasicDescription stereoStreamFormat;
-    stereoStreamFormat.mSampleRate          = 44100.00;
+    bzero(&stereoStreamFormat, sizeof(AudioStreamBasicDescription));
+    stereoStreamFormat.mSampleRate          = kSampleRate;
     stereoStreamFormat.mFormatID            = kAudioFormatLinearPCM;
     stereoStreamFormat.mFormatFlags         = kAudioFormatFlagsCanonical;
     stereoStreamFormat.mBytesPerPacket      = 4;
@@ -177,28 +199,25 @@ static OSStatus hardwareIOCallback(void *inRefCon,
     stereoStreamFormat.mChannelsPerFrame    = 2;
     stereoStreamFormat.mBitsPerChannel      = 16;
     
-    NSLog(@"FormatID: %d", kAudioFormatLinearPCM);
-    NSLog(@"FormatFlags: %d", kAudioFormatFlagsCanonical);
-    
-    OSErr err;
+    OSErr err = noErr;
     @try {
         // Create new AUGraph
-        err = NewAUGraph(&_auGraph);
+        err = NewAUGraph(&auGraph);
         NSAssert1(err == noErr, @"Error creating AUGraph: %hd", err);
         
         // Add node to AUGraph
-        err = AUGraphAddNode(_auGraph,
+        err = AUGraphAddNode(auGraph,
                              &desc,
-                             &_ioNode);
+                             &ioNode);
         NSAssert1(err == noErr, @"Error adding AUNode: %hd", err);
         
         // Open AUGraph
-        err = AUGraphOpen(_auGraph);
+        err = AUGraphOpen(auGraph);
         NSAssert1(err == noErr, @"Error opening AUGraph: %hd", err);
         
         // Add AUGraph node info
-        err = AUGraphNodeInfo(_auGraph,
-                              _ioNode,
+        err = AUGraphNodeInfo(auGraph,
+                              ioNode,
                               &desc,
                               &_ioUnit);
         NSAssert1(err == noErr, @"Error adding noe info to AUGraph: %hd", err);
@@ -214,7 +233,7 @@ static OSStatus hardwareIOCallback(void *inRefCon,
         NSAssert1(err == noErr, @"Error enabling input: %hd", err);
         
         // Apply format to input of ioUnit
-        err = AudioUnitSetProperty(self.ioUnit,
+        err = AudioUnitSetProperty(_ioUnit,
                              kAudioUnitProperty_StreamFormat,
                              kAudioUnitScope_Input,
                              kOutputBus,
@@ -223,7 +242,7 @@ static OSStatus hardwareIOCallback(void *inRefCon,
         NSAssert1(err == noErr, @"Error setting input ASBD: %hd", err);
         
         // Apply format to output of ioUnit
-        err = AudioUnitSetProperty(self.ioUnit,
+        err = AudioUnitSetProperty(_ioUnit,
                              kAudioUnitProperty_StreamFormat,
                              kAudioUnitScope_Output,
                              kInputBus,
@@ -235,31 +254,30 @@ static OSStatus hardwareIOCallback(void *inRefCon,
         AURenderCallbackStruct callbackStruct;
         callbackStruct.inputProc = hardwareIOCallback;
         callbackStruct.inputProcRefCon = (__bridge void *)(self);
-        err = AUGraphSetNodeInputCallback(_auGraph,
-                                          _ioNode,
-                                          kInputBus,
+        err = AUGraphSetNodeInputCallback(auGraph,
+                                          ioNode,
+                                          kOutputBus,
                                           &callbackStruct);
         NSAssert1(err == noErr, @"Error setting IO callback: %hd", err);
         
         // Initialize AudioGraph
-        err = AUGraphInitialize(_auGraph);
+        err = AUGraphInitialize(auGraph);
         NSAssert1(err == noErr, @"Error initializing AUGraph: %hd", err);
         
         // Start audio unit
-        err = AUGraphStart(_auGraph);
+        err = AUGraphStart(auGraph);
         NSAssert1(err == noErr, @"Error starting AUGraph: %hd", err);
 
     }
     @catch (NSException *exception) {
         NSLog(@"Failed with exception: %@", exception);
     }
-    
 }
 
 
 - (void) monitorSensors: (UIView *) view : (BOOL) enable {
     if (enable){
-        if (!self.auGraph) {
+        if (!self->auGraph) {
             // Start IO communication
             [self startCollecting];
         }
@@ -271,7 +289,7 @@ static OSStatus hardwareIOCallback(void *inRefCon,
         NSLog(@"Sensor monitor STARTED");
     } else {
         // Stop IO communication
-        if (self.auGraph) {
+        if (self->auGraph) {
             [self stopCollecting];
         }
         
@@ -294,16 +312,16 @@ static OSStatus hardwareIOCallback(void *inRefCon,
 
 
 - (void) stopCollecting {
-    // Set Master Volume to 50%
-    self.volumeSlider.value = 0.5f;
-    
     // Unregister notification callbacks
     [[NSNotificationCenter defaultCenter] removeObserver: self];
     
     // Stop and release audio unit
-    AUGraphStop(self.auGraph);
-    AUGraphUninitialize(self.auGraph);
-    self.auGraph = nil;
+    AUGraphStop(self->auGraph);
+    AUGraphUninitialize(self->auGraph);
+    self->auGraph = nil;
+    
+    // Set Master Volume to 50%
+    self.volumeSlider.value = 0.5f;
 }
 
 - (void) checkAudioStatus: (UIView *) view {
@@ -505,21 +523,43 @@ static OSStatus hardwareIOCallback(void *inRefCon,
             if (self.curState != self.lastState) {
                 self.lastState = self.curState;
                 if (self.curState == 1) {
-                    self.curBit = 1;
+                    [self.sensorData addObject:[NSNumber numberWithInt:kManchesterOne]];
                 } else {
-                    self.curBit = 0;
+                    [self.sensorData addObject:[NSNumber numberWithInt:kManchesterZero]];
                 }
             }
             
-            /**** DEBUG: Prints contents of input buffer to consol ****/
-            for (int i = 0; i < (sourceBuffer.mDataByteSize / sizeof(sourceBuffer)); i++) {
-                
+            /**** DEBUG: Prints contents of input buffer to file. Doing this in     ****
+             ****        will cut power out to micro down to 2.1 VDC.               ****/
+            /*
+            // Grabs Document directory path only needs to be run once
+            NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+            NSString *docs_dir = [paths objectAtIndex:0];
+            NSLog(@"%@", docs_dir);
+            */
+            /*
+            FILE *fp;
+            fp = fopen("/var/mobile/Applications/2788ABA7-BD37-4797-B360-138B1438F88A/Documents/inputData.txt", "a");
+            if (fp == NULL) {
+                printf("ERROR processIO: Couldn't open file \"inputData.txt\"\n");
+                exit(0);
             }
+            for (int i = 0; i < (sourceBuffer.mDataByteSize / sizeof(sourceBuffer)); i++) {
+                fprintf(fp, "%d\n", (int)buffer[i]);
+            }
+            fclose(fp);
+             */
         }
         
         // Fill output buffer with commands and set new output data flag
 
     }
+}
+
+- (NSMutableArray*) collectData {
+    
+    
+    return self.sensorData;
 }
 
 @end
