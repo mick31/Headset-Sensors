@@ -232,6 +232,25 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
                              sizeof(enabled));
         NSAssert1(err == noErr, @"Error enabling input: %hd", err);
         
+        // Set highpass filter for input.
+        UInt32 bandWidthCenter = 5000;
+        err = AudioUnitSetParameter(_ioUnit,
+                                    kBandpassParam_CenterFrequency,
+                                    kAudioUnitScope_Global,
+                                    0,
+                                    bandWidthCenter,
+                                    0);
+        NSAssert1(err == noErr, @"Error enabling bandwidth center: %hd", err);
+        
+        UInt32 bandWidthEdges = 750;
+        err = AudioUnitSetParameter(_ioUnit,
+                                   kBandpassParam_Bandwidth,
+                                   kAudioUnitScope_Global,
+                                   0,
+                                   bandWidthEdges,
+                                   0);
+        NSAssert1(err == noErr, @"Error enabling bandwidth edges: %hd", err);
+        
         // Apply format to input of ioUnit
         err = AudioUnitSetProperty(_ioUnit,
                              kAudioUnitProperty_StreamFormat,
@@ -315,10 +334,15 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     // Unregister notification callbacks
     [[NSNotificationCenter defaultCenter] removeObserver: self];
     
-    // Stop and release audio unit
-    AUGraphStop(self->auGraph);
-    AUGraphUninitialize(self->auGraph);
-    self->auGraph = nil;
+    Boolean isRunning = false;
+    AUGraphIsRunning (auGraph, &isRunning);
+    
+    if (isRunning) {
+        // Stop and release audio unit
+        AUGraphStop(self->auGraph);
+        AUGraphUninitialize(self->auGraph);
+        self->auGraph = nil;
+    }
     
     // Set Master Volume to 50%
     self.volumeSlider.value = 0.5f;
@@ -531,24 +555,30 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
             
             /**** DEBUG: Prints contents of input buffer to file. Doing this in     ****
              ****        will cut power out to micro down to 2.1 VDC.               ****/
-            /*
-            // Grabs Document directory path only needs to be run once
+            
+            // Grabs Document directory path and file name
             NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-            NSString *docs_dir = [paths objectAtIndex:0];
-            NSLog(@"%@", docs_dir);
-            */
-            /*
+            NSMutableString *docs_dir = [paths objectAtIndex:0];
+            NSString *path = [NSString stringWithFormat:@"%@/inData_100Hz_5750KHzBPF_Repeat_One_pulse_Pulldown.txt",docs_dir];
+            const char *file = [path UTF8String];
+            
             FILE *fp;
-            fp = fopen("/var/mobile/Applications/2788ABA7-BD37-4797-B360-138B1438F88A/Documents/inputData.txt", "a");
+            fp = fopen(file, "a+");
             if (fp == NULL) {
                 printf("ERROR processIO: Couldn't open file \"inputData.txt\"\n");
                 exit(0);
             }
-            for (int i = 0; i < (sourceBuffer.mDataByteSize / sizeof(sourceBuffer)); i++) {
-                fprintf(fp, "%d\n", (int)buffer[i]);
+            
+            //fprintf(fp, "Buffer Start");
+            
+            int buf_indx = 0;
+            for (buf_indx = 0; buf_indx < (sourceBuffer.mDataByteSize / sizeof(sourceBuffer)); buf_indx++) {
+                fprintf(fp, "%d\n", (int)buffer[buf_indx]);
             }
+            
+            //fprintf(fp, "Buffer Stop. Size: %d", buf_indx);
             fclose(fp);
-             */
+            
         }
         
         // Fill output buffer with commands and set new output data flag
