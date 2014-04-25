@@ -13,8 +13,8 @@
 #define kOutputBus          0
 #define kInputBus           1
 #define kSamplesPerCheck    20
-#define kHighMin            600
-#define kLowMax             -600
+#define kHighMin            30000
+#define kLowMin             -30000
 #define kSampleRate         44100.00f
 #define kManchesterZero     0
 #define kManchesterOne      1
@@ -38,6 +38,7 @@ ViewController *dataView;
 @property(assign) AudioUnit ioUnit;
 @property AVAudioSession* sensorAudioSession;
 @property NSMutableArray *sensorData;
+@property NSMutableArray *rawInputData;
 @property double sinPhase;
 @property BOOL newDataOut;
 @property int curState;
@@ -177,6 +178,7 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     self.curState = 0;
     self.lastState = 0;
     self.sensorData = [NSMutableArray array];
+    self.rawInputData = [NSMutableArray array];
     
     // Audio component description
     AudioComponentDescription desc;
@@ -231,8 +233,8 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
                              &enabled,
                              sizeof(enabled));
         NSAssert1(err == noErr, @"Error enabling input: %hd", err);
-        
-        // Set highpass filter for input.
+        /*
+        // Set bandpass filter for input.
         UInt32 bandWidthCenter = 5000;
         err = AudioUnitSetParameter(_ioUnit,
                                     kBandpassParam_CenterFrequency,
@@ -242,7 +244,7 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
                                     0);
         NSAssert1(err == noErr, @"Error enabling bandwidth center: %hd", err);
         
-        UInt32 bandWidthEdges = 750;
+        UInt32 bandWidthEdges = 100;
         err = AudioUnitSetParameter(_ioUnit,
                                    kBandpassParam_Bandwidth,
                                    kAudioUnitScope_Global,
@@ -250,7 +252,7 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
                                    bandWidthEdges,
                                    0);
         NSAssert1(err == noErr, @"Error enabling bandwidth edges: %hd", err);
-        
+        */
         // Apply format to input of ioUnit
         err = AudioUnitSetProperty(_ioUnit,
                              kAudioUnitProperty_StreamFormat,
@@ -346,6 +348,46 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     
     // Set Master Volume to 50%
     self.volumeSlider.value = 0.5f;
+    
+    
+    /***************************************************************************
+     **** DEBUG: Prints contents of input buffer to file. Doing this in     ****
+     ****        will cut power out to micro down to 2.1 VDC.               ****
+     ***************************************************************************/
+    // Grabs Document directory path and file name
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSMutableString *docs_dir = [paths objectAtIndex:0];
+    NSString *path = [NSString stringWithFormat:@"%@/inData_100Hz_ManZero_5kHzOne_NoDelay_Repeat_NoProcessIO_WithBufferMarks.txt",docs_dir];
+    const char *file = [path UTF8String];
+    
+    // Remove Last File
+    NSError *err;
+    NSString *lastPath = [NSString stringWithFormat:@"%@/inData_100Hz_ManZero_5kHzOne_NoDelay_Repeat_NoProcessIO.txt",docs_dir];
+    [[NSFileManager defaultManager] removeItemAtPath:lastPath error:&err];
+    
+    if (err != noErr) {
+        NSLog(@"ERROR: %@- Failed to delete last file: %@", err, lastPath);
+    }
+    
+    // Open and write to file
+    FILE *fp;
+    fp = fopen(file, "w+");
+    if (fp == NULL) {
+        printf("ERROR processIO: Couldn't open file \"inputData.txt\"\n");
+        exit(0);
+    }
+    
+    int buf_indx = 0;
+    for (buf_indx = 0; buf_indx < [self.rawInputData count]; buf_indx++) {
+        fprintf(fp, "%d\n", (int)self.rawInputData[buf_indx]);
+    }
+    fclose(fp);
+
+    NSLog(@"Data In decoded: %@", self.sensorData);
+    /***************************************************************************
+     **** DEBUG: Prints contents of input buffer to file. Doing this in     ****
+     ****        will cut power out to micro down to 2.1 VDC.               ****
+     ***************************************************************************/
 }
 
 - (void) checkAudioStatus: (UIView *) view {
@@ -527,9 +569,11 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
         SInt16 *buffer = (SInt16 *) bufferList->mBuffers[j].mData;
         
         for (int i = 0; i < (sourceBuffer.mDataByteSize / sizeof(sourceBuffer)); i++) {
-            SInt16 maxBufferPoint = 0;
-            SInt16 minBufferPoint = 0;
+           // SInt16 maxBufferPoint = 0;
+           // SInt16 minBufferPoint = 0;
             
+            [self.rawInputData addObject:[NSNumber numberWithInt:buffer[i]]];
+           /*
             // Find min and max points in current buffer
             for (int j = 0; j < kSamplesPerCheck; j++) {
                 maxBufferPoint = max(buffer[i+j], maxBufferPoint);
@@ -537,48 +581,22 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
             }
             
             // Associate current bit value based on min/max values
-            if ( (maxBufferPoint < kHighMin && minBufferPoint > kLowMax) ) {
-                self.curState = 0;
-            } else {
+            if ( (maxBufferPoint > kHighMin && minBufferPoint < kLowMin) ) {
                 self.curState = 1;
+            } else {
+                self.curState = 0;
             }
             
             // Check for bit flip against last bit value
             if (self.curState != self.lastState) {
-                self.lastState = self.curState;
                 if (self.curState == 1) {
                     [self.sensorData addObject:[NSNumber numberWithInt:kManchesterOne]];
                 } else {
                     [self.sensorData addObject:[NSNumber numberWithInt:kManchesterZero]];
                 }
             }
-            
-            /**** DEBUG: Prints contents of input buffer to file. Doing this in     ****
-             ****        will cut power out to micro down to 2.1 VDC.               ****/
-            
-            // Grabs Document directory path and file name
-            NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-            NSMutableString *docs_dir = [paths objectAtIndex:0];
-            NSString *path = [NSString stringWithFormat:@"%@/inData_100Hz_5750KHzBPF_Repeat_One_pulse_Pulldown.txt",docs_dir];
-            const char *file = [path UTF8String];
-            
-            FILE *fp;
-            fp = fopen(file, "a+");
-            if (fp == NULL) {
-                printf("ERROR processIO: Couldn't open file \"inputData.txt\"\n");
-                exit(0);
-            }
-            
-            //fprintf(fp, "Buffer Start");
-            
-            int buf_indx = 0;
-            for (buf_indx = 0; buf_indx < (sourceBuffer.mDataByteSize / sizeof(sourceBuffer)); buf_indx++) {
-                fprintf(fp, "%d\n", (int)buffer[buf_indx]);
-            }
-            
-            //fprintf(fp, "Buffer Stop. Size: %d", buf_indx);
-            fclose(fp);
-            
+            self.lastState = self.curState;
+            */
         }
         
         // Fill output buffer with commands and set new output data flag
