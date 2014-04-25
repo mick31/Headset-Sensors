@@ -12,7 +12,7 @@
 // Defined Macros
 #define kOutputBus          0
 #define kInputBus           1
-#define kSamplesPerCheck    20
+#define kSamplesPerCheck    10
 #define kHighMin            30000
 #define kLowMin             -30000
 #define kSampleRate         44100.00f
@@ -41,8 +41,11 @@ ViewController *dataView;
 @property NSMutableArray *rawInputData;
 @property double sinPhase;
 @property BOOL newDataOut;
+@property BOOL startBit;
+@property BOOL startRise;
 @property int curState;
 @property int lastState;
+@property int durationCount;
 
 @end
 
@@ -130,9 +133,6 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     success = [self.sensorAudioSession setCategory:AVAudioSessionCategoryPlayAndRecord error:&error];
 	if (!success) NSLog(@"ERROR viewDidLoad: AVAudioSession failed setting category- %@", error);
     
-    success = [self.sensorAudioSession setPreferredIOBufferDuration:0.005 error:&error];
-    if (!success) NSLog(@"ERROR viewDidLoad: AVAudioSession failed setting buffer duration- %@", error);
-    
     // Make the sensor AVAudioSession active
     success = [self.sensorAudioSession setActive:YES error:&error];
     if(!success) NSLog(@"ERROR viewDidLoad: AVAudioSession failed activating- %@", error);
@@ -177,6 +177,8 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     // Initialize input data buffer/states
     self.curState = 0;
     self.lastState = 0;
+    self.startBit = false;
+    self.startRise = false;
     self.sensorData = [NSMutableArray array];
     self.rawInputData = [NSMutableArray array];
     
@@ -357,12 +359,12 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     // Grabs Document directory path and file name
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
     NSMutableString *docs_dir = [paths objectAtIndex:0];
-    NSString *path = [NSString stringWithFormat:@"%@/inData_100Hz_ManZero_5kHzOne_NoDelay_Repeat_NoProcessIO_WithBufferMarks.txt",docs_dir];
+    NSString *path = [NSString stringWithFormat:@"%@/HeadsetSensor_inData_100Hz_ManZero_5kHzOne_NoDelay_Repeat_NoBufDur.txt",docs_dir];
     const char *file = [path UTF8String];
     
     // Remove Last File
     NSError *err;
-    NSString *lastPath = [NSString stringWithFormat:@"%@/inData_100Hz_ManZero_5kHzOne_NoDelay_Repeat_NoProcessIO.txt",docs_dir];
+    NSString *lastPath = [NSString stringWithFormat:@"%@/HeadsetSensor_inData_100Hz_ManZero_5kHzOne_NoDelay_Repeat_NoProcessIO_NoBufDur.txt",docs_dir];
     [[NSFileManager defaultManager] removeItemAtPath:lastPath error:&err];
     
     if (err != noErr) {
@@ -569,34 +571,55 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
         SInt16 *buffer = (SInt16 *) bufferList->mBuffers[j].mData;
         
         for (int i = 0; i < (sourceBuffer.mDataByteSize / sizeof(sourceBuffer)); i++) {
-           // SInt16 maxBufferPoint = 0;
-           // SInt16 minBufferPoint = 0;
+            SInt16 maxBufferPoint = 0;
+            SInt16 minBufferPoint = 0;
             
             [self.rawInputData addObject:[NSNumber numberWithInt:buffer[i]]];
-           /*
+           
             // Find min and max points in current buffer
             for (int j = 0; j < kSamplesPerCheck; j++) {
                 maxBufferPoint = max(buffer[i+j], maxBufferPoint);
                 minBufferPoint = min(buffer[i+j], minBufferPoint);
             }
             
-            // Associate current bit value based on min/max values
+            // Associate current bit value based on min/max values and check if it's the start bit
             if ( (maxBufferPoint > kHighMin && minBufferPoint < kLowMin) ) {
                 self.curState = 1;
+                // Only enters this statement for the rising edge of the start bit
+                if (!self.startRise && !self.startBit) {
+                    self.startRise = true;
+                }
             } else {
                 self.curState = 0;
             }
             
-            // Check for bit flip against last bit value
-            if (self.curState != self.lastState) {
-                if (self.curState == 1) {
-                    [self.sensorData addObject:[NSNumber numberWithInt:kManchesterOne]];
-                } else {
-                    [self.sensorData addObject:[NSNumber numberWithInt:kManchesterZero]];
+            // Check for falling edge of start bit
+            if (self.curState == 0 && self.startRise) {
+                    self.startBit = true;
+                    self.startRise = false;
+                    self.durationCount = 0;
+            }
+            
+            // When start bit is set check for data
+            if (self.startBit) {
+                // Increment and check duration for low-low or high-high state transitions
+                self.durationCount++;
+                if (self.durationCount == 300) {
+                    self.durationCount = 0;
+                    if (self.curState == self.lastState) {
+                        self.lastState = self.curState;
+                    }
+                }
+                // Check for state flip against last state value
+                if (self.curState != self.lastState) {
+                    if (self.curState == 1) {
+                        [self.sensorData addObject:[NSNumber numberWithInt:kManchesterOne]];
+                    } else {
+                        [self.sensorData addObject:[NSNumber numberWithInt:kManchesterZero]];
+                    }
+                    self.lastState = self.curState;
                 }
             }
-            self.lastState = self.curState;
-            */
         }
         
         // Fill output buffer with commands and set new output data flag
@@ -605,8 +628,6 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
 }
 
 - (NSMutableArray*) collectData {
-    
-    
     return self.sensorData;
 }
 
