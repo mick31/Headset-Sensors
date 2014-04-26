@@ -16,8 +16,6 @@
 #define kHighMin            30000
 #define kLowMin             -30000
 #define kSampleRate         44100.00f
-#define kManchesterZero     0
-#define kManchesterOne      1
 
 #ifndef min
 #define min( a, b ) ( ((a) < (b)) ? (a) : (b) )
@@ -41,11 +39,12 @@ ViewController *dataView;
 @property NSMutableArray *rawInputData;
 @property double sinPhase;
 @property BOOL newDataOut;
-@property BOOL startBit;
-@property BOOL startRise;
+@property BOOL startEdge;
 @property int curState;
 @property int lastState;
-@property int durationCount;
+@property int lastDouble;
+@property int halfPeriodCount;
+@property BOOL firstHalfPeriod;
 
 @end
 
@@ -177,8 +176,8 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     // Initialize input data buffer/states
     self.curState = 0;
     self.lastState = 0;
-    self.startBit = false;
-    self.startRise = false;
+    self.startEdge = false;
+    self.firstHalfPeriod = true;
     self.sensorData = [NSMutableArray array];
     self.rawInputData = [NSMutableArray array];
     
@@ -585,39 +584,38 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
             // Associate current bit value based on min/max values and check if it's the start bit
             if ( (maxBufferPoint > kHighMin && minBufferPoint < kLowMin) ) {
                 self.curState = 1;
-                // Only enters this statement for the rising edge of the start bit
-                if (!self.startRise && !self.startBit) {
-                    self.startRise = true;
+                // Only enters this statement for the rising edge of the start signal
+                if (!self.startEdge) {
+                    self.startEdge = true;
+                    self.firstHalfPeriod = true;
+                    self.halfPeriodCount = 0;
                 }
             } else {
                 self.curState = 0;
             }
             
-            // Check for falling edge of start bit
-            if (self.curState == 0 && self.startRise) {
-                    self.startBit = true;
-                    self.startRise = false;
-                    self.durationCount = 0;
-            }
-            
             // When start bit is set check for data
-            if (self.startBit) {
-                // Increment and check duration for low-low or high-high state transitions
-                self.durationCount++;
-                if (self.durationCount == 300) {
-                    self.durationCount = 0;
-                    if (self.curState == self.lastState) {
+            if (self.startEdge) {
+                // Increment and check if half period is finished
+                self.halfPeriodCount++;
+                if (self.halfPeriodCount == 300) {
+                    // Reset half period count
+                    self.halfPeriodCount = 0;
+                    
+                    // Check if this is the first pass after the start edge
+                    if (self.firstHalfPeriod) {
+                        if (self.curState == 1) self.lastDouble = 1;
                         self.lastState = self.curState;
-                    }
-                }
-                // Check for state flip against last state value
-                if (self.curState != self.lastState) {
-                    if (self.curState == 1) {
-                        [self.sensorData addObject:[NSNumber numberWithInt:kManchesterOne]];
+                        self.firstHalfPeriod = false;
+                    } else if (self.curState != self.lastState && self.lastDouble != self.curState) {
+                        [self.sensorData addObject:[NSNumber numberWithInt:self.curState]];
+                        self.lastState = self.curState;
+                    } else if (self.curState == self.lastState) {
+                        self.lastDouble = self.curState;
+                        self.lastState = self.curState;
                     } else {
-                        [self.sensorData addObject:[NSNumber numberWithInt:kManchesterZero]];
+                        // need condition for reseting variables and start edge to false
                     }
-                    self.lastState = self.curState;
                 }
             }
         }
