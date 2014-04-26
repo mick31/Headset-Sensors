@@ -12,7 +12,6 @@
 @interface ViewController ()
 
 @property GSFSensorIOController *sensorIO;
-@property NSTimer* oneSecondTimer;
 
 @end
 
@@ -20,7 +19,7 @@
 
 - (void) viewDidLoad {
     [super viewDidLoad];
-    self.sensorIO = [[GSFSensorIOController alloc] init];
+    self.sensorIO = [[GSFSensorIOController alloc] init: self.view];
 }
 
 - (IBAction)collectDataButton:(id)sender {
@@ -29,10 +28,6 @@
     } else {
         [self.sensorIO monitorSensors:self.view :NO];
     }
-}
-
-- (void) oneSecondCallback: (NSTimer*) timer {
-    
 }
 
 @end
