@@ -24,9 +24,10 @@
 @property (nonatomic, strong) UISlider *volumeSlider;
 @property (nonatomic) int audioChangeReason;
 
-// Function prototypes
-- (void) monitorSensors: (UIView *) view : (BOOL) enable;
+// Public function prototypes
+- (id) init: (UIView *) view;                               // Uses idea of ONE associated view
+- (void) monitorSensors: (UIView *) view : (BOOL) enable;   // Uses idea of ANY calling view
 - (void) processIO: (AudioBufferList*) bufferList;
-- (void) checkAudioStatus: (UIView *) view;
+- (void) checkAudioStatus: (UIView *) view;                 // Uses idea of ANY calling view
 
 @end
