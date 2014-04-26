@@ -12,12 +12,12 @@
 // Defined Macros
 #define kOutputBus          0
 #define kInputBus           1
-#define kSamplesPerCheck    20
+#define kSamplesPerCheck    10
 #define kHighMin            30000
 #define kLowMin             -30000
 #define kSampleRate         44100.00f
-#define kManchesterZero     0
-#define kManchesterOne      1
+#define kLowState           0
+#define kHighState          1
 
 #ifndef min
 #define min( a, b ) ( ((a) < (b)) ? (a) : (b) )
@@ -27,22 +27,26 @@
 #define max( a, b ) ( ((a) > (b)) ? (a) : (b) )
 #endif
 
-// Pointer to associated view controller
-ViewController *dataView;
-
 // Private interface
 @interface GSFSensorIOController () {
     AUGraph auGraph;
     AUNode ioNode;
 }
-@property(assign) AudioUnit ioUnit;
-@property AVAudioSession* sensorAudioSession;
-@property NSMutableArray *sensorData;
-@property NSMutableArray *rawInputData;
-@property double sinPhase;
-@property BOOL newDataOut;
-@property int curState;
-@property int lastState;
+@property (assign) AudioUnit ioUnit;            // Audio unit handles in IO
+@property AVAudioSession *sensorAudioSession;   // Pointer to sensor required audio session
+@property NSMutableArray *inputDataDecoded;    // Decoded input
+@property NSMutableArray *sensorData;           // Final sensor data
+@property NSMutableArray *rawInputData;         // Raw input data for DEBUG printing
+@property double sinPhase;                      // Latest point of sine wave for power tone
+@property BOOL newDataOut;                      // Flag for new communication to micro
+@property BOOL startEdge;                       // First rise of input signal signifies start edge
+@property int curState;                         // Current input state value (HIGH or LOW)
+@property int lastState;                        // Last input state to compare with current state
+@property int secondLastState;                  // Second to last input to check for pattern flaws
+@property int doubleState;                      // Marks last double state (HIGH-HIGH or LOW-LOW)
+@property int halfPeriodCount;                  // Count for half of the expected input period
+@property BOOL firstHalfPeriod;                 // First half period for start edge
+@property UIView *associatedView;               // *** View for ONE view alert system ***
 
 @end
 
@@ -115,7 +119,7 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
  *
  *  @return The class instance with initailized audio session and units
  */
-- (id) init {
+- (id) init :(UIView *) view {
     self = [super init];
     if (!self) {
         NSLog(@"ERROR viewDidLoad: GSFSensorIOController Failed to initialize");
@@ -129,19 +133,25 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     
     success = [self.sensorAudioSession setCategory:AVAudioSessionCategoryPlayAndRecord error:&error];
 	if (!success) NSLog(@"ERROR viewDidLoad: AVAudioSession failed setting category- %@", error);
+    /*
+    success = [self.sensorAudioSession setPreferredSampleRate:44100.00 error:&error];
+	if (!success) NSLog(@"ERROR viewDidLoad: AVAudioSession failed setting sample rate- %@", error);
     
-    success = [self.sensorAudioSession setPreferredIOBufferDuration:0.005 error:&error];
-    if (!success) NSLog(@"ERROR viewDidLoad: AVAudioSession failed setting buffer duration- %@", error);
-    
+    success = [self.sensorAudioSession setPreferredIOBufferDuration:0.93 error:&error];
+	if (!success) NSLog(@"ERROR viewDidLoad: AVAudioSession failed setting buffer dur- %@", error);
+    */
     // Make the sensor AVAudioSession active
     success = [self.sensorAudioSession setActive:YES error:&error];
     if(!success) NSLog(@"ERROR viewDidLoad: AVAudioSession failed activating- %@", error);
+    
+    // Add pointer to associated UIView controlerr for alerts
+    self.associatedView = view;
     
     // Set up master volume controller
     MPVolumeView *volumeView = [MPVolumeView new];
     volumeView.showsRouteButton = NO;
     volumeView.showsVolumeSlider = NO;
-    [dataView.view addSubview:volumeView];
+    [self.associatedView addSubview:volumeView];
     
     // Bind master volume slider to class volume slider
     __weak __typeof(self)weakSelf = self;
@@ -177,6 +187,8 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     // Initialize input data buffer/states
     self.curState = 0;
     self.lastState = 0;
+    self.startEdge = false;
+    self.firstHalfPeriod = true;
     self.sensorData = [NSMutableArray array];
     self.rawInputData = [NSMutableArray array];
     
@@ -357,18 +369,18 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     // Grabs Document directory path and file name
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
     NSMutableString *docs_dir = [paths objectAtIndex:0];
-    NSString *path = [NSString stringWithFormat:@"%@/inData_100Hz_ManZero_5kHzOne_NoDelay_Repeat_NoProcessIO_WithBufferMarks.txt",docs_dir];
+    NSString *path = [NSString stringWithFormat:@"%@/HeadsetSensor_in_100Hz_5kHzOne_StartEdge_RepeatZeros_NoPro.txt",docs_dir];
     const char *file = [path UTF8String];
-    
+    /**/
     // Remove Last File
     NSError *err;
-    NSString *lastPath = [NSString stringWithFormat:@"%@/inData_100Hz_ManZero_5kHzOne_NoDelay_Repeat_NoProcessIO.txt",docs_dir];
+    NSString *lastPath = [NSString stringWithFormat:@"%@/HeadsetSensor_in_100Hz_5kHzOne_RepeatZeros_NoPro.txt",docs_dir];
     [[NSFileManager defaultManager] removeItemAtPath:lastPath error:&err];
     
     if (err != noErr) {
         NSLog(@"ERROR: %@- Failed to delete last file: %@", err, lastPath);
     }
-    
+    /**/
     // Open and write to file
     FILE *fp;
     fp = fopen(file, "w+");
@@ -383,7 +395,7 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     }
     fclose(fp);
 
-    NSLog(@"Data In decoded: %@", self.sensorData);
+    NSLog(@"Data In decoded: %@", self.inputDataDecoded);
     /***************************************************************************
      **** DEBUG: Prints contents of input buffer to file. Doing this in     ****
      ****        will cut power out to micro down to 2.1 VDC.               ****
@@ -569,9 +581,10 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
         SInt16 *buffer = (SInt16 *) bufferList->mBuffers[j].mData;
         
         for (int i = 0; i < (sourceBuffer.mDataByteSize / sizeof(sourceBuffer)); i++) {
-           // SInt16 maxBufferPoint = 0;
-           // SInt16 minBufferPoint = 0;
+            //SInt16 maxBufferPoint = 0;
+            //SInt16 minBufferPoint = 0;
             
+            // DEBUG: Array of raw data points for printing to a file
             [self.rawInputData addObject:[NSNumber numberWithInt:buffer[i]]];
            /*
             // Find min and max points in current buffer
@@ -580,23 +593,53 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
                 minBufferPoint = min(buffer[i+j], minBufferPoint);
             }
             
-            // Associate current bit value based on min/max values
+            // Associate current bit value based on min/max values and check if it's the start bit
             if ( (maxBufferPoint > kHighMin && minBufferPoint < kLowMin) ) {
-                self.curState = 1;
+                self.curState = kHighState;
+                // Only enters this statement for the rising edge of the start signal
+                if (!self.startEdge) {
+                    self.startEdge = true;
+                    self.firstHalfPeriod = true;
+                    self.halfPeriodCount = 0;
+                }
             } else {
-                self.curState = 0;
+                self.curState = kLowState;
             }
             
-            // Check for bit flip against last bit value
-            if (self.curState != self.lastState) {
-                if (self.curState == 1) {
-                    [self.sensorData addObject:[NSNumber numberWithInt:kManchesterOne]];
-                } else {
-                    [self.sensorData addObject:[NSNumber numberWithInt:kManchesterZero]];
+            // When start bit is set check for data
+            if (self.startEdge) {
+                // Increment and check if half period is finished
+                self.halfPeriodCount++;
+                if (self.halfPeriodCount == 300) {
+                    // Reset half period count
+                    self.halfPeriodCount = 0;
+                    
+                    // Check if this is the first pass after the start edge
+                    if (self.firstHalfPeriod) {
+                        if (self.curState == 1) self.doubleState = 1;
+                        self.lastState = self.curState;
+                        self.secondLastState = self.lastState;
+                        self.firstHalfPeriod = false;
+                    }
+                    // Check for bit flip
+                    else if (self.curState != self.lastState && self.doubleState != self.curState) {
+                        [self.inputDataDecoded addObject:[NSNumber numberWithInt:self.curState]];
+                        self.lastState = self.curState;
+                        self.secondLastState = self.lastState;
+                    }
+                    // Check for non bit flip aka double state
+                    else if (self.curState == self.lastState) {
+                        self.doubleState = self.curState;
+                        self.secondLastState = self.lastState;
+                        self.lastState = self.curState;
+                    }
                 }
-            }
-            self.lastState = self.curState;
-            */
+                
+                // Reset input stream last three states are equivalent
+                if (self.curState == self.lastState == self.secondLastState) {
+                    self.startEdge = false;
+                }
+            }*/
         }
         
         // Fill output buffer with commands and set new output data flag
@@ -604,9 +647,18 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     }
 }
 
+/**
+ *  Decodes input from micro and returns an NSMutableArray of the sensor readings.
+ *
+ *  @return An NSMutableArray containing the decoded sensor data.
+ */
 - (NSMutableArray*) collectData {
-    
-    
+    UInt16 temp_byte = 0x00;
+    for (int i = 0; i < [self.inputDataDecoded count]; i++) {
+        for (int j = 0; j < 8; j++) {
+            temp_byte = temp_byte << 1;
+        }
+    }
     return self.sensorData;
 }
 
