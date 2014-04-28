@@ -15,7 +15,7 @@
 #define kSamplesPerCheck    10
 #define kHighMin            30000
 #define kLowMin             -30000
-#define kSampleRate         44100.00f
+#define kSampleRate         20000
 #define kLowState           0
 #define kHighState          1
 
@@ -34,7 +34,7 @@
 }
 @property (assign) AudioUnit ioUnit;            // Audio unit handles in IO
 @property AVAudioSession *sensorAudioSession;   // Pointer to sensor required audio session
-@property NSMutableArray *inputDataDecoded;    // Decoded input
+@property NSMutableArray *inputDataDecoded;     // Decoded input
 @property NSMutableArray *sensorData;           // Final sensor data
 @property NSMutableArray *rawInputData;         // Raw input data for DEBUG printing
 @property double sinPhase;                      // Latest point of sine wave for power tone
@@ -45,6 +45,7 @@
 @property int secondLastState;                  // Second to last input to check for pattern flaws
 @property int doubleState;                      // Marks last double state (HIGH-HIGH or LOW-LOW)
 @property int halfPeriodCount;                  // Count for half of the expected input period
+@property int halfPeriodTC;                     // TC for half period count
 @property BOOL firstHalfPeriod;                 // First half period for start edge
 @property UIView *associatedView;               // *** View for ONE view alert system ***
 
@@ -61,20 +62,22 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     
     // Grab the samples and place them in the buffer list
     AudioUnit ioUnit = sensorIO.ioUnit;
-
+    
     OSStatus result = AudioUnitRender(ioUnit,
-                                   ioActionFlags,
-                                   inTimeStamp,
-                                   kInputBus,
-                                   inNumberFrames,
-                                   ioData);
+                                      ioActionFlags,
+                                      inTimeStamp,
+                                      kInputBus,
+                                      inNumberFrames,
+                                      ioData);
+    
+    if (result != noErr) NSLog(@"Blowing it in interrupt");
     
     // Process input data
     [sensorIO processIO:ioData];
     
     // Set up power tone attributes
     float freq = 20000.00f;
-    float sampleRate = 44100.00f;
+    float sampleRate = kSampleRate;
     float phase = sensorIO.sinPhase;
     float sinSignal;
     
@@ -130,16 +133,9 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     self.sensorAudioSession = [AVAudioSession sharedInstance];
     BOOL success;
     NSError *error;
-    
     success = [self.sensorAudioSession setCategory:AVAudioSessionCategoryPlayAndRecord error:&error];
 	if (!success) NSLog(@"ERROR viewDidLoad: AVAudioSession failed setting category- %@", error);
-    /*
-    success = [self.sensorAudioSession setPreferredSampleRate:44100.00 error:&error];
-	if (!success) NSLog(@"ERROR viewDidLoad: AVAudioSession failed setting sample rate- %@", error);
     
-    success = [self.sensorAudioSession setPreferredIOBufferDuration:0.93 error:&error];
-	if (!success) NSLog(@"ERROR viewDidLoad: AVAudioSession failed setting buffer dur- %@", error);
-    */
     // Make the sensor AVAudioSession active
     success = [self.sensorAudioSession setActive:YES error:&error];
     if(!success) NSLog(@"ERROR viewDidLoad: AVAudioSession failed activating- %@", error);
@@ -189,6 +185,8 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     self.lastState = 0;
     self.startEdge = false;
     self.firstHalfPeriod = true;
+    self.halfPeriodCount = 150;                 // Should make this a result of a calibration period
+                                                // for greater accuracy
     self.sensorData = [NSMutableArray array];
     self.rawInputData = [NSMutableArray array];
     
@@ -245,6 +243,17 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
                              &enabled,
                              sizeof(enabled));
         NSAssert1(err == noErr, @"Error enabling input: %hd", err);
+        /*
+        UInt32 highpass = 10000;
+        err = AudioUnitSetParameter(_ioUnit,
+                                    kHipassParam_CutoffFrequency,
+                                    kAudioUnitScope_Global,
+                                    0,
+                                    highpass,
+                                    0);
+        NSAssert1(err == noErr, @"Error enabling bandwidth center: %hd", err);
+         */
+        
         /*
         // Set bandpass filter for input.
         UInt32 bandWidthCenter = 5000;
@@ -369,32 +378,34 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     // Grabs Document directory path and file name
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
     NSMutableString *docs_dir = [paths objectAtIndex:0];
-    NSString *path = [NSString stringWithFormat:@"%@/HeadsetSensor_in_100Hz_5kHzOne_StartEdge_RepeatZeros_NoPro.txt",docs_dir];
+    /**/
+    // New file to add
+    NSString *path = [NSString stringWithFormat:@"%@/HeadsetSensor_in_100Hz_10HzOne_0xDE_20kSR_i5s.txt",docs_dir];
     const char *file = [path UTF8String];
     /**/
-    // Remove Last File
+    // Remove last File
     NSError *err;
-    NSString *lastPath = [NSString stringWithFormat:@"%@/HeadsetSensor_in_100Hz_5kHzOne_RepeatZeros_NoPro.txt",docs_dir];
+    NSString *lastPath = [NSString stringWithFormat:@"%@/HeadsetSensor_in_100Hz_10HzOne_0xDE_44kSR_i5s.txt",docs_dir];
     [[NSFileManager defaultManager] removeItemAtPath:lastPath error:&err];
     
     if (err != noErr) {
         NSLog(@"ERROR: %@- Failed to delete last file: %@", err, lastPath);
     }
     /**/
-    // Open and write to file
+    // Open and write to new file
     FILE *fp;
     fp = fopen(file, "w+");
     if (fp == NULL) {
         printf("ERROR processIO: Couldn't open file \"inputData.txt\"\n");
         exit(0);
     }
-    
     int buf_indx = 0;
     for (buf_indx = 0; buf_indx < [self.rawInputData count]; buf_indx++) {
         fprintf(fp, "%d\n", (int)self.rawInputData[buf_indx]);
     }
     fclose(fp);
-
+    /**/
+    // Print the decoded input data
     NSLog(@"Data In decoded: %@", self.inputDataDecoded);
     /***************************************************************************
      **** DEBUG: Prints contents of input buffer to file. Doing this in     ****
@@ -581,12 +592,12 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
         SInt16 *buffer = (SInt16 *) bufferList->mBuffers[j].mData;
         
         for (int i = 0; i < (sourceBuffer.mDataByteSize / sizeof(sourceBuffer)); i++) {
-            //SInt16 maxBufferPoint = 0;
-            //SInt16 minBufferPoint = 0;
+            SInt16 maxBufferPoint = 0;
+            SInt16 minBufferPoint = 0;
             
             // DEBUG: Array of raw data points for printing to a file
             [self.rawInputData addObject:[NSNumber numberWithInt:buffer[i]]];
-           /*
+           
             // Find min and max points in current buffer
             for (int j = 0; j < kSamplesPerCheck; j++) {
                 maxBufferPoint = max(buffer[i+j], maxBufferPoint);
@@ -610,7 +621,7 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
             if (self.startEdge) {
                 // Increment and check if half period is finished
                 self.halfPeriodCount++;
-                if (self.halfPeriodCount == 300) {
+                if (self.halfPeriodCount == self.halfPeriodTC) {
                     // Reset half period count
                     self.halfPeriodCount = 0;
                     
@@ -639,7 +650,7 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
                 if (self.curState == self.lastState == self.secondLastState) {
                     self.startEdge = false;
                 }
-            }*/
+            }
         }
         
         // Fill output buffer with commands and set new output data flag
@@ -653,12 +664,12 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
  *  @return An NSMutableArray containing the decoded sensor data.
  */
 - (NSMutableArray*) collectData {
-    UInt16 temp_byte = 0x00;
+    /*UInt16 temp_byte = 0x00;
     for (int i = 0; i < [self.inputDataDecoded count]; i++) {
         for (int j = 0; j < 8; j++) {
-            temp_byte = temp_byte << 1;
+            
         }
-    }
+    }*/
     return self.sensorData;
 }
 
