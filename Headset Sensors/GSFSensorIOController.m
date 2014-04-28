@@ -15,7 +15,7 @@
 #define kSamplesPerCheck    10
 #define kHighMin            30000
 #define kLowMin             -30000
-#define kSampleRate         44100.00f
+#define kSampleRate         20000
 #define kLowState           0
 #define kHighState          1
 
@@ -77,7 +77,7 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     
     // Set up power tone attributes
     float freq = 20000.00f;
-    float sampleRate = 44100.00f;
+    float sampleRate = kSampleRate;
     float phase = sensorIO.sinPhase;
     float sinSignal;
     
@@ -202,7 +202,7 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     // Stereo ASBD
     AudioStreamBasicDescription stereoStreamFormat;
     bzero(&stereoStreamFormat, sizeof(AudioStreamBasicDescription));
-    stereoStreamFormat.mSampleRate          = 20000;
+    stereoStreamFormat.mSampleRate          = kSampleRate;
     stereoStreamFormat.mFormatID            = kAudioFormatLinearPCM;
     stereoStreamFormat.mFormatFlags         = kAudioFormatFlagsCanonical;
     stereoStreamFormat.mBytesPerPacket      = 4;
@@ -378,20 +378,20 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     // Grabs Document directory path and file name
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
     NSMutableString *docs_dir = [paths objectAtIndex:0];
-    
+    /**/
     // New file to add
-    NSString *path = [NSString stringWithFormat:@"%@/HeadsetSensor_in_100Hz_5kHzOne_5StartEd_01_20kSR_00LT.txt",docs_dir];
+    NSString *path = [NSString stringWithFormat:@"%@/HeadsetSensor_in_100Hz_10HzOne_0xDE_20kSR_i5s.txt",docs_dir];
     const char *file = [path UTF8String];
-    /** /
+    /**/
     // Remove last File
     NSError *err;
-    NSString *lastPath = [NSString stringWithFormat:@"%@/inputData.txt",docs_dir];
+    NSString *lastPath = [NSString stringWithFormat:@"%@/HeadsetSensor_in_100Hz_10HzOne_0xDE_44kSR_i5s.txt",docs_dir];
     [[NSFileManager defaultManager] removeItemAtPath:lastPath error:&err];
     
     if (err != noErr) {
         NSLog(@"ERROR: %@- Failed to delete last file: %@", err, lastPath);
     }
-    / **/
+    /**/
     // Open and write to new file
     FILE *fp;
     fp = fopen(file, "w+");
@@ -404,7 +404,7 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
         fprintf(fp, "%d\n", (int)self.rawInputData[buf_indx]);
     }
     fclose(fp);
-    
+    /**/
     // Print the decoded input data
     NSLog(@"Data In decoded: %@", self.inputDataDecoded);
     /***************************************************************************
