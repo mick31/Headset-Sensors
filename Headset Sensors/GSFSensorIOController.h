@@ -25,9 +25,9 @@
 @property (nonatomic) int audioChangeReason;
 
 // Public function prototypes
-- (id) init: (UIView *) view;                               // Uses idea of ONE associated view
-- (void) monitorSensors: (UIView *) view : (BOOL) enable;   // Uses idea of ANY calling view
-- (void) processIO: (AudioBufferList*) bufferList;
-- (void) checkAudioStatus: (UIView *) view;                 // Uses idea of ANY calling view
+- (id) init: (UIView *) view;               // Initializes sensor object. Takes the calling UIViews view for alert messages
+- (void) monitorSensors: (BOOL) enable;     // Starts the power and communication with micro
+- (void) checkAudioStatus;                  // Checks for changes in audio conditions that could disturb collection process.
+- (NSMutableArray*) collectSensorData;      // Returns an array of sensor readings
 
 @end
