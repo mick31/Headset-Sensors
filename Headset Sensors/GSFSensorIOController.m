@@ -7,17 +7,16 @@
 //
 
 #import "GSFSensorIOController.h"
-#import "ViewController.h"
 
 // Defined Macros
-#define kOutputBus          0
-#define kInputBus           1
-#define kSamplesPerCheck    10
-#define kHighMin            30000
-#define kLowMin             -30000
-#define kSampleRate         20000
-#define kLowState           0
-#define kHighState          1
+#define OUTPUTBUS          0
+#define INPUTBUS           1
+#define SAMPLESPERCHECK    10
+#define HIGHMIN            30000
+#define LOWMIN             -30000
+#define SAMPLERATE         44100
+#define LOWSTATE           0
+#define HIGHSTATE          1
 
 #ifndef min
 #define min( a, b ) ( ((a) < (b)) ? (a) : (b) )
@@ -31,12 +30,15 @@
 @interface GSFSensorIOController () {
     AUGraph auGraph;
     AUNode ioNode;
+    AUNode highPassNode;
 }
 @property (assign) AudioUnit ioUnit;            // Audio unit handles in IO
 @property AVAudioSession *sensorAudioSession;   // Pointer to sensor required audio session
 @property NSMutableArray *inputDataDecoded;     // Decoded input
 @property NSMutableArray *sensorData;           // Final sensor data
 @property NSMutableArray *rawInputData;         // Raw input data for DEBUG printing
+@property double sampleRate;                    // Sample rate
+@property double bufferDuration;
 @property double sinPhase;                      // Latest point of sine wave for power tone
 @property BOOL newDataOut;                      // Flag for new communication to micro
 @property BOOL startEdge;                       // First rise of input signal signifies start edge
@@ -48,6 +50,8 @@
 @property int halfPeriodTC;                     // TC for half period count
 @property BOOL firstHalfPeriod;                 // First half period for start edge
 @property UIView *associatedView;               // *** View for ONE view alert system ***
+
+- (void) grabInput: (AudioBufferList*) bufferList;
 
 @end
 
@@ -66,18 +70,18 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     OSStatus result = AudioUnitRender(ioUnit,
                                       ioActionFlags,
                                       inTimeStamp,
-                                      kInputBus,
+                                      INPUTBUS,
                                       inNumberFrames,
                                       ioData);
     
-    if (result != noErr) NSLog(@"Blowing it in interrupt");
     
+    [sensorIO grabInput:ioData];
     // Process input data
-    [sensorIO processIO:ioData];
+    //[sensorIO processIO:ioData];
     
     // Set up power tone attributes
     float freq = 20000.00f;
-    float sampleRate = kSampleRate;
+    float sampleRate = sensorIO.sampleRate;
     float phase = sensorIO.sinPhase;
     float sinSignal;
     
@@ -125,7 +129,7 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
 - (id) init :(UIView *) view {
     self = [super init];
     if (!self) {
-        NSLog(@"ERROR viewDidLoad: GSFSensorIOController Failed to initialize");
+        NSLog(@"ERROR init: GSFSensorIOController Failed to initialize");
         return nil;
     }
     
@@ -133,12 +137,29 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     self.sensorAudioSession = [AVAudioSession sharedInstance];
     BOOL success;
     NSError *error;
+    
+    // Set audio category
     success = [self.sensorAudioSession setCategory:AVAudioSessionCategoryPlayAndRecord error:&error];
-	if (!success) NSLog(@"ERROR viewDidLoad: AVAudioSession failed setting category- %@", error);
+	if (!success) NSLog(@"ERROR init: AVAudioSession failed setting category- %@", error);
+    
+    // Request preferred hardware sample rate
+    self.sampleRate = SAMPLERATE;
+    success = [self.sensorAudioSession setPreferredSampleRate:self.sampleRate error:&error];
+	if (!success) NSLog(@"ERROR init: AVAudioSession failed setting sample rate- %@", error);
+    
+    // Set buffer duration. Idealy it would be 5 ms for low latency
+    success = [self.sensorAudioSession setPreferredIOBufferDuration:0.005 error:&error];
+	if (!success) NSLog(@"ERROR init: AVAudioSession failed setting buffer duration- %@", error);
     
     // Make the sensor AVAudioSession active
     success = [self.sensorAudioSession setActive:YES error:&error];
-    if(!success) NSLog(@"ERROR viewDidLoad: AVAudioSession failed activating- %@", error);
+    if(!success) NSLog(@"ERROR init: AVAudioSession failed activating- %@", error);
+    
+    // Grab actual sample rate and buffer duration
+    self.sampleRate = [self.sensorAudioSession sampleRate];
+    if(self.sampleRate != 44100.00) NSLog(@"WARNING init: Actual sample rate is: %f", self.sampleRate);
+    self.bufferDuration = [self.sensorAudioSession IOBufferDuration];
+    if(self.bufferDuration != 0.005) NSLog(@"WARNING init: Actual buffer duration is: %f", self.bufferDuration);
     
     // Add pointer to associated UIView controlerr for alerts
     self.associatedView = view;
@@ -185,24 +206,32 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     self.lastState = 0;
     self.startEdge = false;
     self.firstHalfPeriod = true;
-    self.halfPeriodCount = 150;                 // Should make this a result of a calibration period
+    self.halfPeriodTC = 220;                 // Should make this a result of a calibration period
                                                 // for greater accuracy
-    self.sensorData = [NSMutableArray array];
-    self.rawInputData = [NSMutableArray array];
+    self.sensorData = [[NSMutableArray alloc] init];
+    self.inputDataDecoded = [[NSMutableArray alloc] init];
+    self.rawInputData = [[NSMutableArray alloc] init];
     
-    // Audio component description
-    AudioComponentDescription desc;
-    bzero(&desc, sizeof(AudioComponentDescription));
-    desc.componentType          = kAudioUnitType_Output;
-    desc.componentSubType       = kAudioUnitSubType_RemoteIO;
-    desc.componentManufacturer  = kAudioUnitManufacturer_Apple;
-    desc.componentFlags         = 0;
-    desc.componentFlagsMask     = 0;
+    // RemoteIO component description
+    AudioComponentDescription ioUnitdesc;
+    bzero(&ioUnitdesc, sizeof(AudioComponentDescription));
+    ioUnitdesc.componentType          = kAudioUnitType_Output;
+    ioUnitdesc.componentSubType       = kAudioUnitSubType_RemoteIO;
+    ioUnitdesc.componentManufacturer  = kAudioUnitManufacturer_Apple;
+    ioUnitdesc.componentFlags         = 0;
+    ioUnitdesc.componentFlagsMask     = 0;
+    
+    // High pass filter component description
+    AudioComponentDescription inputHighPassDesc;
+    bzero(&inputHighPassDesc, sizeof(AudioComponentDescription));
+    inputHighPassDesc.componentType          = kAudioUnitType_Effect;
+    inputHighPassDesc.componentSubType       = kAudioUnitSubType_HighPassFilter;
+    inputHighPassDesc.componentManufacturer  = kAudioUnitManufacturer_Apple;
     
     // Stereo ASBD
     AudioStreamBasicDescription stereoStreamFormat;
     bzero(&stereoStreamFormat, sizeof(AudioStreamBasicDescription));
-    stereoStreamFormat.mSampleRate          = kSampleRate;
+    stereoStreamFormat.mSampleRate          = SAMPLERATE;
     stereoStreamFormat.mFormatID            = kAudioFormatLinearPCM;
     stereoStreamFormat.mFormatFlags         = kAudioFormatFlagsCanonical;
     stereoStreamFormat.mBytesPerPacket      = 4;
@@ -215,82 +244,71 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     @try {
         // Create new AUGraph
         err = NewAUGraph(&auGraph);
-        NSAssert1(err == noErr, @"Error creating AUGraph: %hd", err);
+        NSAssert1(err == noErr, @"ERROR setUpSensorIO: failed to create AUGraph: %hd", err);
         
-        // Add node to AUGraph
+        // Add nodes to AUGraph
         err = AUGraphAddNode(auGraph,
-                             &desc,
+                             &ioUnitdesc,
                              &ioNode);
-        NSAssert1(err == noErr, @"Error adding AUNode: %hd", err);
-        
+        NSAssert1(err == noErr, @"ERROR setUpSensorIO: failed to add AUNode: %hd", err);
+        /*
+        err = AUGraphAddNode(auGraph,
+                             &inputHighPassDesc,
+                             &highPassNode);
+        NSAssert1(err == noErr, @"ERROR setUpSensorIO: failed to add AUNode: %hd", err);
+        */
         // Open AUGraph
         err = AUGraphOpen(auGraph);
-        NSAssert1(err == noErr, @"Error opening AUGraph: %hd", err);
+        NSAssert1(err == noErr, @"ERROR setUpSensorIO: failed to open AUGraph: %hd", err);
         
-        // Add AUGraph node info
+        // Add AUGraph nodes info
         err = AUGraphNodeInfo(auGraph,
                               ioNode,
-                              &desc,
+                              NULL,
                               &_ioUnit);
-        NSAssert1(err == noErr, @"Error adding noe info to AUGraph: %hd", err);
+        NSAssert1(err == noErr, @"ERROR setUpSensorIO: failed to add node info: %hd", err);
+        /*
+        err = AUGraphNodeInfo(auGraph,
+                              highPassNode,
+                              NULL,
+                              &_ioUnit);
+        NSAssert1(err == noErr, @"ERROR setUpSensorIO: failed to add node info: %hd", err);
         
+        // Connect highPassNode output to ioNode input
+        err = AUGraphConnectNodeInput(auGraph,
+                                      highPassNode, // Source node
+                                      0,            // Source node output bus num
+                                      ioNode,       // Dest node
+                                      0);           // Dest node input bus num
+
+        */
         // Enable input, which is disabled by default.
         UInt32 enabled = 1;
         err = AudioUnitSetProperty(_ioUnit,
                              kAudioOutputUnitProperty_EnableIO,
                              kAudioUnitScope_Input,
-                             kInputBus,
+                             INPUTBUS,
                              &enabled,
                              sizeof(enabled));
-        NSAssert1(err == noErr, @"Error enabling input: %hd", err);
-        /*
-        UInt32 highpass = 10000;
-        err = AudioUnitSetParameter(_ioUnit,
-                                    kHipassParam_CutoffFrequency,
-                                    kAudioUnitScope_Global,
-                                    0,
-                                    highpass,
-                                    0);
-        NSAssert1(err == noErr, @"Error enabling bandwidth center: %hd", err);
-         */
+        NSAssert1(err == noErr, @"ERROR setUpSensorIO: failed to enable input: %hd", err);
         
-        /*
-        // Set bandpass filter for input.
-        UInt32 bandWidthCenter = 5000;
-        err = AudioUnitSetParameter(_ioUnit,
-                                    kBandpassParam_CenterFrequency,
-                                    kAudioUnitScope_Global,
-                                    0,
-                                    bandWidthCenter,
-                                    0);
-        NSAssert1(err == noErr, @"Error enabling bandwidth center: %hd", err);
-        
-        UInt32 bandWidthEdges = 100;
-        err = AudioUnitSetParameter(_ioUnit,
-                                   kBandpassParam_Bandwidth,
-                                   kAudioUnitScope_Global,
-                                   0,
-                                   bandWidthEdges,
-                                   0);
-        NSAssert1(err == noErr, @"Error enabling bandwidth edges: %hd", err);
-        */
         // Apply format to input of ioUnit
         err = AudioUnitSetProperty(_ioUnit,
                              kAudioUnitProperty_StreamFormat,
                              kAudioUnitScope_Input,
-                             kOutputBus,
+                             OUTPUTBUS,
                              &stereoStreamFormat,
                              sizeof(stereoStreamFormat));
-        NSAssert1(err == noErr, @"Error setting input ASBD: %hd", err);
+        NSAssert1(err == noErr, @"ERROR setUpSensorIO: failed to set input ASBD: %hd", err);
         
         // Apply format to output of ioUnit
         err = AudioUnitSetProperty(_ioUnit,
                              kAudioUnitProperty_StreamFormat,
                              kAudioUnitScope_Output,
-                             kInputBus,
+                             INPUTBUS,
                              &stereoStreamFormat,
                              sizeof(stereoStreamFormat));
-        NSAssert1(err == noErr, @"Error setting output ASBD: %hd", err);
+        NSAssert1(err == noErr, @"ERROR setUpSensorIO: failed to set output ASBD: %hd", err);
         
         // Set hardware IO callback
         AURenderCallbackStruct callbackStruct;
@@ -298,17 +316,27 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
         callbackStruct.inputProcRefCon = (__bridge void *)(self);
         err = AUGraphSetNodeInputCallback(auGraph,
                                           ioNode,
-                                          kOutputBus,
+                                          OUTPUTBUS,
                                           &callbackStruct);
-        NSAssert1(err == noErr, @"Error setting IO callback: %hd", err);
+        NSAssert1(err == noErr, @"ERROR setUpSensorIO: failed to set IO callback: %hd", err);
         
         // Initialize AudioGraph
         err = AUGraphInitialize(auGraph);
-        NSAssert1(err == noErr, @"Error initializing AUGraph: %hd", err);
-        
+        NSAssert1(err == noErr, @"ERROR setUpSensorIO: failed to initialize AUGraph: %hd", err);
+        /*
+        // Set highpass filter for input.
+        UInt32 highPassfilterCutoff = 5000;
+        err = AudioUnitSetParameter(_ioUnit,
+                                    kHipassParam_CutoffFrequency,
+                                    kAudioUnitScope_Global,
+                                    0,
+                                    highPassfilterCutoff,
+                                    0);
+        NSAssert1(err == noErr, @"ERROR setUpSensorIO: failed to enable highpass filter: %hd", err);
+        */
         // Start audio unit
         err = AUGraphStart(auGraph);
-        NSAssert1(err == noErr, @"Error starting AUGraph: %hd", err);
+        NSAssert1(err == noErr, @"ERROR setUpSensorIO: failed to start AUGraph: %hd", err);
 
     }
     @catch (NSException *exception) {
@@ -317,7 +345,7 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
 }
 
 
-- (void) monitorSensors: (UIView *) view : (BOOL) enable {
+- (void) monitorSensors:  (BOOL) enable {
     if (enable){
         if (!self->auGraph) {
             // Start IO communication
@@ -325,7 +353,7 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
         }
         
         // Check that audio route is correct
-        [self checkAudioStatus:view];
+        [self checkAudioStatus];
         
         // **** DEBUG ****
         NSLog(@"Sensor monitor STARTED");
@@ -369,51 +397,12 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     
     // Set Master Volume to 50%
     self.volumeSlider.value = 0.5f;
-    
-    
-    /***************************************************************************
-     **** DEBUG: Prints contents of input buffer to file. Doing this in     ****
-     ****        will cut power out to micro down to 2.1 VDC.               ****
-     ***************************************************************************/
-    // Grabs Document directory path and file name
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-    NSMutableString *docs_dir = [paths objectAtIndex:0];
-    /**/
-    // New file to add
-    NSString *path = [NSString stringWithFormat:@"%@/HeadsetSensor_in_100Hz_10HzOne_0xDE_20kSR_i5s.txt",docs_dir];
-    const char *file = [path UTF8String];
-    /**/
-    // Remove last File
-    NSError *err;
-    NSString *lastPath = [NSString stringWithFormat:@"%@/HeadsetSensor_in_100Hz_10HzOne_0xDE_44kSR_i5s.txt",docs_dir];
-    [[NSFileManager defaultManager] removeItemAtPath:lastPath error:&err];
-    
-    if (err != noErr) {
-        NSLog(@"ERROR: %@- Failed to delete last file: %@", err, lastPath);
-    }
-    /**/
-    // Open and write to new file
-    FILE *fp;
-    fp = fopen(file, "w+");
-    if (fp == NULL) {
-        printf("ERROR processIO: Couldn't open file \"inputData.txt\"\n");
-        exit(0);
-    }
-    int buf_indx = 0;
-    for (buf_indx = 0; buf_indx < [self.rawInputData count]; buf_indx++) {
-        fprintf(fp, "%d\n", (int)self.rawInputData[buf_indx]);
-    }
-    fclose(fp);
-    /**/
-    // Print the decoded input data
-    NSLog(@"Data In decoded: %@", self.inputDataDecoded);
-    /***************************************************************************
-     **** DEBUG: Prints contents of input buffer to file. Doing this in     ****
-     ****        will cut power out to micro down to 2.1 VDC.               ****
-     ***************************************************************************/
 }
 
-- (void) checkAudioStatus: (UIView *) view {
+/**
+ *  Checks for flags set by audioInterruptionCallback and by manual isSensorConnected function to determine if the audio route has changed in a way that will disrupt the collection process.
+ */
+- (void) checkAudioStatus {
     
 }
 
@@ -581,13 +570,26 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     }
 }
 
+- (void) grabInput: (AudioBufferList*) bufferList {
+    for (int j = 0 ; j < bufferList->mNumberBuffers ; j++) {
+        AudioBuffer sourceBuffer = bufferList->mBuffers[j];
+        SInt16 *buffer = (SInt16 *) bufferList->mBuffers[j].mData;
+        
+        for (int i = 0; i < (sourceBuffer.mDataByteSize / sizeof(sourceBuffer)); i++) {
+            // Array of raw data points for printing to a file
+            [self.rawInputData addObject:[NSNumber numberWithInt:buffer[i]]];
+        }
+    }
+
+}
+
 /**
  *  Process Input readinga and fills right channel output buffer with any response
  *
  *  @param bufferList sensorIO is list of buffers containing the input from the mic line
  */
-- (void) processIO: (AudioBufferList*) bufferList {
-    for (int j = 0 ; j < bufferList->mNumberBuffers ; j++) {
+- (void) processIO {
+/*    for (int j = 0 ; j < bufferList->mNumberBuffers ; j++) {
         AudioBuffer sourceBuffer = bufferList->mBuffers[j];
         SInt16 *buffer = (SInt16 *) bufferList->mBuffers[j].mData;
         
@@ -599,14 +601,14 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
             [self.rawInputData addObject:[NSNumber numberWithInt:buffer[i]]];
            
             // Find min and max points in current buffer
-            for (int j = 0; j < kSamplesPerCheck; j++) {
+            for (int j = 0; j < SAMPLESPERCHECK; j++) {
                 maxBufferPoint = max(buffer[i+j], maxBufferPoint);
                 minBufferPoint = min(buffer[i+j], minBufferPoint);
             }
             
             // Associate current bit value based on min/max values and check if it's the start bit
-            if ( (maxBufferPoint > kHighMin && minBufferPoint < kLowMin) ) {
-                self.curState = kHighState;
+            if ( (maxBufferPoint > HIGHMIN && minBufferPoint < LOWMIN) ) {
+                self.curState = HIGHSTATE;
                 // Only enters this statement for the rising edge of the start signal
                 if (!self.startEdge) {
                     self.startEdge = true;
@@ -614,7 +616,7 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
                     self.halfPeriodCount = 0;
                 }
             } else {
-                self.curState = kLowState;
+                self.curState = LOWSTATE;
             }
             
             // When start bit is set check for data
@@ -656,6 +658,112 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
         // Fill output buffer with commands and set new output data flag
 
     }
+  */
+    
+    // Stop sensor data collection
+    [self monitorSensors: NO];
+    
+    for (int i = 0; i < [self.rawInputData count]; i+=SAMPLESPERCHECK) {
+        int maxBufferPoint = 0;
+        int minBufferPoint = 0;
+        
+        // Find min and max points in current buffer
+        for (int j = 0; j < SAMPLESPERCHECK && i+j < [self.rawInputData count]; j++) {
+            NSNumber *tmp = self.rawInputData[i+j];
+            maxBufferPoint = max(tmp.intValue, maxBufferPoint);
+            minBufferPoint = min(tmp.intValue, minBufferPoint);
+        }
+        
+        // Associate current bit value based on min/max values and check if it's the start bit
+        if ( (maxBufferPoint > HIGHMIN && minBufferPoint < LOWMIN) ) {
+            self.curState = HIGHSTATE;
+            // Only enters this statement for the rising edge of the start signal
+            if (!self.startEdge) {
+                self.startEdge = true;
+                self.firstHalfPeriod = true;
+                self.halfPeriodCount = 0;
+            }
+        } else {
+            self.curState = LOWSTATE;
+        }
+        
+        // When start bit is set check for data
+        if (self.startEdge) {
+            // Increment and check if half period is finished
+            self.halfPeriodCount+=SAMPLESPERCHECK;
+            if (self.halfPeriodCount >= self.halfPeriodTC) {
+                // Reset half period count
+                self.halfPeriodCount = 0;
+                
+                // Check if this is the first pass after the start edge
+                if (self.firstHalfPeriod) {
+                    if (self.curState == HIGHSTATE) self.doubleState = HIGHSTATE;
+                    self.lastState = self.curState;
+                    self.secondLastState = self.lastState;
+                    self.firstHalfPeriod = false;
+                }
+                // Check for bit flip
+                else if (self.curState != self.lastState && self.doubleState != self.curState) {
+                    [self.inputDataDecoded addObject:[NSNumber numberWithInt:self.curState]];
+                    self.lastState = self.curState;
+                    self.secondLastState = self.lastState;
+                }
+                // Check for non bit flip aka double state
+                else if (self.curState == self.lastState) {
+                    self.doubleState = self.curState;
+                    self.secondLastState = self.lastState;
+                    self.lastState = self.curState;
+                }
+            }
+            
+            // Reset input stream last three states are equivalent
+            if (self.curState == self.lastState == self.secondLastState) {
+                self.startEdge = false;
+            }
+        }
+    }
+
+    
+    /***************************************************************************
+     **** DEBUG: Prints contents of input buffer to file. Doing this in     ****
+     ****        will cut power out to micro down to 2.1 VDC.               ****
+     ***************************************************************************/
+    // Grabs Document directory path and file name
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSMutableString *docs_dir = [paths objectAtIndex:0];
+    /**/
+    // New file to add
+    NSString *path = [NSString stringWithFormat:@"%@/HeadsetSensor_in_25Hz_5kHzOne_0xDE_44kSR_SE_i5s.txt",docs_dir];
+    const char *file = [path UTF8String];
+    /** /
+    // Remove last File
+    NSError *err;
+    NSString *lastPath = [NSString stringWithFormat:@"%@/HeadsetSensor_in_100Hz_15kHzOne_0xDE_44kSR_i5s.txt",docs_dir];
+    [[NSFileManager defaultManager] removeItemAtPath:lastPath error:&err];
+    
+    if (err != noErr) {
+        NSLog(@"ERROR: %@- Failed to delete last file: %@", err, lastPath);
+    }
+    / **/
+    // Open and write to new file
+    FILE *fp;
+    fp = fopen(file, "w+");
+    if (fp == NULL) {
+        printf("ERROR processIO: Couldn't open file \"inputData.txt\"\n");
+        exit(0);
+    }
+    int buf_indx = 0;
+    for (buf_indx = 0; buf_indx < [self.rawInputData count]; buf_indx++) {
+        fprintf(fp, "%d\n", (int)self.rawInputData[buf_indx]);
+    }
+    fclose(fp);
+    /**/
+    // Print the decoded input data
+    NSLog(@"Data In decoded: %@", self.inputDataDecoded);
+    /***************************************************************************
+     **** DEBUG: Prints contents of input buffer to file. Doing this in     ****
+     ****        will cut power out to micro down to 2.1 VDC.               ****
+     ***************************************************************************/
 }
 
 /**
@@ -663,13 +771,11 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
  *
  *  @return An NSMutableArray containing the decoded sensor data.
  */
-- (NSMutableArray*) collectData {
-    /*UInt16 temp_byte = 0x00;
-    for (int i = 0; i < [self.inputDataDecoded count]; i++) {
-        for (int j = 0; j < 8; j++) {
-            
-        }
-    }*/
+- (NSMutableArray*) collectSensorData {
+    // Process raw intput buffer
+    [self processIO];
+    
+    // Return collected result
     return self.sensorData;
 }
 
