@@ -733,18 +733,18 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     NSMutableString *docs_dir = [paths objectAtIndex:0];
     /**/
     // New file to add
-    NSString *path = [NSString stringWithFormat:@"%@/HeadsetSensor_in_25Hz_5kHzOne_0xDE_44kSR_SE_i5s.txt",docs_dir];
+    NSString *path = [NSString stringWithFormat:@"%@/HeadsetSensor_in_25Hz_15kHzOne_0xDEADBEEF_CRC_SE_LM_44kSR_i5s.txt",docs_dir];
     const char *file = [path UTF8String];
-    /** /
+    /**/
     // Remove last File
     NSError *err;
-    NSString *lastPath = [NSString stringWithFormat:@"%@/HeadsetSensor_in_100Hz_15kHzOne_0xDE_44kSR_i5s.txt",docs_dir];
+    NSString *lastPath = [NSString stringWithFormat:@"%@/HeadsetSensor_in_25Hz_15kHzOne_0xDEADBEEF_CRCreg8_SE_LM_44kSR_i5s.txt",docs_dir];
     [[NSFileManager defaultManager] removeItemAtPath:lastPath error:&err];
     
     if (err != noErr) {
         NSLog(@"ERROR: %@- Failed to delete last file: %@", err, lastPath);
     }
-    / **/
+    /**/
     // Open and write to new file
     FILE *fp;
     fp = fopen(file, "w+");
