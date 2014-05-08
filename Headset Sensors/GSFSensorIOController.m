@@ -14,8 +14,8 @@
 #define SAMPLERATE         44100
 
 // Comment out to remove DEBUG prints
-#define DEBUG_AVG
-#define DEBUG_SUM
+//#define DEBUG_AVG
+//#define DEBUG_SUM
 #define DEBUG_READ
 
 #define MAX_BUF                 1000000
@@ -83,8 +83,7 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
                                       ioData);
     
     
-    [sensorIO grabInput:ioData];
-    NSLog(@"NumFrames: %d", inNumberFrames);
+    //[sensorIO grabInput:ioData];
     // Process input data
     //[sensorIO processIO:ioData];
     
@@ -108,7 +107,7 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
             sampleBuffer[2 * sampleIdx] = (SInt16)((sinSignal * 32767.0f) /2);
             
             // Write to commands to Atmel on right channel as necessary
-            if(sensorIO.newDataOut)
+            if(!sensorIO.newDataOut)
                 sampleBuffer[2*sampleIdx + 1] = (SInt16)((sinSignal * 32767.0f) /2);
             else
                 sampleBuffer[2*sampleIdx + 1] = 0;
@@ -239,13 +238,6 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     ioUnitdesc.componentFlags         = 0;
     ioUnitdesc.componentFlagsMask     = 0;
     
-    // High pass filter component description
-    AudioComponentDescription inputHighPassDesc;
-    bzero(&inputHighPassDesc, sizeof(AudioComponentDescription));
-    inputHighPassDesc.componentType          = kAudioUnitType_Effect;
-    inputHighPassDesc.componentSubType       = kAudioUnitSubType_HighPassFilter;
-    inputHighPassDesc.componentManufacturer  = kAudioUnitManufacturer_Apple;
-    
     // Stereo ASBD
     AudioStreamBasicDescription stereoStreamFormat;
     bzero(&stereoStreamFormat, sizeof(AudioStreamBasicDescription));
@@ -269,12 +261,7 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
                              &ioUnitdesc,
                              &ioNode);
         NSAssert1(err == noErr, @"ERROR setUpSensorIO: failed to add AUNode: %hd", err);
-        /*
-        err = AUGraphAddNode(auGraph,
-                             &inputHighPassDesc,
-                             &highPassNode);
-        NSAssert1(err == noErr, @"ERROR setUpSensorIO: failed to add AUNode: %hd", err);
-        */
+        
         // Open AUGraph
         err = AUGraphOpen(auGraph);
         NSAssert1(err == noErr, @"ERROR setUpSensorIO: failed to open AUGraph: %hd", err);
@@ -285,21 +272,7 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
                               NULL,
                               &_ioUnit);
         NSAssert1(err == noErr, @"ERROR setUpSensorIO: failed to add node info: %hd", err);
-        /*
-        err = AUGraphNodeInfo(auGraph,
-                              highPassNode,
-                              NULL,
-                              &_ioUnit);
-        NSAssert1(err == noErr, @"ERROR setUpSensorIO: failed to add node info: %hd", err);
         
-        // Connect highPassNode output to ioNode input
-        err = AUGraphConnectNodeInput(auGraph,
-                                      highPassNode, // Source node
-                                      0,            // Source node output bus num
-                                      ioNode,       // Dest node
-                                      0);           // Dest node input bus num
-
-        */
         // Enable input, which is disabled by default.
         UInt32 enabled = 1;
         err = AudioUnitSetProperty(_ioUnit,
@@ -341,17 +314,7 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
         // Initialize AudioGraph
         err = AUGraphInitialize(auGraph);
         NSAssert1(err == noErr, @"ERROR setUpSensorIO: failed to initialize AUGraph: %hd", err);
-        /*
-        // Set highpass filter for input.
-        UInt32 highPassfilterCutoff = 5000;
-        err = AudioUnitSetParameter(_ioUnit,
-                                    kHipassParam_CutoffFrequency,
-                                    kAudioUnitScope_Global,
-                                    0,
-                                    highPassfilterCutoff,
-                                    0);
-        NSAssert1(err == noErr, @"ERROR setUpSensorIO: failed to enable highpass filter: %hd", err);
-        */
+        
         // Start audio unit
         err = AUGraphStart(auGraph);
         NSAssert1(err == noErr, @"ERROR setUpSensorIO: failed to start AUGraph: %hd", err);
@@ -818,24 +781,24 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     /***************************************************************************
      **** DEBUG: Prints contents of input buffer to file.                   ****
      ***************************************************************************/
-    /** /
+    /**/
     // Grabs Document directory path and file name
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
     NSMutableString *docs_dir = [paths objectAtIndex:0];
     
     // New file to add
-    NSString *path = [NSString stringWithFormat:@"%@/HeadsetSensor_in_25Hz_15kHzOne_0xDEADBEEF_CRC_SE_LM_44kSR_i5s.txt",docs_dir];
+    NSString *path = [NSString stringWithFormat:@"%@/HeadsetSensor_in_25Hz_15kHzOne_0xDEADBEEF_CRC_SE_LM_ObjC_44kSR_i5s.txt",docs_dir];
     const char *file = [path UTF8String];
-    / ** /
+    /**/
     // Remove last File
     NSError *err;
-    NSString *lastPath = [NSString stringWithFormat:@"%@/HeadsetSensor_in_25Hz_15kHzOne_0xDEADBEEF_44kSR_SE_i5s.txt",docs_dir];
+    NSString *lastPath = [NSString stringWithFormat:@"%@/HeadsetSensor_in_25Hz_15kHzOne_0xDEADBEEF_CRC_SE_LM_44kSR_i5s.txt",docs_dir];
     [[NSFileManager defaultManager] removeItemAtPath:lastPath error:&err];
     
     if (err != noErr) {
         NSLog(@"ERROR: %@- Failed to delete last file: %@", err, lastPath);
     }
-    / ** /
+    /**/
     // Open and write to new file
     FILE *fp;
     fp = fopen(file, "w+");
@@ -848,7 +811,7 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
         fprintf(fp, "%d\n", (int)self.rawInputData[buf_indx]);
     }
     fclose(fp);
-    / **/
+    /**/
     // Print the decoded input data
     NSLog(@"Data In decoded: %@", self.inputDataDecoded);
     /***************************************************************************
