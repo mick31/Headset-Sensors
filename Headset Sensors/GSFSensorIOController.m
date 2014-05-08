@@ -11,20 +11,21 @@
 // Defined Macros
 #define OUTPUTBUS          0
 #define INPUTBUS           1
-#define SAMPLESPERCHECK    10
-#define HIGHMIN            30000
-#define LOWMIN             -30000
 #define SAMPLERATE         44100
-#define LOWSTATE           0
-#define HIGHSTATE          1
 
-#ifndef min
-#define min( a, b ) ( ((a) < (b)) ? (a) : (b) )
-#endif
+// Comment out to remove DEBUG prints
+#define DEBUG_AVG
+#define DEBUG_SUM
+#define DEBUG_READ
 
-#ifndef max
-#define max( a, b ) ( ((a) > (b)) ? (a) : (b) )
-#endif
+#define MAX_BUF                 1000000
+#define HIGH_MIN_AVG            175000
+#define LOW_STATE               0
+#define HIGH_STATE              1
+#define UNKNOWN_STATE           -1
+#define HALF_PERIOD_TC          216     // Tested working for multi bytes/packet
+#define NUM_SAMPLES_PER_PERIOD  8       // Tested working for multi bytes/packet
+#define SAMPLES_PER_CHECK       HALF_PERIOD_TC / NUM_SAMPLES_PER_PERIOD
 
 // Private interface
 @interface GSFSensorIOController () {
@@ -34,21 +35,28 @@
 }
 @property (assign) AudioUnit ioUnit;            // Audio unit handles in IO
 @property AVAudioSession *sensorAudioSession;   // Pointer to sensor required audio session
-@property NSMutableArray *inputDataDecoded;     // Decoded input
-@property NSMutableArray *sensorData;           // Final sensor data
-@property NSMutableArray *rawInputData;         // Raw input data for DEBUG printing
 @property double sampleRate;                    // Sample rate
 @property double bufferDuration;
 @property double sinPhase;                      // Latest point of sine wave for power tone
+
+@property NSMutableArray *inputDataDecoded;     // Decoded input
+@property NSMutableArray *sensorData;           // Final sensor data
+@property NSMutableArray *rawInputData;         // Raw input data for DEBUG printing
 @property BOOL newDataOut;                      // Flag for new communication to micro
 @property BOOL startEdge;                       // First rise of input signal signifies start edge
+@property BOOL firstHalfPeriod;                 // First half period for start edge
 @property int curState;                         // Current input state value (HIGH or LOW)
 @property int lastState;                        // Last input state to compare with current state
-@property int secondLastState;                  // Second to last input to check for pattern flaws
+@property int lastSampleEdge;
+@property int curWindowState;
+@property int lastWindowState;
+@property int secondLastWindowState;
 @property int doubleState;                      // Marks last double state (HIGH-HIGH or LOW-LOW)
 @property int halfPeriodCount;                  // Count for half of the expected input period
-@property int halfPeriodTC;                     // TC for half period count
-@property BOOL firstHalfPeriod;                 // First half period for start edge
+@property int halfPeriodSum;
+@property int bit_num;
+@property int checkSum;
+
 @property UIView *associatedView;               // *** View for ONE view alert system ***
 
 - (void) grabInput: (AudioBufferList*) bufferList;
@@ -203,12 +211,21 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
 
 - (void) setUpSensorIO {
     // Initialize input data buffer/states
-    self.curState = 0;
-    self.lastState = 0;
+    self.newDataOut = false;
     self.startEdge = false;
-    self.firstHalfPeriod = true;
-    self.halfPeriodTC = 220;                 // Should make this a result of a calibration period
-                                                // for greater accuracy
+    self.firstHalfPeriod = false;
+    self.doubleState = LOW_STATE;
+    self.curState = LOW_STATE;
+    self.lastState = UNKNOWN_STATE;
+    self.lastSampleEdge = 0;
+    self.curWindowState = UNKNOWN_STATE;
+    self.lastWindowState = UNKNOWN_STATE;
+    self.secondLastWindowState = UNKNOWN_STATE;
+    self.halfPeriodCount = 0;
+    self.halfPeriodSum = 0;
+    self.bit_num = 0;
+    self.checkSum = 0;
+    
     self.sensorData = [[NSMutableArray alloc] init];
     self.inputDataDecoded = [[NSMutableArray alloc] init];
     self.rawInputData = [[NSMutableArray alloc] init];
@@ -590,175 +607,235 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
  *  @param bufferList sensorIO is list of buffers containing the input from the mic line
  */
 - (void) processIO {
-/*    for (int j = 0 ; j < bufferList->mNumberBuffers ; j++) {
+/* Realtime decode
+    for (int j = 0 ; j < bufferList->mNumberBuffers ; j++) {
         AudioBuffer sourceBuffer = bufferList->mBuffers[j];
         SInt16 *buffer = (SInt16 *) bufferList->mBuffers[j].mData;
         
         for (int i = 0; i < (sourceBuffer.mDataByteSize / sizeof(sourceBuffer)); i++) {
-            SInt16 maxBufferPoint = 0;
-            SInt16 minBufferPoint = 0;
             
             // DEBUG: Array of raw data points for printing to a file
             [self.rawInputData addObject:[NSNumber numberWithInt:buffer[i]]];
-           
-            // Find min and max points in current buffer
-            for (int j = 0; j < SAMPLESPERCHECK; j++) {
-                maxBufferPoint = max(buffer[i+j], maxBufferPoint);
-                minBufferPoint = min(buffer[i+j], minBufferPoint);
-            }
-            
-            // Associate current bit value based on min/max values and check if it's the start bit
-            if ( (maxBufferPoint > HIGHMIN && minBufferPoint < LOWMIN) ) {
-                self.curState = HIGHSTATE;
-                // Only enters this statement for the rising edge of the start signal
-                if (!self.startEdge) {
-                    self.startEdge = true;
-                    self.firstHalfPeriod = true;
-                    self.halfPeriodCount = 0;
-                }
-            } else {
-                self.curState = LOWSTATE;
-            }
-            
-            // When start bit is set check for data
-            if (self.startEdge) {
-                // Increment and check if half period is finished
-                self.halfPeriodCount++;
-                if (self.halfPeriodCount == self.halfPeriodTC) {
-                    // Reset half period count
-                    self.halfPeriodCount = 0;
-                    
-                    // Check if this is the first pass after the start edge
-                    if (self.firstHalfPeriod) {
-                        if (self.curState == 1) self.doubleState = 1;
-                        self.lastState = self.curState;
-                        self.secondLastState = self.lastState;
-                        self.firstHalfPeriod = false;
-                    }
-                    // Check for bit flip
-                    else if (self.curState != self.lastState && self.doubleState != self.curState) {
-                        [self.inputDataDecoded addObject:[NSNumber numberWithInt:self.curState]];
-                        self.lastState = self.curState;
-                        self.secondLastState = self.lastState;
-                    }
-                    // Check for non bit flip aka double state
-                    else if (self.curState == self.lastState) {
-                        self.doubleState = self.curState;
-                        self.secondLastState = self.lastState;
-                        self.lastState = self.curState;
-                    }
-                }
-                
-                // Reset input stream last three states are equivalent
-                if (self.curState == self.lastState == self.secondLastState) {
-                    self.startEdge = false;
-                }
-            }
+ 
         }
         
         // Fill output buffer with commands and set new output data flag
 
     }
-  */
-    
+*/
+/* After the fact decode */
     // Stop sensor data collection
     [self monitorSensors: NO];
     
-    for (int i = 0; i < [self.rawInputData count]; i+=SAMPLESPERCHECK) {
-        int maxBufferPoint = 0;
-        int minBufferPoint = 0;
+    int j;
+    int num_samples = (int)[self.rawInputData count];
+    
+    // Traverse through all samples applying Manchester Decode
+    for (int i = 0; i < num_samples; i += SAMPLES_PER_CHECK) {
+        int avgSampleNext = 0;
+        int nextSamples = 0;
         
-        // Find min and max points in current buffer
-        for (int j = 0; j < SAMPLESPERCHECK && i+j < [self.rawInputData count]; j++) {
-            NSNumber *tmp = self.rawInputData[i+j];
-            maxBufferPoint = max(tmp.intValue, maxBufferPoint);
-            minBufferPoint = min(tmp.intValue, minBufferPoint);
+        // Find average value for the prev and next set of point around the expected edge
+        for (j = 0; j < SAMPLES_PER_CHECK && i+j < num_samples; j++) {
+            NSNumber *cur_sample = self.rawInputData[i+j];
+            nextSamples += abs(cur_sample.intValue);
         }
+        avgSampleNext = nextSamples / j;
         
         // Associate current bit value based on min/max values and check if it's the start bit
-        if ( (maxBufferPoint > HIGHMIN && minBufferPoint < LOWMIN) ) {
-            self.curState = HIGHSTATE;
+        if ( avgSampleNext >= HIGH_MIN_AVG ) {
+            self.curState = HIGH_STATE;
             // Only enters this statement for the rising edge of the start signal
             if (!self.startEdge) {
+                
+#ifdef DEBUG
+                printf("    !!!!! Start between samples %d to %d\n\n\n",i ,i+j);
+#endif
+                
                 self.startEdge = true;
                 self.firstHalfPeriod = true;
-                self.halfPeriodCount = 0;
+                self.halfPeriodCount = SAMPLES_PER_CHECK;
+                self.halfPeriodSum = 0;
+                self.doubleState = LOW_STATE;
             }
         } else {
-            self.curState = LOWSTATE;
+            self.curState = LOW_STATE;
         }
         
-        // When start bit is set check for data
+        self.halfPeriodSum += avgSampleNext;
+        
+        
+#ifdef DEBUG
+        printf("Avg for samples %d to %d: %d\n",i ,i+j , avgSampleNext);
+#endif
+        
+        // When start flag is set check for data
         if (self.startEdge) {
+            // Grab edge
+            if (self.curState != self.lastState) {
+                self.lastState = self.curState;
+                self.lastSampleEdge = i;
+            }
+            
             // Increment and check if half period is finished
-            self.halfPeriodCount+=SAMPLESPERCHECK;
-            if (self.halfPeriodCount >= self.halfPeriodTC) {
-                // Reset half period count
+            self.halfPeriodCount += j;
+            if (self.halfPeriodCount == HALF_PERIOD_TC) {
+                // Assign window state and adjust off set from last edge
+                if ((self.halfPeriodSum / NUM_SAMPLES_PER_PERIOD) > HIGH_MIN_AVG) {
+                    self.curWindowState = HIGH_STATE;
+                } else {
+                    self.curWindowState = LOW_STATE;
+                }
+                
+#ifdef DEBUG
+                printf("Half Period Start- curState: %d doubleState: %d curWindowState:%d lastWindowState:%d secondLastWindowState:%d\n", self.curState, self.doubleState, self.curWindowState, self.lastWindowState, self.secondLastWindowState);
+#endif
+                
+                if (self.curWindowState != self.curState){
+#ifdef DEBUG
+                    printf("Last sample starting point: %d\n", i);
+#endif
+                    
+                    i = self.lastSampleEdge - SAMPLES_PER_CHECK;
+                    
+#ifdef DEBUG
+                    printf("Next sample starting point: %d\n", i);
+#endif
+                }
+                
+#ifdef DEBUG_SUM
+                printf("Half period sum: %d\n", self.halfPeriodSum);
+                printf("Number of samples per period: %d\n", NUM_SAMPLES_PER_PERIOD);
+                printf("Half period Average: %d && Cutoff: %d\n", (self.halfPeriodSum / NUM_SAMPLES_PER_PERIOD), HIGH_MIN_AVG);
+                printf("Half period State: %d\n", (self.halfPeriodSum / NUM_SAMPLES_PER_PERIOD) > HIGH_MIN_AVG);
+                printf("Half Period Count: %d\n", self.halfPeriodCount);
+#endif
+                
+                // Reset half period count and sumation
+                self.halfPeriodSum = 0;
                 self.halfPeriodCount = 0;
                 
                 // Check if this is the first pass after the start edge
                 if (self.firstHalfPeriod) {
-                    if (self.curState == HIGHSTATE) self.doubleState = HIGHSTATE;
-                    self.lastState = self.curState;
-                    self.secondLastState = self.lastState;
+                    //if (curState == HIGH_STATE) doubleState = HIGH_STATE;
                     self.firstHalfPeriod = false;
+                    
+#ifdef DEBUG
+                    printf("    First Half Period- doubleState:%d curWindowState:%d lastWindowState:%d secondLastWindowState:%d\n", self.doubleState, self.curState, self.lastWindowState, self.secondLastWindowState);
+#endif
+                    
                 }
                 // Check for bit flip
-                else if (self.curState != self.lastState && self.doubleState != self.curState) {
-                    [self.inputDataDecoded addObject:[NSNumber numberWithInt:self.curState]];
-                    self.lastState = self.curState;
-                    self.secondLastState = self.lastState;
+                else if (self.curWindowState != self.lastWindowState &&
+                         self.doubleState != self.curWindowState) {
+                    
+#ifdef DEBUG
+                    printf("            ***** %d detected between samples %d to %d\n", self.curWindowState, i, i+j);
+#endif
+                    
+                    [self.inputDataDecoded addObject:[NSNumber numberWithInt:self.curWindowState]];
+                    self.bit_num++;
                 }
-                // Check for non bit flip aka double state
-                else if (self.curState == self.lastState) {
-                    self.doubleState = self.curState;
-                    self.secondLastState = self.lastState;
-                    self.lastState = self.curState;
+                // Check for non bit flip
+                else if (self.curWindowState == self.lastWindowState &&
+                         self.lastWindowState != self.secondLastWindowState) {
+                    self.doubleState = self.curWindowState;
+                    
+#ifdef DEBUG
+                    printf("    NonFlip- doubleState: %d curWindowState:%d lastWindowState:%d secondLastWindowState:%d\n", self.doubleState, self.curWindowState, self.lastWindowState, self.secondLastWindowState);
+#endif
+                    
                 }
-            }
-            
-            // Reset input stream last three states are equivalent
-            if (self.curState == self.lastState == self.secondLastState) {
-                self.startEdge = false;
+                // Reset input stream last three states are equivalent
+                else if (self.curWindowState == self.lastWindowState &&
+                         self.lastWindowState == self.secondLastWindowState) {
+                    self.startEdge = false;
+                    
+#ifdef DEBUG
+                    printf("    !!!!! End of transmission detected between samples %d to %d\n", i, i+j);
+                    printf("    !!!!! curWindowState:%d lastWindowState:%d secondLastWindowState:%d\n", self.curWindowState, self.lastWindowState, self.secondLastWindowState);
+                    printf("\n\n");
+#endif
+                    
+                    // Convert resulting "bits" to bytes. data is Little Endian
+                    printf("\nDecoded Bytes:\n");
+                    int byte_val = 0;
+                    int power = 7;
+                    int check_it = 0;
+                    
+                    for (int byte_itor = self.bit_num-1; byte_itor >= 0; byte_itor--) {
+                        NSNumber *cur_bit = self.inputDataDecoded[byte_itor];
+                        byte_val += (int)pow(2,power) * cur_bit.intValue;
+                        if (check_it)
+                            self.checkSum += cur_bit.intValue;
+                        power--;
+                        if (power < 0) {
+                            if (byte_itor == self.bit_num - 8) {
+                                printf("Recieved Check Sum: ");
+                                check_it = 1;
+                            }
+                            printf("0x%x\n",byte_val);
+                            power = 7;
+                            byte_val = 0;
+                        }
+                    }
+                    
+                    printf("Actual Check Sum: 0x%x\n\n", self.checkSum);
+                    
+#ifdef DEBUG_READ
+                    printf("    Little Endian Binary Input:\n");
+                    for(int bit_itor = 0; bit_itor < self.bit_num; bit_itor++) {
+                        NSNumber *cur_bit = self.inputDataDecoded[bit_itor];
+                        printf("%d", cur_bit.intValue);
+                        if (bit_itor%8 == 7) printf(" ");
+                    }
+                    printf("\n");
+#endif
+                    
+                    // Clear input array
+                    [self.inputDataDecoded removeAllObjects];
+                    
+                    // Reset bit_num and checkSum
+                    self.bit_num = 0;
+                    self.checkSum = 0;
+                }
+                
+                // Push state down the line
+                self.secondLastWindowState = self.lastWindowState;
+                self.lastWindowState = self.curWindowState;
+                
+#ifdef DEBUG
+                printf("Half Period count: %d\n",self.halfPeriodCount);
+                printf("Half Period sum: %d\n", self.halfPeriodSum);
+                printf("Half Period End- doubleState: %d curWindowState:%d lastWindowState:%d secondLastWindowState:%d\n\n\n", self.doubleState, self.curWindowState, self.lastWindowState, self.secondLastWindowState);
+#endif
             }
         }
+        
     }
 
     
     /***************************************************************************
-     **** DEBUG: Prints contents of input buffer to file. Doing this in     ****
-     ****        will cut power out to micro down to 2.1 VDC.               ****
+     **** DEBUG: Prints contents of input buffer to file.                   ****
      ***************************************************************************/
+    /** /
     // Grabs Document directory path and file name
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
     NSMutableString *docs_dir = [paths objectAtIndex:0];
-    /** /
+    
     // New file to add
-<<<<<<< HEAD
     NSString *path = [NSString stringWithFormat:@"%@/HeadsetSensor_in_25Hz_15kHzOne_0xDEADBEEF_CRC_SE_LM_44kSR_i5s.txt",docs_dir];
-    const char *file = [path UTF8String];
-    /**/
-    // Remove last File
-    NSError *err;
-    NSString *lastPath = [NSString stringWithFormat:@"%@/HeadsetSensor_in_25Hz_15kHzOne_0xDEADBEEF_CRCreg8_SE_LM_44kSR_i5s.txt",docs_dir];
-=======
-    NSString *path = [NSString stringWithFormat:@"%@/HeadsetSensor_in_15Hz_15kHzOne_0xDEADBEEF_44kSR_SE_i5s.txt",docs_dir];
     const char *file = [path UTF8String];
     / ** /
     // Remove last File
     NSError *err;
     NSString *lastPath = [NSString stringWithFormat:@"%@/HeadsetSensor_in_25Hz_15kHzOne_0xDEADBEEF_44kSR_SE_i5s.txt",docs_dir];
->>>>>>> Added Machester Decode (man_decode.c)
     [[NSFileManager defaultManager] removeItemAtPath:lastPath error:&err];
     
     if (err != noErr) {
         NSLog(@"ERROR: %@- Failed to delete last file: %@", err, lastPath);
     }
-<<<<<<< HEAD
-    /**/
-=======
     / ** /
->>>>>>> Added Machester Decode (man_decode.c)
     // Open and write to new file
     FILE *fp;
     fp = fopen(file, "w+");
@@ -776,7 +853,6 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     NSLog(@"Data In decoded: %@", self.inputDataDecoded);
     /***************************************************************************
      **** DEBUG: Prints contents of input buffer to file. Doing this in     ****
-     ****        will cut power out to micro down to 2.1 VDC.               ****
      ***************************************************************************/
 }
 
