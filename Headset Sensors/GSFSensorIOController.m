@@ -76,6 +76,7 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     
     
     [sensorIO grabInput:ioData];
+    NSLog(@"NumFrames: %d", inNumberFrames);
     // Process input data
     //[sensorIO processIO:ioData];
     
@@ -731,20 +732,33 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     // Grabs Document directory path and file name
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
     NSMutableString *docs_dir = [paths objectAtIndex:0];
-    /**/
+    /** /
     // New file to add
+<<<<<<< HEAD
     NSString *path = [NSString stringWithFormat:@"%@/HeadsetSensor_in_25Hz_15kHzOne_0xDEADBEEF_CRC_SE_LM_44kSR_i5s.txt",docs_dir];
     const char *file = [path UTF8String];
     /**/
     // Remove last File
     NSError *err;
     NSString *lastPath = [NSString stringWithFormat:@"%@/HeadsetSensor_in_25Hz_15kHzOne_0xDEADBEEF_CRCreg8_SE_LM_44kSR_i5s.txt",docs_dir];
+=======
+    NSString *path = [NSString stringWithFormat:@"%@/HeadsetSensor_in_15Hz_15kHzOne_0xDEADBEEF_44kSR_SE_i5s.txt",docs_dir];
+    const char *file = [path UTF8String];
+    / ** /
+    // Remove last File
+    NSError *err;
+    NSString *lastPath = [NSString stringWithFormat:@"%@/HeadsetSensor_in_25Hz_15kHzOne_0xDEADBEEF_44kSR_SE_i5s.txt",docs_dir];
+>>>>>>> Added Machester Decode (man_decode.c)
     [[NSFileManager defaultManager] removeItemAtPath:lastPath error:&err];
     
     if (err != noErr) {
         NSLog(@"ERROR: %@- Failed to delete last file: %@", err, lastPath);
     }
+<<<<<<< HEAD
     /**/
+=======
+    / ** /
+>>>>>>> Added Machester Decode (man_decode.c)
     // Open and write to new file
     FILE *fp;
     fp = fopen(file, "w+");
@@ -757,7 +771,7 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
         fprintf(fp, "%d\n", (int)self.rawInputData[buf_indx]);
     }
     fclose(fp);
-    /**/
+    / **/
     // Print the decoded input data
     NSLog(@"Data In decoded: %@", self.inputDataDecoded);
     /***************************************************************************
