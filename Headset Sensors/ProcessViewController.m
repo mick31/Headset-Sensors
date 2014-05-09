@@ -32,7 +32,7 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     if (self.sensorIOToggle) {
-        self.sensorIO = [[GSFSensorIOController alloc] init:self.view];
+        self.sensorIO = [[GSFSensorIOController alloc] initWithView:self.view];
         [self.sensorIO monitorSensors:YES];
     }
 }
@@ -40,16 +40,15 @@
 - (void) viewWillDisappear:(BOOL)animated {
     // Stop monitoring process and free sensorIO
     [self.sensorIO monitorSensors:NO];
-    //self.sensorIO = nil;
 }
 
 - (IBAction)processButtPush:(id)sender {
-    NSMutableArray *data = [NSMutableArray init];
+    NSMutableArray *data = [[NSMutableArray alloc]init];
     // Grab collected sensor data
     data = self.sensorIO.collectSensorData;
     
     // Display data
-    if (data != NULL) {
+    if ([data count] != 0) {
         self.decodedDataLabel.text = [NSString stringWithFormat:@"%@ %@", data[1], data[2]];
     } else {
         self.decodedDataLabel.text = [NSString stringWithFormat:@"No Data"];

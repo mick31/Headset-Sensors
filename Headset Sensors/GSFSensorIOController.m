@@ -43,6 +43,7 @@
 @property NSMutableArray *sensorData;           // Final sensor data
 @property NSMutableArray *rawInputData;         // Raw input data for DEBUG printing
 @property BOOL reqNewData;                      // Flag for new communication to micro
+@property BOOL audioSetup;
 
 @property BOOL startEdge;                       // First rise of input signal signifies start edge
 @property BOOL firstHalfPeriod;                 // First half period for start edge
@@ -84,7 +85,7 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
                                       ioData);
     
     
-    //[sensorIO grabInput:ioData];
+    [sensorIO grabInput:ioData];
     // Process input data
     //[sensorIO processIO:ioData];
     
@@ -105,7 +106,7 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
             
             // Generate power tone on left channel
             sinSignal = sin(phase);
-            sampleBuffer[2 * sampleIdx] = (SInt16)((sinSignal * 60000) /2);  // (SInt16)((sinSignal * 32767.0f) /2);
+            sampleBuffer[2 * sampleIdx] = (SInt16)((sinSignal * 16383.5) /2);  // (SInt16)((sinSignal * 32767.0f) /2);
             
             // Write to commands to Atmel on right channel as necessary
             if(sensorIO.reqNewData)
@@ -135,7 +136,7 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
  *
  *  @return The class instance with initailized audio session and units
  */
-- (id) init :(UIView *) view {
+- (id) initWithView :(UIView *) view {
     self = [super init];
     if (!self) {
         NSLog(@"ERROR init: GSFSensorIOController Failed to initialize");
@@ -192,8 +193,9 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     // Add volume change callback
     [self.volumeSlider addTarget:self action:@selector(handleVolumeChanged:) forControlEvents:UIControlEventValueChanged];
     
+    self.audioSetup = false;
     // Setup AUGraph
-    [self setUpSensorIO];
+    //[self setUpSensorIO];
     
     return self;
 }
@@ -211,7 +213,7 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
 
 - (void) setUpSensorIO {
     // Initialize input data buffer/states
-    self.reqNewData = false;
+    self.reqNewData = true;
     self.startEdge = false;
     self.firstHalfPeriod = false;
     self.doubleState = LOW_STATE;
@@ -251,8 +253,14 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     stereoStreamFormat.mChannelsPerFrame    = 2;
     stereoStreamFormat.mBitsPerChannel      = 16;
     
+    BOOL success;
+    NSError *error;
     OSErr err = noErr;
     @try {
+        // Make the sensor AVAudioSession active
+        success = [self.sensorAudioSession setActive:YES error:&error];
+        if(!success) NSLog(@"ERROR init: AVAudioSession failed activating- %@", error);
+        
         // Create new AUGraph
         err = NewAUGraph(&auGraph);
         NSAssert1(err == noErr, @"ERROR setUpSensorIO: failed to create AUGraph: %hd", err);
@@ -319,17 +327,19 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
         // Start audio unit
         err = AUGraphStart(auGraph);
         NSAssert1(err == noErr, @"ERROR setUpSensorIO: failed to start AUGraph: %hd", err);
-
+        
+        self.audioSetup = true;
     }
     @catch (NSException *exception) {
         NSLog(@"Failed with exception: %@", exception);
+        self.audioSetup = false;
     }
 }
 
 
 - (void) monitorSensors:  (BOOL) enable {
     if (enable){
-        if (!self->auGraph) {
+        if (!self.audioSetup) {
             // Start IO communication
             [self startCollecting];
         }
@@ -341,7 +351,7 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
         NSLog(@"Sensor monitor STARTED");
     } else {
         // Stop IO communication
-        if (self->auGraph) {
+        if (self.audioSetup) {
             [self stopCollecting];
         }
         
@@ -360,6 +370,9 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     
     // Set Master Volume to 100%
     self.volumeSlider.value = 1.0f;
+    if (self.volumeSlider.value != 1.0f) {
+        [self addAlertViewToView: self.associatedView :3];
+    }
 }
 
 
@@ -484,7 +497,7 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     
     switch (changeReason) {
         case 1:
-            // Set up alert View
+            // Set up alert View for a disconnected sensor
             self.sensorAlert =
             [[SDCAlertView alloc]
              initWithTitle:@"No Sensor"
@@ -502,7 +515,7 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
                                                                                                    views:NSDictionaryOfVariableBindings(alertImageView)]];
             break;
         case 2:
-            // Set up Alert View
+            // Set up alert view audio source changed
             self.sensorAlert =
             [[SDCAlertView alloc]
              initWithTitle:@"Audio Source Changed"
@@ -510,6 +523,24 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
              delegate:self
              cancelButtonTitle:nil
              otherButtonTitles:@"Cancel", @"Continue", nil];
+            break;
+        case 3:
+            // Set up alert view for volume malfunction
+            self.sensorAlert =
+            [[SDCAlertView alloc]
+             initWithTitle:@"Auto Power Failed"
+             message:@"The sensor needs power. Please adjust the volume slider to the maximum volume to continue."
+             delegate:self
+             cancelButtonTitle:nil
+             otherButtonTitles:@"Cancel", nil];
+            /*
+            [self.volumeSlider setTranslatesAutoresizingMaskIntoConstraints:NO];
+            [self.sensorAlert.contentView addSubview:self.volumeSlider];
+            [self.volumeSlider sdc_horizontallyCenterInSuperview];
+            [self.sensorAlert.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|-[self.volumeSlider]|"
+                                                                                                 options:0
+                                                                                                 metrics:nil
+                                                                                                   views:NSDictionaryOfVariableBindings(self.volumeSlider)]];*/
             break;
         default:
             NSLog(@"Blowing It In- addAlertViewToView");
@@ -602,8 +633,9 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
         
         // Find average value for the prev and next set of point around the expected edge
         for (j = 0; j < SAMPLES_PER_CHECK && i+j < num_samples; j++) {
-            NSNumber *cur_sample = self.rawInputData[i+j];
-            nextSamples += abs(cur_sample.intValue);
+            //NSNumber *cur_sample = self.rawInputData[i+j];
+            //nextSamples += abs(cur_sample.intValue);
+            nextSamples += abs((int)self.rawInputData[i+j]);
         }
         avgSampleNext = nextSamples / j;
         
@@ -613,7 +645,7 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
             // Only enters this statement for the rising edge of the start signal
             if (!self.startEdge) {
                 
-#ifdef DEBUG
+#ifdef DEBUG_AVG
                 printf("    !!!!! Start between samples %d to %d\n\n\n",i ,i+j);
 #endif
                 
@@ -630,7 +662,7 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
         self.halfPeriodSum += avgSampleNext;
         
         
-#ifdef DEBUG
+#ifdef DEBUG_AVG
         printf("Avg for samples %d to %d: %d\n",i ,i+j , avgSampleNext);
 #endif
         
@@ -652,18 +684,18 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
                     self.curWindowState = LOW_STATE;
                 }
                 
-#ifdef DEBUG
+#ifdef DEBUG_AVG
                 printf("Half Period Start- curState: %d doubleState: %d curWindowState:%d lastWindowState:%d secondLastWindowState:%d\n", self.curState, self.doubleState, self.curWindowState, self.lastWindowState, self.secondLastWindowState);
 #endif
                 
                 if (self.curWindowState != self.curState){
-#ifdef DEBUG
+#ifdef DEBUG_AVG
                     printf("Last sample starting point: %d\n", i);
 #endif
                     
                     i = self.lastSampleEdge - SAMPLES_PER_CHECK;
                     
-#ifdef DEBUG
+#ifdef DEBUG_AVG
                     printf("Next sample starting point: %d\n", i);
 #endif
                 }
@@ -685,7 +717,7 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
                     //if (curState == HIGH_STATE) doubleState = HIGH_STATE;
                     self.firstHalfPeriod = false;
                     
-#ifdef DEBUG
+#ifdef DEBUG_AVG
                     printf("    First Half Period- doubleState:%d curWindowState:%d lastWindowState:%d secondLastWindowState:%d\n", self.doubleState, self.curState, self.lastWindowState, self.secondLastWindowState);
 #endif
                     
@@ -694,7 +726,7 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
                 else if (self.curWindowState != self.lastWindowState &&
                          self.doubleState != self.curWindowState) {
                     
-#ifdef DEBUG
+#ifdef DEBUG_AVG
                     printf("            ***** %d detected between samples %d to %d\n", self.curWindowState, i, i+j);
 #endif
                     
@@ -706,7 +738,7 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
                          self.lastWindowState != self.secondLastWindowState) {
                     self.doubleState = self.curWindowState;
                     
-#ifdef DEBUG
+#ifdef DEBUG_AVG
                     printf("    NonFlip- doubleState: %d curWindowState:%d lastWindowState:%d secondLastWindowState:%d\n", self.doubleState, self.curWindowState, self.lastWindowState, self.secondLastWindowState);
 #endif
                     
@@ -716,7 +748,7 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
                          self.lastWindowState == self.secondLastWindowState) {
                     self.startEdge = false;
                     
-#ifdef DEBUG
+#ifdef DEBUG_AVG
                     printf("    !!!!! End of transmission detected between samples %d to %d\n", i, i+j);
                     printf("    !!!!! curWindowState:%d lastWindowState:%d secondLastWindowState:%d\n", self.curWindowState, self.lastWindowState, self.secondLastWindowState);
                     printf("\n\n");
@@ -748,11 +780,6 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
                     
                     printf("Actual Check Sum: 0x%x\n\n", self.checkSum);
                     
-                    NSNumber *calc_check_sum = self.sensorData[0];
-                    if (calc_check_sum.intValue != self.checkSum) {
-                        self.reqNewData = true;
-                    }
-                    
 #ifdef DEBUG_READ
                     printf("    Little Endian Binary Input:\n");
                     for(int bit_itor = 0; bit_itor < self.bit_num; bit_itor++) {
@@ -766,6 +793,13 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
                     // Clear input array
                     [self.inputDataDecoded removeAllObjects];
                     
+                    
+                    NSNumber *calc_check_sum = self.sensorData[0];
+                    if (calc_check_sum.intValue != self.checkSum) {
+                        self.reqNewData = true;
+                        break;
+                    }
+                    
                     // Reset bit_num and checkSum
                     self.bit_num = 0;
                     self.checkSum = 0;
@@ -775,7 +809,7 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
                 self.secondLastWindowState = self.lastWindowState;
                 self.lastWindowState = self.curWindowState;
                 
-#ifdef DEBUG
+#ifdef DEBUG_AVG
                 printf("Half Period count: %d\n",self.halfPeriodCount);
                 printf("Half Period sum: %d\n", self.halfPeriodSum);
                 printf("Half Period End- doubleState: %d curWindowState:%d lastWindowState:%d secondLastWindowState:%d\n\n\n", self.doubleState, self.curWindowState, self.lastWindowState, self.secondLastWindowState);
@@ -797,7 +831,7 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     // New file to add
     NSString *path = [NSString stringWithFormat:@"%@/HeadsetSensor_in_25Hz_15kHzOne_0xDEADBEEF_CRC_SE_LM_ObjC_44kSR_i5s.txt",docs_dir];
     const char *file = [path UTF8String];
-    /**/
+    /** /
     // Remove last File
     NSError *err;
     NSString *lastPath = [NSString stringWithFormat:@"%@/HeadsetSensor_in_25Hz_15kHzOne_0xDEADBEEF_CRC_SE_LM_44kSR_i5s.txt",docs_dir];
@@ -806,7 +840,7 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     if (err != noErr) {
         NSLog(@"ERROR: %@- Failed to delete last file: %@", err, lastPath);
     }
-    /**/
+    / **/
     // Open and write to new file
     FILE *fp;
     fp = fopen(file, "w+");
@@ -825,6 +859,9 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     /***************************************************************************
      **** DEBUG: Prints contents of input buffer to file. Doing this in     ****
      ***************************************************************************/
+    if (self.reqNewData) {
+        [self monitorSensors:YES];
+    }
 }
 
 /**
@@ -836,6 +873,7 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     // Process raw intput buffer
     [self processIO];
     
+    NSLog(@"Sensor Data: %@", self.sensorData);
     // Return collected result
     return self.sensorData;
 }
