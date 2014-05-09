@@ -44,16 +44,16 @@
 }
 
 - (IBAction)processButtPush:(id)sender {
-    NSMutableArray *data = NULL;
+    NSMutableArray *data = [NSMutableArray init];
     // Grab collected sensor data
     data = self.sensorIO.collectSensorData;
     
     // Display data
-    /*if (data != NULL) {
-        self.decodedDataLabel.text = [NSString stringWithFormat:@"%@%@", data[1], data[2]];
+    if (data != NULL) {
+        self.decodedDataLabel.text = [NSString stringWithFormat:@"%@ %@", data[1], data[2]];
     } else {
         self.decodedDataLabel.text = [NSString stringWithFormat:@"No Data"];
-    }*/
+    }
 }
 
 

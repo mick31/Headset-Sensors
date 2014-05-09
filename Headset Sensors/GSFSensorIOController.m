@@ -42,7 +42,8 @@
 @property NSMutableArray *inputDataDecoded;     // Decoded input
 @property NSMutableArray *sensorData;           // Final sensor data
 @property NSMutableArray *rawInputData;         // Raw input data for DEBUG printing
-@property BOOL newDataOut;                      // Flag for new communication to micro
+@property BOOL reqNewData;                      // Flag for new communication to micro
+
 @property BOOL startEdge;                       // First rise of input signal signifies start edge
 @property BOOL firstHalfPeriod;                 // First half period for start edge
 @property int curState;                         // Current input state value (HIGH or LOW)
@@ -104,11 +105,11 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
             
             // Generate power tone on left channel
             sinSignal = sin(phase);
-            sampleBuffer[2 * sampleIdx] = (SInt16)((sinSignal * 32767.0f) /2);
+            sampleBuffer[2 * sampleIdx] = (SInt16)((sinSignal * 60000) /2);  // (SInt16)((sinSignal * 32767.0f) /2);
             
             // Write to commands to Atmel on right channel as necessary
-            if(!sensorIO.newDataOut)
-                sampleBuffer[2*sampleIdx + 1] = (SInt16)((sinSignal * 32767.0f) /2);
+            if(sensorIO.reqNewData)
+                sampleBuffer[2*sampleIdx + 1] = (SInt16)((sinSignal * 32767.0f) /2);     // (SInt16)((sinSignal * 32767.0f) /2);
             else
                 sampleBuffer[2*sampleIdx + 1] = 0;
             
@@ -210,7 +211,7 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
 
 - (void) setUpSensorIO {
     // Initialize input data buffer/states
-    self.newDataOut = false;
+    self.reqNewData = false;
     self.startEdge = false;
     self.firstHalfPeriod = false;
     self.doubleState = LOW_STATE;
@@ -587,7 +588,8 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     }
 */
 /* After the fact decode */
-    // Stop sensor data collection
+    // Stop request data signal and sensor data collection
+    self.reqNewData = false;
     [self monitorSensors: NO];
     
     int j;
@@ -738,12 +740,18 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
                                 check_it = 1;
                             }
                             printf("0x%x\n",byte_val);
+                            [self.sensorData addObject:[NSNumber numberWithInt:byte_val]];
                             power = 7;
                             byte_val = 0;
                         }
                     }
                     
                     printf("Actual Check Sum: 0x%x\n\n", self.checkSum);
+                    
+                    NSNumber *calc_check_sum = self.sensorData[0];
+                    if (calc_check_sum.intValue != self.checkSum) {
+                        self.reqNewData = true;
+                    }
                     
 #ifdef DEBUG_READ
                     printf("    Little Endian Binary Input:\n");
