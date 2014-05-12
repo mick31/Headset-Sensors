@@ -811,49 +811,27 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
                     int rawTempData[2];
                     float humidData = 0.0;
                     float tempData = 0.0;
-                    //unsigned char mask = 0x01;
                     
-                    //int data_length = (int)[self.sensorData count];
-                    //printf("\nsensorData length: %d\n", (int)[self.sensorData count]);
-                    //printf("crc_index: %d\n", crc_index);
                     for (int k = crc_index+1, i = 0; k < crc_index+5; k++, i++) {
                         NSNumber *cur_byte = self.sensorData[k];
                         chipcapData[i] = cur_byte.intValue;
                     }
                     
-                    // Check two most sig bits of twiMaster.readData[3] for input
-                    // status: 00B = Valid Data,            01B = Stale Data,
-                    //         10B = ChipCap2 Command Mode, 11B = Not Used
-                    //if (!(chipcapData[3] & 0xC0)) {
-                        // Grab humidity and temp data
-                        /*
-                        for (j=0; j < 6; j++) {
-                            rawHumidData[1] += chipcapData[3] & (mask << j);
-                            rawTempData[0] += chipcapData[0] & (mask << (j+2));
-                        }
-                        rawHumidData[0] = chipcapData[2];
-                        rawTempData[1] = chipcapData[1];
-                        */
+                    // Get raw data from chipcapData array
+                    rawHumidData[0] = chipcapData[0];
+                    rawHumidData[1] = chipcapData[1];
                     
-                        // Get raw data from chipcapData array
-                        rawHumidData[0] = chipcapData[0];
-                        rawHumidData[1] = chipcapData[1];
-                        rawTempData[0] = chipcapData[2];
-                        rawTempData[1] = chipcapData[3];
+                    rawTempData[0] = chipcapData[2];
+                    rawTempData[1] = chipcapData[3];
+                
+                    // Conversion equations from ChipCap2 data sheet
+                    humidData = (((rawHumidData[0] >> 2)*256 + rawHumidData[1])/pow(2,14)) * 100;
+                    tempData = ((rawTempData[0]*64 + (rawTempData[1] >> 2))/pow(2,14)) * 165 - 40;
+                
+                    // Add the converted data to reading arrays
+                    [self.humidityReadings addObject:[NSNumber numberWithFloat:humidData]];
+                    [self.temperatureReadings addObject:[NSNumber numberWithFloat:tempData]];
                     
-                        // Conversion equations from ChipCap2 data sheet
-                        humidData = (((rawHumidData[0] >> 2)*256 + rawHumidData[1])/pow(2,14)) * 100;
-                        tempData = ((rawTempData[0]*64 + (rawTempData[1]>>2))/pow(2,14)) * 165 - 40;
-                    
-                        [self.humidityReadings addObject:[NSNumber numberWithFloat:humidData]];
-                        [self.temperatureReadings addObject:[NSNumber numberWithFloat:tempData]];
-                    
-                        printf("\nHumidity:   %f RH\n", humidData);
-                        printf("Temprature: %f C\n\n", tempData);
-                    //} else
-                    //    printf("\nBAD SENSOR DATA\n\n");
-                    
-                    // Reset bit_num and checkSum
                     crc_index += 5;
                     self.bit_num = 0;
                     self.checkSum = 0;
@@ -935,6 +913,7 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     float humAvg = 0.0;
     float tempAvg = 0.0;
     int count = (int)[self.humidityReadings count];
+    
     // Get avarage humidity and temperature readings
     for (int k = 0; k < count; k++){
         NSNumber *hum = self.humidityReadings[k];
@@ -950,7 +929,7 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     [readings addObject:[NSNumber numberWithInt:count]];
     
     NSLog(@"Readings: %@", readings);
-    // Return collected result
+    // Return average of readings 
     return readings;
 }
 
