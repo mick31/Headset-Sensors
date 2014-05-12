@@ -49,7 +49,7 @@
     
     // Display data
     if ([data count] != 0) {
-        self.decodedDataLabel.text = [NSString stringWithFormat:@"%@ %@ %@", data[0], data[1], data[2]];
+        self.decodedDataLabel.text = [NSString stringWithFormat:@"Avg Humidiy: %@ RH\n Avg Temperature: %@ C\n Number of Samples: %@", data[0], data[1], data[2]];
     } else {
         self.decodedDataLabel.text = [NSString stringWithFormat:@"No Data"];
     }
