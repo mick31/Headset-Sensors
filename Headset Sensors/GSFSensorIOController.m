@@ -623,6 +623,7 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     self.reqNewData = false;
     [self monitorSensors: NO];
     
+    int crc_index = 0;
     int j;
     int num_samples = (int)[self.rawInputData count];
     
@@ -793,12 +794,47 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
                     // Clear input array
                     [self.inputDataDecoded removeAllObjects];
                     
-                    
-                    NSNumber *calc_check_sum = self.sensorData[0];
+                    // Verify checksum
+                    NSNumber *calc_check_sum = self.sensorData[crc_index];
                     if (calc_check_sum.intValue != self.checkSum) {
                         self.reqNewData = true;
                         break;
                     }
+                    crc_index += 40;
+                    
+                    // Convert chipcap bytes into sensor reading values
+                    int chipcapData[4];
+                    int rawHumidData[2];
+                    int rawTempData[2];
+                    float humidData = 0.0;
+                    float tempData = 0.0;
+                    unsigned char mask = 0x01;
+                    
+                    for (int k = 1; k < 5; k++) {
+                        NSNumber *cur_byte = self.sensorData[k];
+                        chipcapData[k] = cur_byte.intValue;
+                    }
+                    
+                    // Check two most sig bits of twiMaster.readData[3] for input
+                    // status: 00B = Valid Data,            01B = Stale Data,
+                    //         10B = ChipCap2 Command Mode, 11B = Not Used
+                    //if (!(chipcapData[3] & 0xC0)) {
+                        // Grab humidity and temp data
+                        for (j=0; j < 6; j++) {
+                            rawHumidData[1] += chipcapData[3] & (mask << j);
+                            rawTempData[0] += chipcapData[0] & (mask << (j+2));
+                        }
+                        rawHumidData[0] = chipcapData[2];
+                        rawTempData[1] = chipcapData[1];
+                        
+                        // Conversion equations from ChipCap2 data sheet
+                        humidData = (rawHumidData[1]*256 + rawHumidData[0])/pow(2,14) * 100;
+                        tempData = (rawTempData[1]*64 + rawTempData[0]/4)/pow(2,14) * 165 -40;
+                        
+                        printf("\nHumidity:   %f RH\n", humidData);
+                        printf("Temprature: %f C\n\n", tempData);
+                    //} else
+                    //    printf("\nBAD SENSOR DATA\n\n");
                     
                     // Reset bit_num and checkSum
                     self.bit_num = 0;
@@ -829,12 +865,12 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     NSMutableString *docs_dir = [paths objectAtIndex:0];
     
     // New file to add
-    NSString *path = [NSString stringWithFormat:@"%@/HeadsetSensor_in_25Hz_15kHzOne_0xDEADBEEF_CRC_SE_LM_ObjC_44kSR_i5s.txt",docs_dir];
+    NSString *path = [NSString stringWithFormat:@"%@/HeadsetSensor_in_25Hz_15kHzOne_ChipCap2Sensor_CRC_SE_LM_ObjC_44kSR_i5s.txt",docs_dir];
     const char *file = [path UTF8String];
     /** /
     // Remove last File
     NSError *err;
-    NSString *lastPath = [NSString stringWithFormat:@"%@/HeadsetSensor_in_25Hz_15kHzOne_0xDEADBEEF_CRC_SE_LM_44kSR_i5s.txt",docs_dir];
+    NSString *lastPath = [NSString stringWithFormat:@"%@/HeadsetSensor_in_25Hz_15kHzOne_0xDEADBEEF_CRC_SE_LM_ObjC_44kSR_i5s.txt",docs_dir];
     [[NSFileManager defaultManager] removeItemAtPath:lastPath error:&err];
     
     if (err != noErr) {
@@ -854,12 +890,13 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     }
     fclose(fp);
     /**/
-    // Print the decoded input data
-    NSLog(@"Data In decoded: %@", self.inputDataDecoded);
     /***************************************************************************
      **** DEBUG: Prints contents of input buffer to file. Doing this in     ****
      ***************************************************************************/
+    
+    // When checksum match fails request new data
     if (self.reqNewData) {
+        NSLog(@"Requesting new data. Bad Checksum");
         [self monitorSensors:YES];
     }
 }
