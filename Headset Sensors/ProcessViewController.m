@@ -49,7 +49,7 @@
     
     // Display data
     if ([data count] != 0) {
-        self.decodedDataLabel.text = [NSString stringWithFormat:@"%@ %@ %@ %@", data[1], data[2], data[3], data[4]];
+        self.decodedDataLabel.text = [NSString stringWithFormat:@"%@ %@ %@", data[0], data[1], data[2]];
     } else {
         self.decodedDataLabel.text = [NSString stringWithFormat:@"No Data"];
     }

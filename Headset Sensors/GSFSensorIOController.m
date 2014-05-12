@@ -42,6 +42,8 @@
 @property NSMutableArray *inputDataDecoded;     // Decoded input
 @property NSMutableArray *sensorData;           // Final sensor data
 @property NSMutableArray *rawInputData;         // Raw input data for DEBUG printing
+@property NSMutableArray *temperatureReadings;      // All temperature readings
+@property NSMutableArray *humidityReadings;         // All humidity readings
 @property BOOL reqNewData;                      // Flag for new communication to micro
 @property BOOL audioSetup;
 
@@ -229,6 +231,8 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     self.checkSum = 0;
     
     self.sensorData = [[NSMutableArray alloc] init];
+    self.temperatureReadings = [[NSMutableArray alloc] init];
+    self.humidityReadings = [[NSMutableArray alloc] init];
     self.inputDataDecoded = [[NSMutableArray alloc] init];
     self.rawInputData = [[NSMutableArray alloc] init];
     
@@ -800,7 +804,6 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
                         self.reqNewData = true;
                         break;
                     }
-                    crc_index += 40;
                     
                     // Convert chipcap bytes into sensor reading values
                     int chipcapData[4];
@@ -808,11 +811,14 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
                     int rawTempData[2];
                     float humidData = 0.0;
                     float tempData = 0.0;
-                    unsigned char mask = 0x01;
+                    //unsigned char mask = 0x01;
                     
-                    for (int k = 1; k < 5; k++) {
+                    //int data_length = (int)[self.sensorData count];
+                    //printf("\nsensorData length: %d\n", (int)[self.sensorData count]);
+                    //printf("crc_index: %d\n", crc_index);
+                    for (int k = crc_index+1, i = 0; k < crc_index+5; k++, i++) {
                         NSNumber *cur_byte = self.sensorData[k];
-                        chipcapData[k] = cur_byte.intValue;
+                        chipcapData[i] = cur_byte.intValue;
                     }
                     
                     // Check two most sig bits of twiMaster.readData[3] for input
@@ -820,23 +826,35 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
                     //         10B = ChipCap2 Command Mode, 11B = Not Used
                     //if (!(chipcapData[3] & 0xC0)) {
                         // Grab humidity and temp data
+                        /*
                         for (j=0; j < 6; j++) {
                             rawHumidData[1] += chipcapData[3] & (mask << j);
                             rawTempData[0] += chipcapData[0] & (mask << (j+2));
                         }
                         rawHumidData[0] = chipcapData[2];
                         rawTempData[1] = chipcapData[1];
-                        
+                        */
+                    
+                        // Get raw data from chipcapData array
+                        rawHumidData[0] = chipcapData[0];
+                        rawHumidData[1] = chipcapData[1];
+                        rawTempData[0] = chipcapData[2];
+                        rawTempData[1] = chipcapData[3];
+                    
                         // Conversion equations from ChipCap2 data sheet
-                        humidData = (rawHumidData[1]*256 + rawHumidData[0])/pow(2,14) * 100;
-                        tempData = (rawTempData[1]*64 + rawTempData[0]/4)/pow(2,14) * 165 -40;
-                        
+                        humidData = (((rawHumidData[0] >> 2)*256 + rawHumidData[1])/pow(2,14)) * 100;
+                        tempData = ((rawTempData[0]*64 + (rawTempData[1]>>2))/pow(2,14)) * 165 - 40;
+                    
+                        [self.humidityReadings addObject:[NSNumber numberWithFloat:humidData]];
+                        [self.temperatureReadings addObject:[NSNumber numberWithFloat:tempData]];
+                    
                         printf("\nHumidity:   %f RH\n", humidData);
                         printf("Temprature: %f C\n\n", tempData);
                     //} else
                     //    printf("\nBAD SENSOR DATA\n\n");
                     
                     // Reset bit_num and checkSum
+                    crc_index += 5;
                     self.bit_num = 0;
                     self.checkSum = 0;
                 }
@@ -910,9 +928,30 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     // Process raw intput buffer
     [self processIO];
     
-    NSLog(@"Sensor Data: %@", self.sensorData);
+    //NSLog(@"Sensor Data: %@", self.sensorData);
+    NSLog(@"Humidity Data: %@", self.humidityReadings);
+    NSLog(@"Temperature Data: %@", self.temperatureReadings);
+    
+    float humAvg = 0.0;
+    float tempAvg = 0.0;
+    int count = (int)[self.humidityReadings count];
+    // Get avarage humidity and temperature readings
+    for (int k = 0; k < count; k++){
+        NSNumber *hum = self.humidityReadings[k];
+        humAvg += hum.floatValue;
+        
+        NSNumber *tem = self.temperatureReadings[k];
+        tempAvg += tem.floatValue;
+    }
+    
+    NSMutableArray *readings = [[NSMutableArray alloc] init];
+    [readings addObject:[NSNumber numberWithFloat:(humAvg/count)]];
+    [readings addObject:[NSNumber numberWithFloat:(tempAvg/count)]];
+    [readings addObject:[NSNumber numberWithInt:count]];
+    
+    NSLog(@"Readings: %@", readings);
     // Return collected result
-    return self.sensorData;
+    return readings;
 }
 
 @end
