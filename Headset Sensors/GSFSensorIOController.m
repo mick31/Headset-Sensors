@@ -14,8 +14,8 @@
 #define SAMPLERATE         44100
 
 // Comment out to remove DEBUG prints
-//#define DEBUG_AVG
-//#define DEBUG_SUM
+#define DEBUG_AVG
+#define DEBUG_SUM
 #define DEBUG_READ
 
 #define MAX_BUF                 1000000
@@ -42,6 +42,8 @@
 @property NSMutableArray *inputDataDecoded;     // Decoded input
 @property NSMutableArray *sensorData;           // Final sensor data
 @property NSMutableArray *rawInputData;         // Raw input data for DEBUG printing
+@property NSMutableArray *temperatureReadings;      // All temperature readings
+@property NSMutableArray *humidityReadings;         // All humidity readings
 @property BOOL reqNewData;                      // Flag for new communication to micro
 @property BOOL audioSetup;
 
@@ -106,7 +108,7 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
             
             // Generate power tone on left channel
             sinSignal = sin(phase);
-            sampleBuffer[2 * sampleIdx] = (SInt16)((sinSignal * 16383.5) /2);  // (SInt16)((sinSignal * 32767.0f) /2);
+            sampleBuffer[2 * sampleIdx] = (SInt16)((sinSignal * 60534.0f) /2);  // (SInt16)((sinSignal * 32767.0f) /2);
             
             // Write to commands to Atmel on right channel as necessary
             if(sensorIO.reqNewData)
@@ -229,6 +231,8 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     self.checkSum = 0;
     
     self.sensorData = [[NSMutableArray alloc] init];
+    self.temperatureReadings = [[NSMutableArray alloc] init];
+    self.humidityReadings = [[NSMutableArray alloc] init];
     self.inputDataDecoded = [[NSMutableArray alloc] init];
     self.rawInputData = [[NSMutableArray alloc] init];
     
@@ -622,7 +626,8 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     // Stop request data signal and sensor data collection
     self.reqNewData = false;
     [self monitorSensors: NO];
-    
+    /**/
+    int crc_index = 0;
     int j;
     int num_samples = (int)[self.rawInputData count];
     
@@ -793,14 +798,41 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
                     // Clear input array
                     [self.inputDataDecoded removeAllObjects];
                     
-                    
-                    NSNumber *calc_check_sum = self.sensorData[0];
+                    // Verify checksum
+                    NSNumber *calc_check_sum = self.sensorData[crc_index];
                     if (calc_check_sum.intValue != self.checkSum) {
                         self.reqNewData = true;
                         break;
                     }
                     
-                    // Reset bit_num and checkSum
+                    // Convert chipcap bytes into sensor reading values
+                    int chipcapData[4];
+                    int rawHumidData[2];
+                    int rawTempData[2];
+                    float humidData = 0.0;
+                    float tempData = 0.0;
+                    
+                    for (int k = crc_index+1, i = 0; k < crc_index+5; k++, i++) {
+                        NSNumber *cur_byte = self.sensorData[k];
+                        chipcapData[i] = cur_byte.intValue;
+                    }
+                    
+                    // Get raw data from chipcapData array
+                    rawHumidData[0] = chipcapData[0];
+                    rawHumidData[1] = chipcapData[1];
+                    
+                    rawTempData[0] = chipcapData[2];
+                    rawTempData[1] = chipcapData[3];
+                
+                    // Conversion equations from ChipCap2 data sheet
+                    humidData = (((rawHumidData[0] >> 2)*256 + rawHumidData[1])/pow(2,14)) * 100;
+                    tempData = ((rawTempData[0]*64 + (rawTempData[1] >> 2))/pow(2,14)) * 165 - 40;
+                
+                    // Add the converted data to reading arrays
+                    [self.humidityReadings addObject:[NSNumber numberWithFloat:humidData]];
+                    [self.temperatureReadings addObject:[NSNumber numberWithFloat:tempData]];
+                    
+                    crc_index += 5;
                     self.bit_num = 0;
                     self.checkSum = 0;
                 }
@@ -817,7 +849,7 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
             }
         }
         
-    }
+    }/**/
 
     
     /***************************************************************************
@@ -827,14 +859,14 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     // Grabs Document directory path and file name
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
     NSMutableString *docs_dir = [paths objectAtIndex:0];
-    
+    /**/
     // New file to add
-    NSString *path = [NSString stringWithFormat:@"%@/HeadsetSensor_in_25Hz_15kHzOne_0xDEADBEEF_CRC_SE_LM_ObjC_44kSR_i5s.txt",docs_dir];
+    NSString *path = [NSString stringWithFormat:@"%@/HeadsetSensor_in_25Hz_15kHzOne_SensorReading_CRC_SE_LM_EC_ObjC_44kSR_i5s.txt",docs_dir];
     const char *file = [path UTF8String];
     /** /
     // Remove last File
     NSError *err;
-    NSString *lastPath = [NSString stringWithFormat:@"%@/HeadsetSensor_in_25Hz_15kHzOne_0xDEADBEEF_CRC_SE_LM_44kSR_i5s.txt",docs_dir];
+    NSString *lastPath = [NSString stringWithFormat:@"%@/HeadsetSensor_in_25Hz_15kHzOne_ChipCap2Sensor_CRC_SE_LM_ObjC_44kSR_i5s.txt",docs_dir];
     [[NSFileManager defaultManager] removeItemAtPath:lastPath error:&err];
     
     if (err != noErr) {
@@ -854,12 +886,13 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     }
     fclose(fp);
     /**/
-    // Print the decoded input data
-    NSLog(@"Data In decoded: %@", self.inputDataDecoded);
     /***************************************************************************
      **** DEBUG: Prints contents of input buffer to file. Doing this in     ****
      ***************************************************************************/
+    
+    // When checksum match fails request new data
     if (self.reqNewData) {
+        NSLog(@"Requesting new data. Bad Checksum");
         [self monitorSensors:YES];
     }
 }
@@ -873,9 +906,31 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     // Process raw intput buffer
     [self processIO];
     
-    NSLog(@"Sensor Data: %@", self.sensorData);
-    // Return collected result
-    return self.sensorData;
+    //NSLog(@"Sensor Data: %@", self.sensorData);
+    NSLog(@"Humidity Data: %@", self.humidityReadings);
+    NSLog(@"Temperature Data: %@", self.temperatureReadings);
+    
+    float humAvg = 0.0;
+    float tempAvg = 0.0;
+    int count = (int)[self.humidityReadings count];
+    
+    // Get avarage humidity and temperature readings
+    for (int k = 0; k < count; k++){
+        NSNumber *hum = self.humidityReadings[k];
+        humAvg += hum.floatValue;
+        
+        NSNumber *tem = self.temperatureReadings[k];
+        tempAvg += tem.floatValue;
+    }
+    
+    NSMutableArray *readings = [[NSMutableArray alloc] init];
+    [readings addObject:[NSNumber numberWithFloat:(humAvg/count)]];
+    [readings addObject:[NSNumber numberWithFloat:(tempAvg/count)]];
+    [readings addObject:[NSNumber numberWithInt:count]];
+    
+    NSLog(@"Readings: %@", readings);
+    // Return average of readings 
+    return readings;
 }
 
 @end
