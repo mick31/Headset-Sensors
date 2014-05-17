@@ -14,8 +14,8 @@
 #define SAMPLERATE         44100
 
 // Comment out to remove DEBUG prints
-//#define DEBUG_AVG
-//#define DEBUG_SUM
+#define DEBUG_AVG
+#define DEBUG_SUM
 #define DEBUG_READ
 
 #define MAX_BUF                 1000000
@@ -626,7 +626,7 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     // Stop request data signal and sensor data collection
     self.reqNewData = false;
     [self monitorSensors: NO];
-    
+    /**/
     int crc_index = 0;
     int j;
     int num_samples = (int)[self.rawInputData count];
@@ -849,7 +849,7 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
             }
         }
         
-    }
+    }/**/
 
     
     /***************************************************************************
@@ -859,14 +859,14 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     // Grabs Document directory path and file name
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
     NSMutableString *docs_dir = [paths objectAtIndex:0];
-    
+    /**/
     // New file to add
-    NSString *path = [NSString stringWithFormat:@"%@/HeadsetSensor_in_25Hz_15kHzOne_ChipCap2Sensor_CRC_SE_LM_ObjC_44kSR_i5s.txt",docs_dir];
+    NSString *path = [NSString stringWithFormat:@"%@/HeadsetSensor_in_25Hz_15kHzOne_SensorReading_CRC_SE_LM_EC_ObjC_44kSR_i5s.txt",docs_dir];
     const char *file = [path UTF8String];
     /** /
     // Remove last File
     NSError *err;
-    NSString *lastPath = [NSString stringWithFormat:@"%@/HeadsetSensor_in_25Hz_15kHzOne_0xDEADBEEF_CRC_SE_LM_ObjC_44kSR_i5s.txt",docs_dir];
+    NSString *lastPath = [NSString stringWithFormat:@"%@/HeadsetSensor_in_25Hz_15kHzOne_ChipCap2Sensor_CRC_SE_LM_ObjC_44kSR_i5s.txt",docs_dir];
     [[NSFileManager defaultManager] removeItemAtPath:lastPath error:&err];
     
     if (err != noErr) {
