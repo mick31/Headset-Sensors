@@ -16,6 +16,15 @@
 #import <SDCAlertView.h>                            // Custom Alert View
 #import <UIView+SDCAutoLayout.h>                    // Layout Control for custom Alert View
 
+@class GSFSensorIOController;
+
+@protocol GSFSensorIOControllerDelgate <NSObject>
+
+- (void) endCollection:(GSFSensorIOController *)sensorIOController;
+
+@end
+
+
 // Public interface
 @interface GSFSensorIOController : NSObject
 
@@ -29,5 +38,9 @@
 - (void) monitorSensors: (BOOL) enable;     // Starts the power and communication with micro
 - (void) checkAudioStatus;                  // Checks for changes in audio conditions that could disturb collection process.
 - (NSMutableArray*) collectSensorData;      // Returns an array of sensor readings
+
+// Delegate stuff
+@property (nonatomic, assign) id collectionDelegate;
+- (void) collectionCompleteDelegate;
 
 @end
