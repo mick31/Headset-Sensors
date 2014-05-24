@@ -11,7 +11,7 @@
 // Comment out to remove DEBUG prints
 //#define DEBUG_AVG         //  Prints average sample reading
 //#define DEBUG_SUM         //  Prints sumation of average sample reading
-//#define DEBUG_PACKETS     //  Prints the packets recieved
+#define DEBUG_PACKETS     //  Prints the packets recieved
 #define DEBUG_WRITE       //  Creates new file that will contain raw input form mic
 //#define DEBUG_REMOVE      //  Removes last file containing raw input from mic
 
@@ -615,7 +615,6 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     // Realtime decode
     int j = 0;
     int last_sample = 0;
-    int num_samples = 0;
     
     for (int j = 0 ; j < bufferList->mNumberBuffers ; j++) {
         AudioBuffer sourceBuffer = bufferList->mBuffers[j];
@@ -628,14 +627,13 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     }
     
     last_sample = (int)[self.rawInputData count];
-    printf("First Sample: %d\n Last Sample: %d\n\n", self.first_sample, last_sample);
     
     for (int i = self.first_sample; i < last_sample; i += SAMPLES_PER_CHECK) {
         int avgSampleNext = 0;
         int nextSamples = 0;
         
         // Find average value for the prev and next set of point around the expected edge
-        for (j = 0; j < SAMPLES_PER_CHECK && i+j < num_samples && i+j > 0; j++) {
+        for (j = 0; j < SAMPLES_PER_CHECK && i+j < last_sample && i+j > 0; j++) {
             nextSamples += abs((int)self.rawInputData[i+j]);
         }
         avgSampleNext = nextSamples / j;
@@ -677,7 +675,7 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
             
             // Increment and check if half period is finished
             self.halfPeriodCount += j;
-            if (self.halfPeriodCount == HALF_PERIOD_TC) {
+            if (self.halfPeriodCount >= HALF_PERIOD_TC) {
                 // Assign window state and adjust off set from last edge
                 if ((self.halfPeriodSum / NUM_SAMPLES_PER_PERIOD) > HIGH_MIN_AVG) {
                     self.curWindowState = HIGH_STATE;
@@ -795,15 +793,25 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
                     printf("\n");
 #endif
                     
-                    // Clear input array
+                    // Clear binary input array
                     [self.inputDataDecoded removeAllObjects];
                     
                     // Verify checksum
                     NSNumber *calc_check_sum = self.sensorData[self.crc_index];
                     if (calc_check_sum.intValue != self.checkSum) {
-                        for (int k = self.crc_index; k <= self.crc_index+5; k++) {
+#ifdef DEBUG_PACKETS
+                        printf("    **** Bad CRC on packet: %d ****\n", ((self.crc_index+5)/5) );
+                        printf("Bytes Recieved:\n");
+                        for (int k = self.crc_index; k < self.crc_index+5; k++)
+                            printf("    %d\n",(int)[self.sensorData objectAtIndex:k]);
+                        printf("Last end point: %lu", (unsigned long)[self.sensorData count]);
+#endif
+                        for (int k = self.crc_index; k < self.crc_index+5; k++) {
                             [self.sensorData removeObjectAtIndex:k];
                         }
+#ifdef DEBUG_PACKETS
+                        printf("New end point: %lu", (unsigned long)[self.sensorData count]);
+#endif
                     } else {
                         // Convert chipcap bytes into sensor reading values
                         int chipcapData[4];
@@ -849,9 +857,9 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
 #endif
             }
             // When four packets have been successfully collected stop collecting
-            if (self.crc_index == 25) {
+            /*if (self.crc_index == 25) {
                 [self collectionCompleteDelegate];
-            }
+            }*/
         }
     }
     self.first_sample = last_sample;
@@ -913,10 +921,6 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     self.reqNewData = false;
     [self monitorSensors :NO];
     
-    NSLog(@"Sensor Data: %@", self.sensorData);
-    NSLog(@"Humidity Data: %@", self.humidityReadings);
-    NSLog(@"Temperature Data: %@", self.temperatureReadings);
-    
     float humAvg = 0.0;
     float tempAvg = 0.0;
     int count = (int)[self.humidityReadings count];
@@ -935,7 +939,6 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     [readings addObject:[NSNumber numberWithFloat:(tempAvg/count)]];
     [readings addObject:[NSNumber numberWithInt:count]];
     
-    NSLog(@"Readings: %@", readings);
     // Return average of readings 
     return readings;
 }
