@@ -35,9 +35,8 @@
         // Intialize pluggable sensor collection object
         self.sensorIO = [[GSFSensorIOController alloc] initWithView:self.view];
         
-        // Assign delegate
+        // Assign delegates
         self.sensorIO.collectionDelegate = self;
-        [self.sensorIO collectionCompleteDelegate];
         
         // Start collection
         [self.sensorIO monitorSensors:YES];
@@ -52,6 +51,9 @@
 // Delegate function call that ends collection process after a predetermine number of packets has been collected
 - (void) endCollection: (GSFSensorIOController *) sensorIOController {
     // Stop monitoring process and free sensorIO
+    [self performSelectorInBackground:@selector(stopAudio) withObject:nil];
+}
+- (void) stopAudio {
     [self.sensorIO monitorSensors:NO];
 }
 
