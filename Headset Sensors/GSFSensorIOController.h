@@ -21,6 +21,7 @@
 @protocol GSFSensorIOControllerDelgate <NSObject>
 
 - (void) endCollection:(GSFSensorIOController *) sensorIOController;
+- (void) popVCSensorIO:(GSFSensorIOController *) sensorIOController;
 
 @end
 
@@ -36,12 +37,13 @@
 // Public function prototypes
 - (id) initWithView: (UIView *) view;       // Initializes sensor object. Takes the calling UIViews view for alert messages
 - (void) monitorSensors: (BOOL) enable;     // Starts the power and communication with micro
-- (void) restartCollecting;
 - (void) checkAudioStatus;                  // Checks for changes in audio conditions that could disturb collection process.
 - (NSMutableArray*) collectSensorData;      // Returns an array of sensor readings
 
-// Delegate information
+// Delegate to limit number of sensor packets collected
 @property (nonatomic, weak) id collectionDelegate;
 - (void) collectionCompleteDelegate;
+
+@property (nonatomic, weak) id popVCSensorIODelegate;
 
 @end

@@ -29,6 +29,11 @@
 #define NUM_SAMPLES_PER_PERIOD  8       // Tested working for multi bytes/packet
 #define SAMPLES_PER_CHECK       HALF_PERIOD_TC / NUM_SAMPLES_PER_PERIOD
 
+#define UNSET_STATE         -1
+#define SENSOR_CONNECTED    0
+#define SENSOR_DISCONNECTED 1
+#define APP_CHANGE          2
+
 // Private interface
 @interface GSFSensorIOController () {
     AUGraph auGraph;
@@ -40,6 +45,7 @@
 @property double sampleRate;                    // Sample rate
 @property double bufferDuration;
 @property double sinPhase;                      // Latest point of sine wave for power tone
+@property int routeStatus;
 
 @property NSMutableArray *inputDataDecoded;     // Decoded input
 @property NSMutableArray *sensorData;           // Final sensor data
@@ -135,6 +141,7 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
 
 @implementation GSFSensorIOController
 
+@synthesize popVCSensorIODelegate;
 @synthesize collectionDelegate;
 @synthesize ioUnit = _ioUnit;
 
@@ -356,16 +363,22 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
             [self startCollecting];
         }
         
+        // Register audio route change listner with notification callback
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(audioRouteChangeListener:) name:AVAudioSessionRouteChangeNotification object:nil];
+        
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(audioInterrupt:) name:AVAudioSessionInterruptionNotification object:self.sensorAudioSession];
+        
         // Check that audio route is correct
         [self checkAudioStatus];
         
         // **** DEBUG ****
         NSLog(@"Sensor monitor STARTED");
     } else {
+        // Unregister notification callbacks
+        [[NSNotificationCenter defaultCenter] removeObserver: self];
+        
         // Stop IO communication
-        if (self.audioSetup) {
-            [self stopCollecting];
-        }
+        [self stopCollecting];
         
         // **** DEBUG ****
         NSLog(@"Sensor monitor STOPPED");
@@ -377,52 +390,47 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     // Set up audio associate sensor IO
     [self setUpSensorIO];
     
-    // Register audio route change listner with notification callback
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(audioRouteChangeListener:) name:AVAudioSessionRouteChangeNotification object:nil];
-    
     // Set Master Volume to 100%
     self.volumeSlider.value = 1.0f;
     if (self.volumeSlider.value != 1.0f) {
-        [self addAlertViewToView: self.associatedView :3];
+        [self addAlertViewToView: 3];
     }
 }
 
 
 - (void) stopCollecting {
-    // Unregister notification callbacks
-    [[NSNotificationCenter defaultCenter] removeObserver: self];
-    
     Boolean isRunning = false;
     AUGraphIsRunning (auGraph, &isRunning);
+    
+    //self.routeStatus = UNSET_STATE;
     
     if (isRunning) {
         // Stop and release audio unit
         AUGraphStop(self->auGraph);
         AUGraphUninitialize(self->auGraph);
         self->auGraph = nil;
+        
+        // Free array's
+        self.sensorData = nil;
+        self.temperatureReadings = nil;
+        self.humidityReadings = nil;
+        self.inputDataDecoded = nil;
+        self.rawInputData = nil;
     }
     
     // Set Master Volume to 50%
     self.volumeSlider.value = 0.5f;
 }
 
-- (void) restartCollecting {
-    Boolean isRunning = false;
-    AUGraphIsRunning (auGraph, &isRunning);
-    
-    if (isRunning) {
-        // Stop and release audio unit
-        AUGraphStop(self->auGraph);
-        AUGraphStart(self->auGraph);
-    }
-
-}
 
 /**
  *  Checks for flags set by audioInterruptionCallback and by manual isSensorConnected function to determine if the audio route has changed in a way that will disrupt the collection process.
  */
 - (void) checkAudioStatus {
-    
+    if (!self.isSensorConnected) {
+        [self stopCollecting];
+        [self addAlertViewToView: self.routeStatus];
+    }
 }
 
 /**
@@ -452,26 +460,55 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     
     if ([portNameOut isEqualToString:@"Headphones"] && [portNameIn isEqualToString:@"Headset Microphone"])
         return YES;
+    else
+        self.routeStatus = SENSOR_DISCONNECTED;
     
     return NO;
 }
 
+- (void) audioInterrupt: (NSNotification *) notification {
+    // Initiallize dictionary with notification and grab route change reason
+    NSDictionary *interuptionDict = notification.userInfo;
+    NSInteger audioInterruptReason = [[interuptionDict valueForKey:AVAudioSessionInterruptionTypeKey] integerValue];
+    
+    switch (audioInterruptReason) {
+        case AVAudioSessionInterruptionTypeBegan:
+            // Stop IO audio unit
+            [self stopCollecting];
+            
+            // Set State and dismiss alert if any
+            //self.routeStatus = APP_CHANGE;
+            [self.sensorAlert dismissWithClickedButtonIndex:2 animated:YES];
+            [self addAlertViewToView: APP_CHANGE];
+            NSLog(@"Audio Interruption Started\n");
+            break;
+            
+        case AVAudioSessionInterruptionTypeEnded:
+            //[self startCollecting];
+            NSLog(@"Audio Interruption Ended\n");
+            break;
+            
+        default:
+            NSLog(@"Unhandled Audio Interruption Event: %ld\n", (long)audioInterruptReason);
+    }
+}
 
 /**
  *  Audio route change listener callback, for GSFSensorIOController class, that is invoked whenever a change occurs in the audio route.
  *
  *  @param notification A NSNotification containing audio change reason
  */
-- (void) audioRouteChangeListener: (NSNotification*)notification {
+- (void) audioRouteChangeListener: (NSNotification *)notification {
     // Initiallize dictionary with notification and grab route change reason
     NSDictionary *interuptionDict = notification.userInfo;
     NSInteger routeChangeReason = [[interuptionDict valueForKey:AVAudioSessionRouteChangeReasonKey] integerValue];
     
-    NSLog(@"MADE IT: sensorAudioRouteChageListener");
-    
     switch (routeChangeReason) {
         // Sensor inserted
         case AVAudioSessionRouteChangeReasonNewDeviceAvailable:
+            // Dismiss alert if any
+            [self.sensorAlert dismissWithClickedButtonIndex:2 animated:YES];
+            
             // Start IO communication
             [self startCollecting];
             
@@ -484,15 +521,16 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
             // Stop IO audio unit
             [self stopCollecting];
             
+            // Set State and dismiss alert if any
+            //self.routeStatus = SENSOR_DISCONNECTED;
+            [self addAlertViewToView: SENSOR_DISCONNECTED];
+            
             // **** DEBUG ****
             NSLog(@"Sensor REMOVED");
             break;
             
         // Category changed from PlayAndRecord
         case AVAudioSessionRouteChangeReasonCategoryChange:
-            // Stop IO audio unit
-            [self stopCollecting];
-            
             // **** DEBUG ****
             NSLog(@"Category CHANGED");
             break;
@@ -510,11 +548,9 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
  *  @param view         The UIView for the data staging area
  *  @param changeReason The NSInteger holding the reason why the audio route changed
  */
-- (void) addAlertViewToView:(UIView*) view :(NSInteger) changeReason {
+- (void) addAlertViewToView: (NSInteger) changeReason {
     // Dismiss any existing alert
-    if (self.sensorAlert) {
-        [self.sensorAlert dismissWithClickedButtonIndex:0 animated:NO];
-    }
+    [self.sensorAlert dismissWithClickedButtonIndex:2 animated:NO];
     
     // Set up image for alert View
     UIImageView *alertImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"GSF_Insert_sensor_alert-v2.png"]];
@@ -538,6 +574,7 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
                                                                                                  metrics:nil
                                                                                                    views:NSDictionaryOfVariableBindings(alertImageView)]];
             break;
+            
         case 2:
             // Set up alert view audio source changed
             self.sensorAlert =
@@ -548,6 +585,7 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
              cancelButtonTitle:nil
              otherButtonTitles:@"Cancel", @"Continue", nil];
             break;
+            
         case 3:
             // Set up alert view for volume malfunction
             self.sensorAlert =
@@ -570,8 +608,8 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
             NSLog(@"Blowing It In- addAlertViewToView");
     }
     
-    // Add alertView to current view
-    [view addSubview:self.sensorAlert];
+    // Add alertView to associated view
+    [self.associatedView addSubview:self.sensorAlert];
     
     // Show Alert
     [self.sensorAlert show];
@@ -588,11 +626,9 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     switch (buttonIndex) {
         // Cancel Button pushed
         case 0:
-            // Unregister notification center observer
-            [[NSNotificationCenter defaultCenter] removeObserver: self];
-            
             // Stop IO audio unit
             [self stopCollecting];
+            [self.popVCSensorIODelegate popVCSensorIO:self];
             break;
             
         // Continue
@@ -600,12 +636,18 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
             // Start IO communication
             [self startCollecting];
             break;
+        
+        case 2:
+            // Used to dismiss alert view when no button input is neccessary
+            NSLog(@"Made it to standard dismiss\n");
+            break;
             
         default:
             NSLog(@"Blowing It In- alertView: Button index not handled: %ld", (long)buttonIndex);
             break;
     }
 }
+
 
 /**
  *  Process Input readinga and fills right channel output buffer with any response
@@ -869,6 +911,7 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
         self.first_sample = last_sample;
     }
 }
+
 
 /**
  *  Delegate message to end collection process
