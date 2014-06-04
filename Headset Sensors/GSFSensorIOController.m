@@ -118,7 +118,8 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
             
             // Generate power tone on left channel
             sinSignal = sin(phase);
-            sampleBuffer[2 * sampleIdx] = (SInt16)((sinSignal * 60534.0f) /2);  // (SInt16)((sinSignal * 32767.0f) /2);
+            //sampleBuffer[2 * sampleIdx] = (SInt16)((sinSignal * 60534.0f) /2);
+            sampleBuffer[2 * sampleIdx] = 0;
             
             // Write to commands to Atmel on right channel as necessary
             if(sensorIO.reqNewData)
