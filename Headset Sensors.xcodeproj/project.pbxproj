@@ -27,6 +27,7 @@
 		5B1A94CF19119F3B00464239 /* ProcessViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 5B1A94CE19119F3B00464239 /* ProcessViewController.m */; };
 		5B402D8D18BE6C2E009EE8CA /* GSF_insert_sensor_alert.png in Resources */ = {isa = PBXBuildFile; fileRef = 5B402D8C18BE6C2E009EE8CA /* GSF_insert_sensor_alert.png */; };
 		5B402D8F18BEA015009EE8CA /* GSF_Insert_sensor_alert-v2.png in Resources */ = {isa = PBXBuildFile; fileRef = 5B402D8E18BEA015009EE8CA /* GSF_Insert_sensor_alert-v2.png */; };
+		5B855C5D193424BF00E7AC76 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 000AD22D189312880035A466 /* AudioToolbox.framework */; };
 		5B9F5DC018A996D8002CD58B /* MediaPlayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5B9F5DBF18A996D8002CD58B /* MediaPlayer.framework */; };
 		5BC5A0C518FE010D009BA617 /* GSFSensorIOController.m in Sources */ = {isa = PBXBuildFile; fileRef = 5BC5A0C418FE010D009BA617 /* GSFSensorIOController.m */; };
 /* End PBXBuildFile section */
@@ -71,6 +72,7 @@
 		5B1A94CE19119F3B00464239 /* ProcessViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ProcessViewController.m; sourceTree = "<group>"; };
 		5B402D8C18BE6C2E009EE8CA /* GSF_insert_sensor_alert.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = GSF_insert_sensor_alert.png; path = "Headset Sensors/GSF_insert_sensor_alert.png"; sourceTree = "<group>"; };
 		5B402D8E18BEA015009EE8CA /* GSF_Insert_sensor_alert-v2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "GSF_Insert_sensor_alert-v2.png"; path = "Headset Sensors/GSF_Insert_sensor_alert-v2.png"; sourceTree = "<group>"; };
+		5B855C5C193424BF00E7AC76 /* Headset Sensors.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = "Headset Sensors.entitlements"; sourceTree = "<group>"; };
 		5B9F5DBF18A996D8002CD58B /* MediaPlayer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaPlayer.framework; path = System/Library/Frameworks/MediaPlayer.framework; sourceTree = SDKROOT; };
 		5BC5A0C318FE010D009BA617 /* GSFSensorIOController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GSFSensorIOController.h; sourceTree = "<group>"; };
 		5BC5A0C418FE010D009BA617 /* GSFSensorIOController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GSFSensorIOController.m; sourceTree = "<group>"; };
@@ -84,6 +86,7 @@
 				5B9F5DC018A996D8002CD58B /* MediaPlayer.framework in Frameworks */,
 				000AD23218931A030035A466 /* CoreAudio.framework in Frameworks */,
 				000AD22C189312800035A466 /* AVFoundation.framework in Frameworks */,
+				5B855C5D193424BF00E7AC76 /* AudioToolbox.framework in Frameworks */,
 				000AD1F9189311F20035A466 /* CoreGraphics.framework in Frameworks */,
 				000AD1FB189311F20035A466 /* UIKit.framework in Frameworks */,
 				000AD1F7189311F20035A466 /* Foundation.framework in Frameworks */,
@@ -145,6 +148,7 @@
 		000AD1FC189311F20035A466 /* Headset Sensors */ = {
 			isa = PBXGroup;
 			children = (
+				5B855C5C193424BF00E7AC76 /* Headset Sensors.entitlements */,
 				000AD205189311F20035A466 /* AppDelegate.h */,
 				000AD206189311F20035A466 /* AppDelegate.m */,
 				000AD208189311F20035A466 /* Main.storyboard */,
@@ -249,6 +253,11 @@
 				TargetAttributes = {
 					000AD1F2189311F20035A466 = {
 						DevelopmentTeam = Z5SLZ6QPTL;
+						SystemCapabilities = {
+							com.apple.BackgroundModes = {
+								enabled = 1;
+							};
+						};
 					};
 					000AD213189311F20035A466 = {
 						TestTargetID = 000AD1F2189311F20035A466;
@@ -465,6 +474,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CODE_SIGN_ENTITLEMENTS = "Headset Sensors/Headset Sensors.entitlements";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -482,6 +492,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CODE_SIGN_ENTITLEMENTS = "Headset Sensors/Headset Sensors.entitlements";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;

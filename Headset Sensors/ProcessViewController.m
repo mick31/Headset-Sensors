@@ -37,6 +37,7 @@
         
         // Assign delegates
         self.sensorIO.collectionDelegate = self;
+        self.sensorIO.popVCSensorIODelegate = self;
         
         // Start collection
         [self.sensorIO monitorSensors:YES];
@@ -70,6 +71,9 @@
     }
 }
 
+- (void) popVCSensorIO: (GSFSensorIOController *) sensorIOController {
+    [self.navigationController popViewControllerAnimated:YES];
+}
 
 - (void)didReceiveMemoryWarning
 {
