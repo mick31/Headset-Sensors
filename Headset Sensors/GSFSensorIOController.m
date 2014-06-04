@@ -245,6 +245,14 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
     self.first_sample = 0;
     self.waitACycle = false;
     
+    
+    // Free array's
+    self.sensorData = nil;
+    self.temperatureReadings = nil;
+    self.humidityReadings = nil;
+    self.inputDataDecoded = nil;
+    self.rawInputData = nil;
+    
     self.sensorData = [[NSMutableArray alloc] init];
     self.temperatureReadings = [[NSMutableArray alloc] init];
     self.humidityReadings = [[NSMutableArray alloc] init];
@@ -409,13 +417,6 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
         AUGraphStop(self->auGraph);
         AUGraphUninitialize(self->auGraph);
         self->auGraph = nil;
-        
-        // Free array's
-        self.sensorData = nil;
-        self.temperatureReadings = nil;
-        self.humidityReadings = nil;
-        self.inputDataDecoded = nil;
-        self.rawInputData = nil;
     }
     
     // Set Master Volume to 50%
@@ -967,7 +968,7 @@ static OSStatus hardwareIOCallback(void                         *inRefCon,
      ***************************************************************************/
     
     self.reqNewData = false;
-    [self monitorSensors :NO];
+    [self monitorSensors: NO];
     
     float humAvg = 0.0;
     float tempAvg = 0.0;
